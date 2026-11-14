@@ -91,3 +91,4 @@ The generated code does not branch on `detailMode` when calling it — only the 
 - [Preservation regions](../preservation-regions/) — the `AURORA:FORM-FIELDS` region lives inside `*-form.component.ts`.
 - [How-to: Configure a frontend module](../../../guides/frontend/configure-a-frontend-module/) — the broader workflow this concept fits into.
 - [How-to: Implement a grid-elements-manager widget](../../../guides/frontend/implement-grid-elements-manager/) — recipe that depends on the parent staying in `view` mode.
+- [Guided actions and assisted forms](../guided-actions/) — how a `create` guided action reads `detailMode` to reach the form directly or through the dialog.

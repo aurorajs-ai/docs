@@ -23,6 +23,7 @@ If you want to _do_ something, use the [how-to guides](../guides/). If you need 
 - **[Detail mode](./frontend/detail-mode/)** — how `front.detailMode` chooses between a routed detail page and a list-with-modal CRUD.
 - **[Embed mode](./frontend/embed-mode/)** — how `front.embedSupport` opts a child module into being embedded inside its parent's detail view.
 - **[Form field widths](./frontend/form-field-widths/)** — how the 12-column grid, type defaults, `widget.span`, and the auto-expand pass decide each field's width.
+- **[Guided actions and assisted forms](./frontend/guided-actions/)** — how the assistant and the command palette take a user to a screen or a creation form, and what `hasAssistant` lets it fill.
 - **[Preservation regions](./frontend/preservation-regions/)** — how you own a slice of a generated file and why that slice survives regeneration.
 - **[Column pinning (TanStack)](./frontend/tanstack-column-pinning/)** — why pinning a column reorders rather than moves it, and how the data-table writes both pinning and order.
 
