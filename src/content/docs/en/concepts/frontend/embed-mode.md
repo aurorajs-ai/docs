@@ -45,4 +45,3 @@ Once both toggles are set:
 - [Implement a grid-elements-manager widget](../../../guides/frontend/implement-grid-elements-manager/) — step-by-step recipe for the YAML and the regen flow.
 - [Configure a frontend module](../../../guides/frontend/configure-a-frontend-module/) — the broader workflow embed mode fits into.
 - [Detail mode: view or dialog](../detail-mode/) — why `dialog` mode cannot host the embed widget.
-- [Grid elements manager widget](../../../changes/cli/2026-04-30-spec-15-grid-elements-manager-widget/) — the change that introduced the model.

@@ -29,7 +29,7 @@ The codegen of `<mod>.columns.ts` walks each property of the aggregate and picks
 | Property shape                       | Cell                                                                          |
 | ------------------------------------ | ----------------------------------------------------------------------------- |
 | `boolean`                            | `flexRenderComponent(BooleanCell, { inputs: {} })`                            |
-| `id` + `relationship: many-to-one`   | `accessorKey: '<rel>.name'` with auto-include (see [Auto-include FK columns](../../../changes/cli/2026-04-30-spec-17-fk-column-auto-include/)) |
+| `id` + `relationship: many-to-one`   | `accessorKey: '<rel>.name'` with auto-include |
 | anything else                        | `(info) => \`${info.getValue<string>()}\`` — plain string coercion            |
 
 The `cells/` family is designed to grow: future renderers (`DateCell`, `BadgeCell`, `CurrencyCell`, `EnumCell`, …) will take over from the string fallback for their respective types as each lands.
@@ -92,6 +92,4 @@ When you add `DateCell`, `BadgeCell`, or anything similar, two rules:
 
 ## Related
 
-- [Icon cell for boolean columns](../../../changes/cli/2026-05-02-spec-18-boolean-cell-dispatch/) — the change that introduced `BooleanCell` and the `cells/` convention.
-- [Auto-include FK columns in lists](../../../changes/cli/2026-04-30-spec-17-fk-column-auto-include/) — sibling pipeline that emits relational columns (different mechanism, related surface).
 - [Configure a frontend module](../../../guides/frontend/configure-a-frontend-module/) — the broader workflow this concept fits into.

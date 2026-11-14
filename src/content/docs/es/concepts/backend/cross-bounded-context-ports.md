@@ -183,5 +183,4 @@ Las dos variantes comparten la misma estructura de 4 archivos (port, token, adap
 ## Relacionado
 
 - [Añadir un port cross-BC](../../../guides/backend/add-a-cross-bc-port/) — receta paso a paso para cablear una nueva dependencia cross-BC.
-- [Cross-BC ports pattern — changelog](../../../changes/catalyst/2026-05-10-establish-cross-bc-ports-pattern/) — el cambio original que introdujo la convención.
 - [Scaffolding de un módulo](../module-scaffolding/) — cómo se organiza internamente un BC antes de cualquier preocupación cross-BC.

@@ -98,4 +98,3 @@ Composition has one honest cost: someone has to write this wiring, and the commo
 
 - [Composables: atoms and presets](../composables/) — how Aurora organizes the composition: the atom/preset rule, the subdomain layout, the full catalog.
 - [Composables reference](../../../reference/frontend/composables/) — signatures and configs for every atom and preset.
-- [Atomic composables + manager rewrite](../../../changes/catalyst/2026-05-05-refactor-data-table-to-atomic-composables/) — the change that moved the brain layer from monolith to composition.

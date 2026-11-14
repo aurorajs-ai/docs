@@ -91,5 +91,3 @@ El código generado no se ramifica según `detailMode` al llamarlo — solo el c
 - [Regiones de preservación](../preservation-regions/) — la región `AURORA:FORM-FIELDS` vive dentro de `*-form.component.ts`.
 - [Cómo: Configurar un módulo frontend](../../../guides/frontend/configure-a-frontend-module/) — el flujo más amplio donde este concepto encaja.
 - [Cómo: Implementar un widget grid-elements-manager](../../../guides/frontend/implement-grid-elements-manager/) — receta que depende de que el padre se quede en modo `view`.
-- [Detail mode: view o dialog](../../../changes/cli/2026-04-25-spec-08-form-extraction-detail-mode/) — el cambio que introdujo el split.
-- [Ancho de diálogo configurable](../../../changes/cli/2026-07-16-add-configurable-dialog-width/) — el cambio que introdujo `front.dialogWidth`.

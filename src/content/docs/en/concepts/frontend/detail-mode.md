@@ -91,5 +91,3 @@ The generated code does not branch on `detailMode` when calling it — only the 
 - [Preservation regions](../preservation-regions/) — the `AURORA:FORM-FIELDS` region lives inside `*-form.component.ts`.
 - [How-to: Configure a frontend module](../../../guides/frontend/configure-a-frontend-module/) — the broader workflow this concept fits into.
 - [How-to: Implement a grid-elements-manager widget](../../../guides/frontend/implement-grid-elements-manager/) — recipe that depends on the parent staying in `view` mode.
-- [Detail mode: view or dialog](../../../changes/cli/2026-04-25-spec-08-form-extraction-detail-mode/) — the change that introduced the split.
-- [Configurable dialog width](../../../changes/cli/2026-07-16-add-configurable-dialog-width/) — the change that introduced `front.dialogWidth`.

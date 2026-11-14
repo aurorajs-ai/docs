@@ -18,11 +18,10 @@ reflects the real state.
 ## Docs automation
 
 Author content under `src/content/docs/` from external sources (sibling-repo archives,
-auto-generated reference, changelog entries).
+auto-generated reference).
 
 | Skill | Trigger | Path |
 | --- | --- | --- |
-| `catalyst-changelog-sync` | After new archives land in a sibling repo; refreshes `/changes/` with classified, bilingual entries. Supports dry-run and bidirectional override. | `.claude/skills/catalyst-changelog-sync/SKILL.md` |
 | `catalyst-docs-from-spec` | The final step of a technical change in `aurora-catalyst` (framework, harness, CLI, core): after `/opsx:archive` (from the archive) or on a direct-path Medium task (from the task and the PR diff); drafts concepts, guides, and reference stubs in EN + ES. | `.claude/skills/catalyst-docs-from-spec/SKILL.md` |
 
 ---

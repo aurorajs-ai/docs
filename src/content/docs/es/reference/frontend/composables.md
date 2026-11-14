@@ -333,4 +333,3 @@ La capa de llamada pura. Vive en `@aurora/modules/graphql/fetchers/` y también 
 ## Relacionado
 
 - [Composables: atoms y presets](../../../concepts/frontend/composables/) — el *porqué* de la arquitectura.
-- [Composables atómicos y nuevo manager](../../../changes/catalyst/2026-05-05-refactor-data-table-to-atomic-composables/) — el change que introdujo esta superficie.
