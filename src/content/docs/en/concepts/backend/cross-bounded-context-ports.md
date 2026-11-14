@@ -183,5 +183,4 @@ Both variants share the identical 4-file shape (port, token, adapter, bridge ent
 ## Related
 
 - [Add a cross-BC port](../../../guides/backend/add-a-cross-bc-port/) — step-by-step recipe to wire a new cross-BC dependency.
-- [Cross-BC ports pattern — changelog](../../../changes/catalyst/2026-05-10-establish-cross-bc-ports-pattern/) — the original change that introduced the convention.
 - [Backend module scaffolding](../module-scaffolding/) — how a single BC is laid out internally, before any cross-BC concern.

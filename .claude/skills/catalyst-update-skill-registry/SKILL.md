@@ -34,7 +34,7 @@ All skills live under a single location (`.claude/skills/`), so the REGISTRY is 
 
 | Subcategory | Fits |
 | --- | --- |
-| **Docs automation** | Skills that author content under `src/content/docs/` from external sources (sibling-repo archives, auto-generated reference, changelog entries) |
+| **Docs automation** | Skills that author content under `src/content/docs/` from external sources (sibling-repo archives, auto-generated reference) |
 | **Workflow — OpenSpec SDD** | Skills that drive the openspec propose / apply / archive / explore loop |
 | **Meta** | Skills that operate on the skill ecosystem itself (this one) |
 
@@ -107,7 +107,7 @@ reflects the real state.
 ## Docs automation
 
 Author content under `src/content/docs/` from external sources (sibling-repo archives,
-auto-generated reference, changelog entries).
+auto-generated reference).
 
 | Skill | Trigger | Path |
 | --- | --- | --- |

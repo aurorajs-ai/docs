@@ -333,4 +333,3 @@ The pure call layer. Lives at `@aurora/modules/graphql/fetchers/` and is also re
 ## Related
 
 - [Composables: atoms and presets](../../../concepts/frontend/composables/) — the *why* of the architecture.
-- [Atomic composables + manager rewrite](../../../changes/catalyst/2026-05-05-refactor-data-table-to-atomic-composables/) — the change that introduced this surface.

@@ -97,7 +97,6 @@ Expected. The widget is a section, not a field — `widget.span` is ignored on `
 
 ## Related
 
-- [Grid elements manager widget](../../../changes/cli/2026-04-30-spec-15-grid-elements-manager-widget/) — the change that introduced the widget.
 - [Detail mode: view or dialog](../../../concepts/frontend/detail-mode/) — why dialog mode cannot host the widget.
 - [Form field widths](../../../concepts/frontend/form-field-widths/) — the grid the parent's form uses; the widget renders as a sibling section, not as a field.
 - [`catalyst generate` reference](../../../reference/cli-commands/generate/) — every flag and argument.

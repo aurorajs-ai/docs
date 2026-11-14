@@ -190,4 +190,3 @@ The bridge entry is missing from `BridgesModule.providers`, or the token symbol 
 ## Related
 
 - [Cross-bounded-context ports](../../../concepts/backend/cross-bounded-context-ports/) — the design rationale and the catalog of bridges in the codebase.
-- [Cross-BC ports pattern — changelog](../../../changes/catalyst/2026-05-10-establish-cross-bc-ports-pattern/) — the original change that introduced the convention.

@@ -156,11 +156,6 @@ export default defineConfig({
               translations: { es: 'Harness' },
               items: [{ autogenerate: { directory: 'reference/harness' } }],
             },
-            {
-              label: 'API',
-              collapsed: true,
-              items: [{ autogenerate: { directory: 'reference/api' } }],
-            },
           ],
         },
         {
@@ -193,12 +188,6 @@ export default defineConfig({
               items: [{ autogenerate: { directory: 'concepts/harness' } }],
             },
           ],
-        },
-        {
-          label: 'Change history',
-          translations: { es: 'Historial de cambios' },
-          collapsed: true,
-          items: [{ autogenerate: { directory: 'changes' } }],
         },
       ],
       editLink: {

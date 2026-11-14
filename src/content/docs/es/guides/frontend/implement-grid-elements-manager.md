@@ -97,7 +97,6 @@ Es lo esperado. El widget es una sección, no un campo — `widget.span` se igno
 
 ## Relacionado
 
-- [Widget grid-elements-manager](../../../changes/cli/2026-04-30-spec-15-grid-elements-manager-widget/) — el cambio que introdujo el widget.
 - [Detail mode: view o dialog](../../../concepts/frontend/detail-mode/) — por qué el modo dialog no puede alojar el widget.
 - [Ancho de campos en formulario](../../../concepts/frontend/form-field-widths/) — el grid que usa el form del padre; el widget renderiza como sección hermana, no como campo.
 - [Referencia de `catalyst generate`](../../../reference/cli-commands/generate/) — cada flag y argumento.

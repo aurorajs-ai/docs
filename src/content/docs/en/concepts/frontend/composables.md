@@ -116,6 +116,5 @@ After a successful `link()` or `unlink()`, `useRelationshipPivot` automatically 
 
 ## Related
 
-- [Atomic composables + manager rewrite](../../../changes/catalyst/2026-05-05-refactor-data-table-to-atomic-composables/) — the change that introduced this architecture.
 - [Implement grid-elements-manager](../../../guides/frontend/implement-grid-elements-manager/) — task-oriented recipe for the one-to-many manager, sibling pattern.
 - [Cell renderers](../cell-renderers/) — the visual-layer counterpart: per-type renderers under `cells/`, dispatched by codegen.

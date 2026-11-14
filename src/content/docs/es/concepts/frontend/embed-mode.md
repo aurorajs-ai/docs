@@ -45,4 +45,3 @@ Una vez ambos flags están puestos:
 - [Implementar un widget grid-elements-manager](../../../guides/frontend/implement-grid-elements-manager/) — receta paso a paso del YAML y del flujo de regeneración.
 - [Configurar un módulo frontend](../../../guides/frontend/configure-a-frontend-module/) — el flujo más amplio donde el modo embed encaja.
 - [Detail mode: view o dialog](../detail-mode/) — por qué el modo dialog no puede alojar el widget embed.
-- [Widget grid-elements-manager](../../../changes/cli/2026-04-30-spec-15-grid-elements-manager-widget/) — el cambio que introdujo el modelo.

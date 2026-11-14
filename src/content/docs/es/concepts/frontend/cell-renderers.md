@@ -29,7 +29,7 @@ El codegen de `<mod>.columns.ts` recorre cada property del agregado y elige el c
 | Forma de la property                  | Celda                                                                                                                                                |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `boolean`                             | `flexRenderComponent(BooleanCell, { inputs: {} })`                                                                                                   |
-| `id` + `relationship: many-to-one`    | `accessorKey: '<rel>.name'` con auto-include (consulta [Columnas FK automáticas](../../../changes/cli/2026-04-30-spec-17-fk-column-auto-include/))   |
+| `id` + `relationship: many-to-one`    | `accessorKey: '<rel>.name'` con auto-include   |
 | cualquier otra cosa                   | `(info) => \`${info.getValue<string>()}\`` — coerción simple a string                                                                                |
 
 La familia `cells/` está pensada para crecer: los futuros renderers (`DateCell`, `BadgeCell`, `CurrencyCell`, `EnumCell`, …) irán reemplazando al fallback de string para sus tipos respectivos según vayan aterrizando.
@@ -92,6 +92,4 @@ Cuando añades `DateCell`, `BadgeCell` o cualquier otro, dos reglas:
 
 ## Relacionado
 
-- [Cell con icono para columnas boolean](../../../changes/cli/2026-05-02-spec-18-boolean-cell-dispatch/) — el cambio que introdujo `BooleanCell` y la convención `cells/`.
-- [Columnas FK automáticas en listas](../../../changes/cli/2026-04-30-spec-17-fk-column-auto-include/) — pipeline hermano que emite columnas relacionales (mecanismo distinto, superficie relacionada).
 - [Configurar un módulo frontend](../../../guides/frontend/configure-a-frontend-module/) — el flujo más amplio donde este concepto encaja.
