@@ -22,6 +22,7 @@ Si quieres _hacer_ algo, usa las [guías](../guides/). Si necesitas datos exacto
 - **[Composición vs herencia](./frontend/composition-over-inheritance/)** — por qué el brain extiende en horizontal componiendo funciones en vez de por jerarquías de clases.
 - **[Detail mode](./frontend/detail-mode/)** — cómo `front.detailMode` elige entre una página de detalle ruteada y un CRUD lista-con-modal.
 - **[Embed mode](./frontend/embed-mode/)** — cómo `front.embedSupport` permite embeber un módulo hijo dentro del detalle de su padre.
+- **[Acciones guiadas y formularios asistidos](./frontend/guided-actions/)** — cómo el asistente y la paleta de comandos llevan al usuario a una pantalla o a un formulario de alta, y qué le deja rellenar `hasAssistant`.
 - **[Ancho de campos](./frontend/form-field-widths/)** — cómo el grid de 12 columnas, los defaults por tipo, `widget.span` y el pase de auto-expand deciden el ancho de cada campo.
 - **[Preservation regions](./frontend/preservation-regions/)** — cómo te apropias de un trozo de un archivo generado y por qué ese trozo sobrevive a la regeneración.
 - **[Columnas pinned (TanStack)](./frontend/tanstack-column-pinning/)** — por qué fijar una columna la reordena en vez de moverla, y cómo la data-table escribe pinning y orden a la vez.
