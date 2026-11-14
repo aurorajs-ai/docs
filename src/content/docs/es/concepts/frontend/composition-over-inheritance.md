@@ -98,4 +98,3 @@ La composición tiene un coste honesto: alguien tiene que escribir este cableado
 
 - [Composables: atoms y presets](../composables/) — cómo organiza Aurora la composición: la regla atom/preset, la organización por subdominio, el catálogo completo.
 - [Referencia de composables](../../../reference/frontend/composables/) — firmas y configs de cada atom y preset.
-- [Atomic composables + manager rewrite](../../../changes/catalyst/2026-05-05-refactor-data-table-to-atomic-composables/) — el cambio que llevó la capa cerebro del monolito a la composición.

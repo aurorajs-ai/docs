@@ -16,7 +16,7 @@ interface Props {
 
 const { lang } = Astro.props;
 
-// Same pattern as ChangelogIndex.astro — BASE_URL carries a trailing slash.
+// BASE_URL carries a trailing slash.
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const href = (anchor: string) => `${base}/${lang}/reference/harness/#${anchor}`;
 

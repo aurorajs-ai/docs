@@ -4,12 +4,6 @@
  * Mirrors auto-generated content from sibling Aurora repos into the docs site,
  * grouped by source repo:
  *   - <source>/docs/                       → src/content/docs/<locale>/reference/cli-commands/  (only slug=cli)
- *   - <source>/docs-api/                   → src/content/docs/<locale>/reference/api/<slug>/
- *
- * Changelog entries (from `openspec/changes/archive/`) are NOT handled here —
- * they are produced by the `changelog-sync` skill, which requires LLM reasoning
- * (classification + bilingual authoring) and therefore lives outside this
- * purely-deterministic script. See `scripts/changelog-sync.ts`.
  *
  * Human-curated pages (tutorials, guides, concepts, hand-written reference)
  * are NEVER touched by this script.
@@ -18,7 +12,6 @@
  *   pnpm sync                              # import every supported section from every source
  *   pnpm sync --source cli                 # only the CLI repo
  *   pnpm sync --skip-cli-commands          # keep existing cli-commands dir as-is
- *   pnpm sync --skip-api                   # keep existing api dir as-is
  *   pnpm sync --help
  */
 
@@ -35,29 +28,23 @@ import {
   sourceAssetsPath,
   targetFor,
 } from './lib/sources.js';
-import { rewriteApiLinks } from './lib/api-links.js';
-
-const SITE_BASE = '/aurora-catalyst-docs'; // mirrors astro.config.mjs `base`
 
 // ─── Args ────────────────────────────────────────────────────────────
 
 interface Options {
   only: null | string;
-  skipApi: boolean;
   skipCliCommands: boolean;
 }
 
 function parseArgs(argv: string[]): Options {
   const options: Options = {
     only: null,
-    skipApi: false,
     skipCliCommands: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--source') options.only = argv[++i];
     else if (arg === '--skip-cli-commands') options.skipCliCommands = true;
-    else if (arg === '--skip-api') options.skipApi = true;
     else if (arg === '--help' || arg === '-h') {
       console.log(`
 Usage: pnpm sync [options]
@@ -65,10 +52,7 @@ Usage: pnpm sync [options]
 Options:
   --source <slug>       Only import from this source (one of: ${SOURCES.map((s) => s.slug).join(', ')})
   --skip-cli-commands   Skip CLI reference generation
-  --skip-api            Skip TypeDoc API generation
   --help                Show this help
-
-Note: changelog entries are produced by the changelog-sync skill, not by this script.
 `);
       process.exit(0);
     }
@@ -101,7 +85,7 @@ async function walkMarkdown(dir: string): Promise<string[]> {
   return out;
 }
 
-// ─── Frontmatter injection (oclif/TypeDoc output comes raw) ──────────
+// ─── Frontmatter injection (oclif output comes raw) ──────────
 
 const TRANSLATION_NOTE: Record<Locale, string> = {
   en: [
@@ -194,64 +178,6 @@ async function mirrorCliCommandsFor(source: Source): Promise<void> {
   }
 }
 
-async function mirrorApiFor(source: Source): Promise<void> {
-  const assetsRoot = sourceAssetsPath(source);
-  if (!existsSync(assetsRoot)) {
-    console.warn(`[skip] ${source.slug}: repo not found at ${assetsRoot}`);
-    return;
-  }
-  const sourceDir = path.join(assetsRoot, 'docs-api');
-  if (!existsSync(sourceDir)) {
-    console.warn(
-      `[skip] ${source.slug}: no TypeDoc output at ${sourceDir}. Run the TypeDoc script in ${source.repo}.`,
-    );
-    return;
-  }
-  for (const locale of CONTENT_LOCALES) {
-    const dest = targetFor(locale, path.join('reference/api', source.slug));
-    await resetDir(dest);
-    await cp(sourceDir, dest, { recursive: true });
-
-    // Rewrite TypeDoc-relative .md links to root-absolute slugified URLs
-    const apiRoot = targetFor(locale, 'reference/api');
-    for (const file of await walkMarkdown(dest)) {
-      const sourceRelPath = path.relative(apiRoot, file).split(path.sep).join('/');
-      const content = await readFile(file, 'utf8');
-      const rewritten = rewriteApiLinks(content, { sourceRelPath, base: SITE_BASE, locale });
-      if (rewritten !== content) await writeFile(file, rewritten, 'utf8');
-    }
-
-    await injectGenericFrontmatterUnder(dest);
-
-    const title =
-      locale === 'es' ? `API · ${source.label.es}` : `API · ${source.label.en}`;
-    const description =
-      locale === 'es'
-        ? `Superficie TypeScript pública de ${source.label.es}. Generada por TypeDoc.`
-        : `Public TypeScript surface of ${source.label.en}. Produced by TypeDoc.`;
-    const intro =
-      locale === 'es'
-        ? `Cada página corresponde a un módulo, interfaz, función o tipo exportado desde ${source.label.es}.`
-        : `Each page corresponds to a module, interface, function, or type exported from ${source.label.en}.`;
-    await writeFile(
-      path.join(dest, 'index.md'),
-      [
-        `---`,
-        `title: ${yamlString(title)}`,
-        `description: ${yamlString(description)}`,
-        `---`,
-        ``,
-        intro,
-        ``,
-        TRANSLATION_NOTE[locale],
-        ``,
-      ].join('\n'),
-      'utf8',
-    );
-    console.log(`[ok] ${source.slug} api → ${path.relative(DOCS_ROOT, dest)}`);
-  }
-}
-
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function resetAutoGenRoots(
@@ -261,9 +187,6 @@ async function resetAutoGenRoots(
   for (const locale of CONTENT_LOCALES) {
     if (!options.skipCliCommands && sources.some((s) => s.hasCli)) {
       await resetDir(targetFor(locale, 'reference/cli-commands'));
-    }
-    if (!options.skipApi && sources.some((s) => s.hasApi)) {
-      await resetDir(targetFor(locale, 'reference/api'));
     }
   }
 }
@@ -287,9 +210,6 @@ async function main(): Promise<void> {
     console.log(`\n→ ${source.slug} (${source.repo})`);
     if (!options.skipCliCommands && source.hasCli) {
       await mirrorCliCommandsFor(source);
-    }
-    if (!options.skipApi && source.hasApi) {
-      await mirrorApiFor(source);
     }
   }
 

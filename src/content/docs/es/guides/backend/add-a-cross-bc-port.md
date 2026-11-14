@@ -190,4 +190,3 @@ Falta la bridge entry en `BridgesModule.providers`, o el symbol del token que im
 ## Relacionado
 
 - [Ports entre bounded contexts](../../../concepts/backend/cross-bounded-context-ports/) — la justificación de diseño y el catálogo de bridges en el código.
-- [Cross-BC ports pattern — changelog](../../../changes/catalyst/2026-05-10-establish-cross-bc-ports-pattern/) — el cambio original que introdujo la convención.
