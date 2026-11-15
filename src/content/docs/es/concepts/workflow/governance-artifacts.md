@@ -43,10 +43,10 @@ Cada ficha de abajo sigue la misma plantilla fija, para que puedas compararlas l
 
 - **Qué es.** Constraints **arquitectónicas / de framework** codificadas que gobiernan tu trabajo *antes* de escribir código.
 - **Para qué sirve.** No son documentación post-hoc ni "memoria opcional" — son constraints que cumples *ahora*, mientras escribes. Su responsabilidad central es enunciar, de forma citable, lo que la arquitectura prohíbe.
-- **Qué lo dispara (*trigger*).** (a) citar un ID por su nombre (`HR-MODULES-001`); (b) ir a tocar rutas gobernadas (lookup `byPath` / `byId` / `byKeyword` en el índice); (c) durante `/opsx:propose`, en la sección `## Harness rules applicable`; (d) editar archivos bajo `cliter/harness-rules/`.
+- **Qué lo dispara (*trigger*).** (a) citar un ID por su nombre (`HR-MODULES-001`); (b) ir a tocar rutas gobernadas (lookup `byPath` / `byId` / `byKeyword` en el índice); (c) durante `/openspec-propose`, en la sección `## Harness rules applicable`; (d) editar archivos bajo `cliter/harness-rules/`.
 - **Cómo se aplica — tres capas de enforcement.**
   - *Prompt-time* (`UserPromptSubmit`): el hook `inject-prompt-context.ts` inyecta las top-N reglas activas como bloque aparte, con framing de "constraints, no memoria".
-  - *Propose-time* (`/opsx:propose`): `openspec/config.yaml` detecta las reglas aplicables; si el cambio VIOLATE una regla `blocking`, hace HALT hasta resolver.
+  - *Propose-time* (`/openspec-propose`): `openspec/config.yaml` detecta las reglas aplicables; si el cambio VIOLATE una regla `blocking`, hace HALT hasta resolver.
   - *Write-time* (`PreToolUse`): (a) el checkpoint (ver Artefacto 2) **adjunta los HR-IDs** que gobiernan el path al mensaje de bloqueo; (b) un *content-guard* bloquea si el contenido coincide con un `detect.pattern` de una regla activa. Hoy el único `detect` activo es **`HR-ACL-001`** (patrón `as unknown as`).
 - **Dónde vive.** Reglas en `cliter/harness-rules/*.md` (core) y `cliter/<bc>/harness-rules/*.md` (atadas a un bounded context); un índice **generado** en `cliter/harness-rules-index.json` (nunca se edita a mano; se regenera con `pnpm hr:generate`); una skill guía en `.claude/skills/harness-rules-guard/SKILL.md` (más `references/enforcement.md`, `references/format.md`); y un catálogo legible en `docs/harness-rules/README.md`.
 - **Ciclo de vida.** Una regla **nace** como decisión arquitectónica deliberada (un `.md` nuevo). Su `### Enunciado` y sus `### Casos exhaustivos` **nunca** se editan in-place: si la semántica cambia, se **deroga** la antigua (estado `derogated`) y se crea una **nueva con nuevo ID** — los IDs no se reutilizan. **No existe** `/harness-rules:promote`: las HR son estables, no se cristalizan por-cambio.
@@ -62,7 +62,7 @@ Estados y severidades: estados `active` / `derogated`; severidad `blocking` / `i
 | Naturaleza | invariantes de **dominio** | constraints de **arquitectura / framework** |
 | Framing | **memoria** + post-hoc | una **constraint** que cumples ahora, antes de escribir |
 | Verbos | mantiene / deroga / extiende | **COMPLY / VIOLATE / DEROGATE** |
-| Ciclo | se cristalizan **tras** `/opsx:archive` vía `/br:promote` | sin promote; cambian solo por decisión arquitectónica deliberada |
+| Ciclo | se cristalizan **tras** `/openspec-archive-change` vía `/br:promote` | sin promote; cambian solo por decisión arquitectónica deliberada |
 | En la propuesta | `## Business rules affected` (declara futuro) | `## Harness rules applicable` (registra cumplimiento de algo ya existente) |
 
 Para el panorama completo del lado Business Rules de esa tabla, mira [Sistema de business rules](../business-rules-overview/).
@@ -97,7 +97,7 @@ En resumen: el hook es una compuerta de una sola vez que bloquea el *primer* wri
 - **A quién va dirigido.** IA (auto-invoke, árbol de decisión) **y** dev humano (referencia).
 - **Su lugar en la analogía.** Los planos de planta del edificio de backend. Orientan; nunca te detienen en la puerta.
 
-Esta skill **cita HR explícitamente**: menciona `HR-PORTS-001` en su árbol de decisión (la "upward inversion `@aurora → @app` está prohibida por `HR-PORTS-001`"). También describe el antipatrón shadow module y cuándo un `.module.ts` hand-written *sí* está justificado (un dedicated flow module dentro del BC, no paralelo). Pero citar no es enforçar — la skill informa; el enforcement real de `HR-PORTS-001` llega por el índice HR en `/opsx:propose`.
+Esta skill **cita HR explícitamente**: menciona `HR-PORTS-001` en su árbol de decisión (la "upward inversion `@aurora → @app` está prohibida por `HR-PORTS-001`"). También describe el antipatrón shadow module y cuándo un `.module.ts` hand-written *sí* está justificado (un dedicated flow module dentro del BC, no paralelo). Pero citar no es enforçar — la skill informa; el enforcement real de `HR-PORTS-001` llega por el índice HR en `/openspec-propose`.
 
 En resumen: el plano de backend te dice dónde van las cosas y te avisa de las leyes cercanas, pero no tiene poder para detenerte — ese poder es del hook y de las HR.
 
@@ -122,7 +122,7 @@ En resumen: mismo papel de plano que la skill de backend, pero autónoma — nin
 | --- | --- | --- | --- | --- |
 | **Qué es** | Constraints arquitectónicas codificadas | Compuerta `PreToolUse` sobre archivos arquitectónicos nuevos | Árbol de decisión "dónde va este archivo" (backend) | Árbol de decisión "dónde va este archivo" (frontend) |
 | **Para qué sirve** | Enunciar lo prohibido, de forma citable | Forzar una consulta de estructura antes del primer write | Orientar la ubicación de archivos por las capas de backend | Orientar la ubicación de archivos por las capas de frontend |
-| **Trigger** | Citar un ID, tocar un path gobernado, `/opsx:propose`, editar un archivo de regla | `PreToolUse` + `Write` + archivo nuevo bajo paths de arquitectura backend | "where does X go", archivo nuevo de backend, banner STOP del hook | "where is X", feature/BC nuevo de frontend |
+| **Trigger** | Citar un ID, tocar un path gobernado, `/openspec-propose`, editar un archivo de regla | `PreToolUse` + `Write` + archivo nuevo bajo paths de arquitectura backend | "where does X go", archivo nuevo de backend, banner STOP del hook | "where is X", feature/BC nuevo de frontend |
 | **¿Bloquea?** | **Sí** (cuando es `blocking`) | **Sí** (una vez por path por sesión) | No — aconseja | No — aconseja |
 | **¿Automático o se lee?** | Automático (3 capas) + lo lee un humano | Automático | Lo lee humano/IA | Lo lee humano/IA |
 | **Dónde vive** | `cliter/**` (+ `docs/`, skill guía en `.claude/`) | `.claude/hooks/` | `backend/.claude/skills/` | `frontend/.claude/skills/` |
@@ -153,7 +153,7 @@ Dueño real: el hook posee *frenarte*; la skill posee *decirte dónde*. La exper
 
 ### 5.3 La skill backend ↔ `HR-PORTS-001` (cita concreta)
 
-La skill *menciona* la regla ("esto violaría `HR-PORTS-001`") pero **no la enforça** — solo informa. El enforcement real llega por el índice HR en `/opsx:propose`.
+La skill *menciona* la regla ("esto violaría `HR-PORTS-001`") pero **no la enforça** — solo informa. El enforcement real llega por el índice HR en `/openspec-propose`.
 
 Dueño real: `HR-PORTS-001` (vía el índice, en propose-time) posee el enforcement. La skill es un cartel que señala la ley, no la ley.
 
@@ -203,7 +203,7 @@ Esto es lo que pasa cuando un dev o una IA intenta `Write` a un archivo nuevo en
 2. Confirma que el archivo es nuevo → clasifica el path → busca los HR-IDs que lo gobiernan en el índice → busca content violations → construye un mensaje adaptado al tipo → **adjunta los HR-IDs** → cachea el path → `exit(2)`.
 3. La IA lee el mensaje → ve "Skill `catalyst-project-structure` → …" → abre la skill → aplica el árbol de decisión → reintenta el `Write`.
 4. En el reintento al **mismo path**: el hook ve el path ya cacheado → `exit(0)` en silencio → el `Write` procede.
-5. Más tarde, en `/opsx:propose` para ese código: el motor carga el índice HR, hace `byPath` sobre los archivos tocados, declara `## Harness rules applicable` y juzga COMPLY / VIOLATE / DEROGATE por regla. Si VIOLATE una regla `blocking` → HALT hasta resolver.
+5. Más tarde, en `/openspec-propose` para ese código: el motor carga el índice HR, hace `byPath` sobre los archivos tocados, declara `## Harness rules applicable` y juzga COMPLY / VIOLATE / DEROGATE por regla. Si VIOLATE una regla `blocking` → HALT hasta resolver.
 
 Lee esa cadena contra la analogía: el guardia te para en la puerta (paso 1–2), te entrega los planos y señala el código de edificación (paso 2–3), te deja pasar una vez has consultado (paso 4), y solo más tarde el arquitecto revisa formalmente tu trabajo contra la normativa en la mesa de propuestas (paso 5).
 

@@ -216,10 +216,10 @@ Thirteen command files in `.claude/commands/`, `contextual`, shipped. They load 
 | `/create-schema` | analyse or create an Aurora YAML schema |
 | `/load-skill` | load a skill by name, or list them |
 | `/review-module` | deep coherence review of a module |
-| `/opsx:explore` | think an idea through before committing to it — checks the change archive for prior decisions before laying out options |
-| `/opsx:propose` | create a change and generate its artifacts |
-| `/opsx:apply` | implement the tasks of a change |
-| `/opsx:archive` | close a completed change |
+| `/openspec-explore` | think an idea through before committing to it |
+| `/openspec-propose` | create a change and generate its artifacts |
+| `/openspec-apply-change` | implement the tasks of a change |
+| `/openspec-archive-change` | close a completed change |
 | `/business-rules:audit` | audit the business-rule catalogue |
 | `/business-rules:check` | validate against the business-rule catalogue |
 | `/business-rules:document` | document rules implicit in existing code |

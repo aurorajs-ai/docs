@@ -12,7 +12,7 @@ El catálogo de business rules se sostiene sobre una constelación reducida de f
 │                       ENTRADAS — humanos e IA                            │
 ├──────────────────────────────────────────────────────────────────────────┤
 │  Developer/IA edita .md   ─┐                                             │
-│  /opsx:propose             ├──►  cliter/<bc>/business-rules/<agg>.md     │
+│  /openspec-propose             ├──►  cliter/<bc>/business-rules/<agg>.md     │
 │  /business-rules:document ─┘                                             │
 └────────────────────┬─────────────────────────────────────────────────────┘
                      │
@@ -33,7 +33,7 @@ El catálogo de business rules se sostiene sobre una constelación reducida de f
 ├──────────────────────────────────────────────────────────────────────────┤
 │  Humanos      ─► INDEX.md, lectura ad-hoc de los .md                     │
 │  IA (Claude)  ─► hook UserPromptSubmit inyecta reglas relevantes         │
-│                  openspec/config.yaml inyecta awareness en /opsx:propose │
+│                  openspec/config.yaml inyecta awareness en /openspec-propose │
 │  Pre-commit   ─► husky regenera el índice y valida en cada commit        │
 │  CI           ─► business-rules-check.yml valida cada PR                 │
 │  Audit        ─► audit.ts (estructural) + Claude continúa (semántico)    │
@@ -197,13 +197,13 @@ Pasos:
 3. `pnpm br:generate` seguido de `git diff --quiet` contra `business-rules-index.json` y `INDEX.md` — falla si el índice commiteado se ha desviado del regenerado (en teoría el pre-commit hook lo previene, pero el CI es el cinturón y los tirantes).
 4. `pnpm br:validate:citations || true` — advisory, nunca bloquea.
 
-El CI es **estructural solo** por diseño. Las contradicciones semánticas se pillan preventivamente en `/opsx:propose` y on-demand vía `/business-rules:audit`; intentar enforzarlas en CI sería poco fiable (heurísticas baratas generan falsos positivos) o caro (llamar a un LLM desde CI requiere API keys, prompts mantenidos fuera del repo, permisos de GitHub App — para un catálogo en piloto, el coste excede el valor).
+El CI es **estructural solo** por diseño. Las contradicciones semánticas se pillan preventivamente en `/openspec-propose` y on-demand vía `/business-rules:audit`; intentar enforzarlas en CI sería poco fiable (heurísticas baratas generan falsos positivos) o caro (llamar a un LLM desde CI requiere API keys, prompts mantenidos fuera del repo, permisos de GitHub App — para un catálogo en piloto, el coste excede el valor).
 
 ### 12. Detección de tensiones semánticas (script + LLM continuation)
 
 **No existe un cron, routine o GitHub App** para detectar contradicciones latentes entre reglas. La cobertura se divide en dos planos que comparten infraestructura:
 
-- **Preventiva — en `/opsx:propose`.** La extensión `openspec/config.yaml` instruye a Claude a cargar las reglas relevantes de los BCs candidatos y comprobar la propuesta contra ellas antes de archivarla. Es la red principal.
+- **Preventiva — en `/openspec-propose`.** La extensión `openspec/config.yaml` instruye a Claude a cargar las reglas relevantes de los BCs candidatos y comprobar la propuesta contra ellas antes de archivarla. Es la red principal.
 - **On-demand — en `/business-rules:audit`.** El paso 1 corre `audit.ts` para el reporte estructural; el paso 2 hace que Claude continúe la misma sesión, empareje reglas que comparten BCs/agregados/keywords y clasifique cada par como `contradiction | extension | orthogonal | needs-review` con un valor de confianza y una explicación corta en español.
 
 Este diseño mantiene al sistema libre de infraestructura externa (no SDK, no API key, no job programado, no GitHub App). El trade-off es que los chequeos semánticos no son continuos — corren cuando hay un humano en el loop. Para un catálogo por debajo de ~150 reglas el trade-off está bien balanceado; pasada esa cifra los warnings del audit recomiendan reevaluarlo.
@@ -215,7 +215,8 @@ El **único** fichero bajo `openspec/` que el sistema modifica. Todo el resto ba
 `config.yaml` lleva:
 
 - Un bloque `context` (~3,1 KB) que la IA recibe al generar artefactos de proposal, design, spec o tasks. Cubre la ubicación del catálogo, el procedimiento de 7 pasos para detección de conflictos, las convenciones bilingües, el ciclo de vida post-implementación y las citas opcionales `@rule`.
-- Un bloque `rules` con seis reglas para `proposal`, dos para `design`, dos para `specs` y dos para `tasks`. Obligan a incluir la sección `## Business rules affected` en la propuesta, fuerzan el halt al detectar conflictos, piden citas a IDs en cambios no triviales y exigen que la lista final de tasks incluya `/business-rules:promote` cuando aplica.
+- Un bloque `rules` con reglas para `proposal`, `design`, `specs` y `tasks`. Obligan a incluir la sección `## Business rules affected` en la propuesta, fuerzan el halt al detectar conflictos y piden citas a IDs en las tareas de implementación de los cambios no triviales.
+- Un bloque `operations.archive.guidance`, que la skill de archive lee al ejecutarse. Pide correr `/business-rules:promote` tras archivar cuando la propuesta declara un cambio de reglas, y anotar el resultado (ids promovidos o `sin cambios`) en la tarea de Backlog del cambio. Es una guía, no una tarea de `tasks.md`: ese fichero solo registra el trabajo que se puede completar antes de archivar.
 
 Si OpenSpec se retira del proyecto, el resto del sistema de business rules sigue funcionando. Solo desaparece la awareness automática al proponer; document, promote sobre archives existentes, audit y check son independientes.
 
@@ -229,11 +230,11 @@ Una sección nueva "Business rules" antes de la sección "Skills", una fila en l
 
 La forma más limpia de ver la arquitectura en movimiento es seguir un cambio único de extremo a extremo.
 
-**1. Autoría.** Un dev corre `/opsx:propose` para un cambio en `production-planning`. La extensión de OpenSpec nudgea a Claude a consultar el catálogo. Claude carga `business-rules-index.json`, escoge las reglas relevantes por BC y keyword, y se pregunta a sí misma si la propuesta contradice alguna. Si encuentra contradicción, la propuesta se detiene con opciones (derogar / coexistir / no es conflicto). La resolución se escribe en la sección `## Business rules affected` del `proposal.md`.
+**1. Autoría.** Un dev corre `/openspec-propose` para un cambio en `production-planning`. La extensión de OpenSpec nudgea a Claude a consultar el catálogo. Claude carga `business-rules-index.json`, escoge las reglas relevantes por BC y keyword, y se pregunta a sí misma si la propuesta contradice alguna. Si encuentra contradicción, la propuesta se detiene con opciones (derogar / coexistir / no es conflicto). La resolución se escribe en la sección `## Business rules affected` del `proposal.md`.
 
-**2. Implementación.** `/opsx:apply` escribe el código. Los hooks que afectan al sistema de business rules permanecen en silencio — ninguna regla ha cambiado todavía, solo el código.
+**2. Implementación.** `/openspec-apply-change` escribe el código. Los hooks que afectan al sistema de business rules permanecen en silencio — ninguna regla ha cambiado todavía, solo el código.
 
-**3. Archive.** `/opsx:archive` mueve el cambio a `openspec/changes/archive/`. El catálogo sigue intacto.
+**3. Archive.** `/openspec-archive-change` mueve el cambio a `openspec/changes/archive/`. El catálogo sigue intacto.
 
 **4. Promote.** `/business-rules:promote` lee el `proposal.md` archivado, parsea `## Business rules affected` y corre `promote.ts`: aplica derogaciones a los `.md` afectados, crea scaffolds para reglas nuevas con el siguiente ID secuencial en `state: proposed` y placeholders `[VERIFICAR]`, y regenera `business-rules-index.json`. Claude entonces continúa la misma sesión — leyendo proposal, design, spec, código y tests — y rellena el body real de cada regla con `Enunciado`, `Casos exhaustivos`, `Implementa` y `Tests`. Cuando el dev confirma, Claude cambia `state: proposed` por `active`.
 

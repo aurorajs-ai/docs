@@ -216,10 +216,10 @@ Trece ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo s
 | `/create-schema` | analizar o crear un esquema YAML de Aurora |
 | `/load-skill` | cargar una skill por nombre, o listarlas |
 | `/review-module` | revisión profunda de coherencia de un módulo |
-| `/opsx:explore` | pensar una idea antes de comprometerse con ella — comprueba el archivo por decisiones previas antes de plantear opciones |
-| `/opsx:propose` | crear un cambio y generar sus artefactos |
-| `/opsx:apply` | implementar las tareas de un cambio |
-| `/opsx:archive` | cerrar un cambio completado |
+| `/openspec-explore` | pensar una idea antes de comprometerse con ella |
+| `/openspec-propose` | crear un cambio y generar sus artefactos |
+| `/openspec-apply-change` | implementar las tareas de un cambio |
+| `/openspec-archive-change` | cerrar un cambio completado |
 | `/business-rules:audit` | auditar el catálogo de business rules |
 | `/business-rules:check` | validar contra el catálogo de business rules |
 | `/business-rules:document` | documentar reglas implícitas en código existente |

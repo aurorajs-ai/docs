@@ -43,10 +43,10 @@ Every fiche below follows the same fixed template, so you can compare them line 
 
 - **What it is.** Codified **architectural / framework** constraints that govern your work *before* you write code.
 - **What it's for.** They are not post-hoc documentation nor "optional memory" — they are constraints you comply with *now*, while writing. Their core responsibility is to state, in a citable form, what the architecture forbids.
-- **What triggers it.** (a) citing an ID by name (`HR-MODULES-001`); (b) going to touch governed paths (a `byPath` / `byId` / `byKeyword` lookup in the index); (c) during `/opsx:propose`, in the `## Harness rules applicable` section; (d) editing files under `cliter/harness-rules/`.
+- **What triggers it.** (a) citing an ID by name (`HR-MODULES-001`); (b) going to touch governed paths (a `byPath` / `byId` / `byKeyword` lookup in the index); (c) during `/openspec-propose`, in the `## Harness rules applicable` section; (d) editing files under `cliter/harness-rules/`.
 - **How it's applied — three enforcement layers.**
   - *Prompt-time* (`UserPromptSubmit`): the `inject-prompt-context.ts` hook injects the top-N active rules as a separate block, framed as "constraints, not memory".
-  - *Propose-time* (`/opsx:propose`): `openspec/config.yaml` detects applicable rules; if the change VIOLATEs a `blocking` rule, it HALTs until resolved.
+  - *Propose-time* (`/openspec-propose`): `openspec/config.yaml` detects applicable rules; if the change VIOLATEs a `blocking` rule, it HALTs until resolved.
   - *Write-time* (`PreToolUse`): (a) the checkpoint (see Artifact 2) **attaches the HR-IDs** governing the path to the blocking message; (b) a *content-guard* blocks if the content matches a `detect.pattern` of an active rule. Today the only active `detect` is **`HR-ACL-001`** (pattern `as unknown as`).
 - **Where it lives.** Rules in `cliter/harness-rules/*.md` (core) and `cliter/<bc>/harness-rules/*.md` (tied to a bounded context); a **generated** index in `cliter/harness-rules-index.json` (never hand-edited; regenerated with `pnpm hr:generate`); a guide skill in `.claude/skills/harness-rules-guard/SKILL.md` (plus `references/enforcement.md`, `references/format.md`); and a human-readable catalog in `docs/harness-rules/README.md`.
 - **Lifecycle.** A rule is **born** as a deliberate architectural decision (a new `.md`). Its `### Enunciado` and `### Casos exhaustivos` are **never** edited in place: if the meaning changes, the old rule is **repealed** (state `derogated`) and a **new one with a new ID** is created — IDs are never reused. There is **no** `/harness-rules:promote`: HR are stable, not crystallized per-change.
@@ -62,7 +62,7 @@ States and severities: states are `active` / `derogated`; severity is `blocking`
 | Nature | **domain** invariants | **architecture / framework** constraints |
 | Framing | **memory** + post-hoc | a **constraint** you comply with now, before writing |
 | Verbs | maintains / derogates / extends | **COMPLY / VIOLATE / DEROGATE** |
-| Cycle | crystallized **after** `/opsx:archive` via `/br:promote` | no promote; they change only by deliberate architectural decision |
+| Cycle | crystallized **after** `/openspec-archive-change` via `/br:promote` | no promote; they change only by deliberate architectural decision |
 | In the proposal | `## Business rules affected` (declares the future) | `## Harness rules applicable` (records compliance with something that already exists) |
 
 For the full picture of the Business Rules side of that table, see [Business rules system](../business-rules-overview/).
@@ -97,7 +97,7 @@ In short: the hook is a one-time gate that blocks the *first* write to a new arc
 - **Audience.** AI (auto-invoke, decision tree) **and** the human dev (reference).
 - **Its place in the analogy.** The floor plans of the backend building. They orient; they never stop you at the door.
 
-This skill **cites HR explicitly**: it names `HR-PORTS-001` in its decision tree (the "upward inversion `@aurora → @app` is forbidden by `HR-PORTS-001`"). It also describes the shadow-module anti-pattern and when a hand-written `.module.ts` *is* justified (a dedicated flow module inside the BC, not a parallel one). But citing is not enforcing — the skill informs; the actual enforcement of `HR-PORTS-001` arrives through the HR index at `/opsx:propose`.
+This skill **cites HR explicitly**: it names `HR-PORTS-001` in its decision tree (the "upward inversion `@aurora → @app` is forbidden by `HR-PORTS-001`"). It also describes the shadow-module anti-pattern and when a hand-written `.module.ts` *is* justified (a dedicated flow module inside the BC, not a parallel one). But citing is not enforcing — the skill informs; the actual enforcement of `HR-PORTS-001` arrives through the HR index at `/openspec-propose`.
 
 In short: the backend blueprint tells you where things go and warns you about the laws nearby, but it has no power to stop you — that power belongs to the hook and to HR.
 
@@ -122,7 +122,7 @@ In short: same blueprint role as the backend skill, but standalone — no hook f
 | --- | --- | --- | --- | --- |
 | **What it is** | Codified architectural constraints | A `PreToolUse` gate on new architectural files | "Where does this file go" decision tree (backend) | "Where does this file go" decision tree (frontend) |
 | **What it's for** | State what is forbidden, citably | Force a structure consultation before the first write | Orient file placement across backend layers | Orient file placement across frontend layers |
-| **Trigger** | Cite an ID, touch a governed path, `/opsx:propose`, edit a rule file | `PreToolUse` + `Write` + new file under backend arch paths | "where does X go", new backend file, hook STOP banner | "where is X", new frontend feature/BC |
+| **Trigger** | Cite an ID, touch a governed path, `/openspec-propose`, edit a rule file | `PreToolUse` + `Write` + new file under backend arch paths | "where does X go", new backend file, hook STOP banner | "where is X", new frontend feature/BC |
 | **Blocks?** | **Yes** (when `blocking`) | **Yes** (once per path per session) | No — advises | No — advises |
 | **Automatic or read?** | Automatic (3 layers) + human reads | Automatic | Read by human/AI | Read by human/AI |
 | **Where it lives** | `cliter/**` (+ `docs/`, guide skill in `.claude/`) | `.claude/hooks/` | `backend/.claude/skills/` | `frontend/.claude/skills/` |
@@ -153,7 +153,7 @@ Real owner: the hook owns *stopping you*; the skill owns *telling you where*. Th
 
 ### 5.3 The backend skill ↔ `HR-PORTS-001` (a concrete citation)
 
-The skill *mentions* the rule ("this would violate `HR-PORTS-001`") but **does not enforce it** — it only informs. The real enforcement arrives through the HR index at `/opsx:propose`.
+The skill *mentions* the rule ("this would violate `HR-PORTS-001`") but **does not enforce it** — it only informs. The real enforcement arrives through the HR index at `/openspec-propose`.
 
 Real owner: `HR-PORTS-001` (via the index, at propose-time) owns enforcement. The skill is a signpost pointing at the law, not the law.
 
@@ -203,7 +203,7 @@ Here is what happens when a dev or AI tries to `Write` a brand-new file at `back
 2. It confirms the file is new → classifies the path → looks up the HR-IDs that govern it in the index → looks for content violations → builds a message adapted to the type → **attaches the HR-IDs** → caches the path → `exit(2)`.
 3. The AI reads the message → sees "Skill `catalyst-project-structure` → …" → opens the skill → applies the decision tree → retries the `Write`.
 4. On the retry to the **same path**: the hook sees the path is already cached → `exit(0)` silently → the `Write` proceeds.
-5. Later, in `/opsx:propose` for that code: the engine loads the HR index, runs `byPath` over the touched files, declares `## Harness rules applicable`, and judges COMPLY / VIOLATE / DEROGATE per rule. If it VIOLATEs a `blocking` rule → HALT until resolved.
+5. Later, in `/openspec-propose` for that code: the engine loads the HR index, runs `byPath` over the touched files, declares `## Harness rules applicable`, and judges COMPLY / VIOLATE / DEROGATE per rule. If it VIOLATEs a `blocking` rule → HALT until resolved.
 
 Read that chain against the analogy: the guard stops you at the door (step 1–2), hands you the blueprints and points at the building code (step 2–3), lets you through once you've consulted (step 4), and only later does the architect formally check your work against the regulations at the propose desk (step 5).
 
