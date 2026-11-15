@@ -49,7 +49,13 @@ function scanMdFiles(dir: string, baseDir: string): string[] {
     // Skip logs and scripts directories
     if (rel.startsWith('logs') || rel.startsWith('scripts')) continue;
 
-    if (entry.isDirectory()) {
+    // OpenSpec 2.0 installs its skills as directory symlinks into `.agents/skills/`,
+    // and `Dirent.isDirectory()` is false for a symlink: stat the target instead.
+    const isDir = entry.isSymbolicLink()
+      ? fs.statSync(fullPath, { throwIfNoEntry: false })?.isDirectory() === true
+      : entry.isDirectory();
+
+    if (isDir) {
       results.push(...scanMdFiles(fullPath, baseDir));
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       results.push(rel);
