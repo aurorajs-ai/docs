@@ -100,7 +100,7 @@ Steps below assume you just closed a change in `aurora-catalyst` — either scop
 
 1. **Finish the change in the source repo.**
    - Implement, test, commit.
-   - Archive the openspec change: `/opsx:archive <change-name>` — this writes to `openspec/changes/archive/YYYY-MM-DD-<change-name>/` at the monorepo root (shared by both the CLI and the framework).
+   - Archive the openspec change: `/openspec-archive-change <change-name>` — this writes to `openspec/changes/archive/YYYY-MM-DD-<change-name>/` at the monorepo root (shared by both the CLI and the framework).
 
 2. **Regenerate the auto-outputs, if the change touched `packages/cli/`.**
 

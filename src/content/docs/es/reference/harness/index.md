@@ -157,7 +157,7 @@ Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `
 | `catalyst-update-skill-registry` | regenerar el registro de skills tras cualquier cambio en ellas |
 | `harness-rules-guard` | el catálogo de harness rules |
 | `judgment-day` | revisión adversarial doble |
-| `openspec-explore` | explorar una idea antes de comprometerse con un cambio; busca en el archivo de cambios decisiones previas sobre el tema antes de plantear opciones |
+| `openspec-explore` | modo explorar como compañero de pensamiento: investigar problemas y aclarar requisitos antes o durante un cambio |
 | `openspec-propose` | crear un cambio y sus artefactos |
 | `openspec-apply-change` | implementar las tareas de un cambio |
 | `openspec-archive-change` | cerrar un cambio y sincronizar las specs |
@@ -208,25 +208,27 @@ Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `
 
 ## Commands
 
-Trece ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo se cargan cuando los escribes tú.
+Quince ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo se cargan cuando los escribes tú.
 
 | Comando | Para qué sirve |
 | --- | --- |
-| `/catalyst-dev-mode` | alternar entre modo Framework y modo Solution |
+| `/annotate` | abrir la app en Chrome con la capa de anotación |
 | `/create-schema` | analizar o crear un esquema YAML de Aurora |
 | `/load-skill` | cargar una skill por nombre, o listarlas |
 | `/review-module` | revisión profunda de coherencia de un módulo |
-| `/opsx:explore` | pensar una idea antes de comprometerse con ella — comprueba el archivo por decisiones previas antes de plantear opciones |
-| `/opsx:propose` | crear un cambio y generar sus artefactos |
-| `/opsx:apply` | implementar las tareas de un cambio |
-| `/opsx:archive` | cerrar un cambio completado |
+| `/polish` | abrir una sesión de pulido guiada en el navegador sobre un ámbito |
+| `/task` | empezar una tarea de Backlog tras comprobar que está lista |
 | `/business-rules:audit` | auditar el catálogo de business rules |
 | `/business-rules:check` | validar contra el catálogo de business rules |
 | `/business-rules:document` | documentar reglas implícitas en código existente |
 | `/business-rules:promote` | cristalizar reglas declaradas en un cambio archivado |
 | `/harness-rules:audit` | auditar el catálogo de harness rules |
+| `/manual:reconcile-prd` | alinear un PRD con lo construido, antes del primer manual de usuario |
+| `/manual:write` | escribir el primer manual de usuario de un bounded context |
+| `/processes:check` | validar contra el catálogo de procesos de negocio |
+| `/processes:document` | redactar el catálogo de procesos de un bounded context |
 
-Dos de esos ficheros se llaman igual, `audit.md`, en directorios distintos. El índice de skills generado deduplica por nombre de fichero, así que informa de doce comandos donde hay trece ficheros; los comandos en sí son distintos y ambos funcionan.
+Varios de esos ficheros comparten nombre (`audit.md`, `check.md`, `document.md`), en directorios distintos. El índice de skills generado deduplica por nombre de fichero, así que informa de doce comandos donde hay quince ficheros; los comandos en sí son distintos y todos funcionan.
 
 ## Agents
 

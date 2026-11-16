@@ -7,7 +7,7 @@ description: >
   on the direct path — the backlog task and the diff of its merged pull request.
 metadata:
   version: "0.2"
-  trigger: "The final tasks.md step after /opsx:archive of a technical change in aurora-catalyst, or the «Documentación técnica revisada» acceptance criterion of a direct-path Medium task."
+  trigger: "The archive-guidance step after /openspec-archive-change of a technical change in aurora-catalyst, or the «Documentación técnica revisada» acceptance criterion of a direct-path Medium task."
 ---
 
 ## When to use

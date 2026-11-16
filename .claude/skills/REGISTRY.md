@@ -22,13 +22,13 @@ auto-generated reference).
 
 | Skill | Trigger | Path |
 | --- | --- | --- |
-| `catalyst-docs-from-spec` | The final step of a technical change in `aurora-catalyst` (framework, harness, CLI, core): after `/opsx:archive` (from the archive) or on a direct-path Medium task (from the task and the PR diff); drafts concepts, guides, and reference stubs in EN + ES. | `.claude/skills/catalyst-docs-from-spec/SKILL.md` |
+| `catalyst-docs-from-spec` | The archive-guidance step of a technical change in `aurora-catalyst` (framework, harness, CLI, core): after `/openspec-archive-change` (from the archive) or on a direct-path Medium task (from the task and the PR diff); drafts concepts, guides, and reference stubs in EN + ES. | `.claude/skills/catalyst-docs-from-spec/SKILL.md` |
 
 ---
 
 ## Workflow — OpenSpec SDD
 
-Drive the openspec propose / apply / archive / explore loop.
+Drive the openspec propose / apply / archive / explore / sync loop.
 
 | Skill | Trigger | Path |
 | --- | --- | --- |
@@ -36,6 +36,7 @@ Drive the openspec propose / apply / archive / explore loop.
 | `openspec-archive-change` | Archive a completed change in the experimental workflow. Use when finalizing a change after implementation. | `.claude/skills/openspec-archive-change/SKILL.md` |
 | `openspec-explore` | Enter explore mode — thinking partner for ideas, investigations, and clarifying requirements. Use before or during a change. | `.claude/skills/openspec-explore/SKILL.md` |
 | `openspec-propose` | Propose a new change with proposal + design + specs + tasks generated in one step. | `.claude/skills/openspec-propose/SKILL.md` |
+| `openspec-sync-specs` | Sync delta specs from an OpenSpec change to main specs, without archiving the change. | `.claude/skills/openspec-sync-specs/SKILL.md` |
 
 ---
 

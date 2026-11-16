@@ -9,7 +9,7 @@ This is the operational guide for the business-rules catalog. Read [Business rul
 
 Every change to the catalog goes through exactly one of three workflows. Choose by the **origin of the change**, not by the size:
 
-- **A — via OpenSpec.** The change is going through `/opsx:propose → /opsx:apply → /opsx:archive`. Almost everything that touches the domain belongs here.
+- **A — via OpenSpec.** The change is going through `/openspec-propose → /openspec-apply-change → /openspec-archive-change`. Almost everything that touches the domain belongs here.
 - **B — retroactive bootstrap.** An aggregate has no catalog file yet, and you want to extract its implicit rules from existing code, tests, or a product Word document. One-off per aggregate.
 - **C — direct edit.** Typos, broken paths, derogation of an obsolete rule outside OpenSpec, resolution of `[VERIFICAR]` markers.
 
@@ -19,10 +19,10 @@ Workflows do not mix. Pick one and stay in it.
 
 This is the canonical path. Six steps, the last of which is the only one specific to business rules.
 
-1. **`/opsx:propose <description>`.** Claude generates the proposal artifacts. The `openspec/config.yaml` extension instructs it to consult the catalog, detect conflicts with existing rules, and write a `## Business rules affected` section in `proposal.md` declaring the rule actions (`mantiene` / `deroga` / `extiende` / `Nuevas`).
+1. **`/openspec-propose <description>`.** Claude generates the proposal artifacts. The `openspec/config.yaml` extension instructs it to consult the catalog, detect conflicts with existing rules, and write a `## Business rules affected` section in `proposal.md` declaring the rule actions (`mantiene` / `deroga` / `extiende` / `Nuevas`).
 2. **Resolve conflicts.** If Claude detected a conflict, it pauses and asks for a decision: derogate the prior rule (a), keep both with a new exception (b), or no real conflict — justify (c). The choice is recorded in the proposal.
-3. **`/opsx:apply`.** Claude implements the change. The catalog stays untouched at this stage.
-4. **`/opsx:archive <name>`.** The change moves to `openspec/changes/archive/`.
+3. **`/openspec-apply-change`.** Claude implements the change. The catalog stays untouched at this stage.
+4. **`/openspec-archive-change <name>`.** The change moves to `openspec/changes/archive/`.
 5. **`/business-rules:promote [<archive-name>]`.** This is where the catalog gets updated. The command runs in two halves in the same session.
    - First, the script applies the deterministic actions: derogations get `state: derogated` + a derogation note, new rules get a scaffold with the next sequential ID under `state: proposed` and `[VERIFICAR]` placeholders, and the index is regenerated.
    - Then Claude reads the proposal, the design, the specs, the code, and the tests, and writes the real body of every new rule — `Enunciado`, exhaustive case table, `Implementa`, `Tests`. After your confirmation it switches `state: proposed` to `active`.
@@ -202,7 +202,7 @@ Four commands live exclusively in Claude Code. They follow the **script + LLM co
 
 | Command                                 | When to invoke                                                                                            |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `/business-rules:promote [<archive>]`   | After every `/opsx:archive` whose proposal declared a `## Business rules affected` section.               |
+| `/business-rules:promote [<archive>]`   | After every `/openspec-archive-change` whose proposal declared a `## Business rules affected` section.               |
 | `/business-rules:document <bc>/<agg>`   | Once per aggregate, when bootstrapping retroactively (workflow B).                                        |
 | `/business-rules:audit [<bc>]`          | Monthly housekeeping or before a major release. Run with no argument for the full catalog; pass a BC to limit the pairwise semantic sweep to that BC. |
 | `/business-rules:check [<args>]`        | When you want the output of `pnpm br:check` rendered inside the Claude Code conversation.                 |

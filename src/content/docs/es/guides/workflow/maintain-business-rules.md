@@ -9,7 +9,7 @@ Esta es la guía operativa del catálogo de business rules. Lee primero [Sistema
 
 Cada cambio en el catálogo pasa por exactamente uno de los tres workflows. Escoge por el **origen del cambio**, no por el tamaño:
 
-- **A — vía OpenSpec.** El cambio va por `/opsx:propose → /opsx:apply → /opsx:archive`. Casi todo lo que toque el dominio cae aquí.
+- **A — vía OpenSpec.** El cambio va por `/openspec-propose → /openspec-apply-change → /openspec-archive-change`. Casi todo lo que toque el dominio cae aquí.
 - **B — bootstrap retroactivo.** Un agregado todavía no tiene fichero de catálogo y quieres extraer sus reglas implícitas del código existente, los tests o un Word de producto. Uno por agregado, una sola vez.
 - **C — edición directa.** Typos, paths rotos, derogación de una regla obsoleta fuera de OpenSpec, resolver marcadores `[VERIFICAR]`.
 
@@ -19,10 +19,10 @@ Los workflows no se mezclan. Escoge uno y mantente en él.
 
 Es el camino canónico. Seis pasos, y el último es el único específico de business rules.
 
-1. **`/opsx:propose <descripción>`.** Claude genera los artefactos de propuesta. La extensión `openspec/config.yaml` le instruye a consultar el catálogo, detectar conflictos con reglas existentes y escribir una sección `## Business rules affected` en `proposal.md` declarando las acciones sobre reglas (`mantiene` / `deroga` / `extiende` / `Nuevas`).
+1. **`/openspec-propose <descripción>`.** Claude genera los artefactos de propuesta. La extensión `openspec/config.yaml` le instruye a consultar el catálogo, detectar conflictos con reglas existentes y escribir una sección `## Business rules affected` en `proposal.md` declarando las acciones sobre reglas (`mantiene` / `deroga` / `extiende` / `Nuevas`).
 2. **Resuelve conflictos.** Si Claude detectó un conflicto, se detiene y te pide una decisión: derogar la regla previa (a), mantener ambas con una excepción nueva (b) o no es conflicto — justifica (c). La elección queda registrada en la propuesta.
-3. **`/opsx:apply`.** Claude implementa el cambio. El catálogo permanece intacto en este punto.
-4. **`/opsx:archive <name>`.** El cambio se mueve a `openspec/changes/archive/`.
+3. **`/openspec-apply-change`.** Claude implementa el cambio. El catálogo permanece intacto en este punto.
+4. **`/openspec-archive-change <name>`.** El cambio se mueve a `openspec/changes/archive/`.
 5. **`/business-rules:promote [<archive-name>]`.** Aquí es donde el catálogo se actualiza. El comando corre en dos mitades dentro de la misma sesión.
    - Primero el script aplica las acciones deterministas: las derogaciones reciben `state: derogated` + nota de derogación, las reglas nuevas reciben un scaffold con el siguiente ID secuencial bajo `state: proposed` y placeholders `[VERIFICAR]`, y el índice se regenera.
    - A continuación Claude lee la propuesta, el design, las specs, el código y los tests, y escribe el body real de cada regla nueva — `Enunciado`, tabla exhaustiva de casos, `Implementa`, `Tests`. Tras tu confirmación, cambia `state: proposed` por `active`.
@@ -202,7 +202,7 @@ Cuatro comandos viven exclusivamente en Claude Code. Siguen el patrón **script 
 
 | Comando                                 | Cuándo invocarlo                                                                                                                       |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `/business-rules:promote [<archive>]`   | Después de cada `/opsx:archive` cuya propuesta declaró una sección `## Business rules affected`.                                       |
+| `/business-rules:promote [<archive>]`   | Después de cada `/openspec-archive-change` cuya propuesta declaró una sección `## Business rules affected`.                                       |
 | `/business-rules:document <bc>/<agg>`   | Una vez por agregado, al hacer bootstrap retroactivo (workflow B).                                                                     |
 | `/business-rules:audit [<bc>]`          | Housekeeping mensual o antes de una release importante. Córrelo sin argumento para el catálogo entero; pasa un BC para acotar el sweep semántico pairwise a ese BC. |
 | `/business-rules:check [<args>]`        | Cuando quieres el output de `pnpm br:check` renderizado dentro de la conversación de Claude Code.                                      |
