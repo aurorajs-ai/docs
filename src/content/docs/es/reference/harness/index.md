@@ -157,7 +157,7 @@ Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `
 | `catalyst-update-skill-registry` | regenerar el registro de skills tras cualquier cambio en ellas |
 | `harness-rules-guard` | el catálogo de harness rules |
 | `judgment-day` | revisión adversarial doble |
-| `openspec-explore` | explorar una idea antes de comprometerse con un cambio; busca en el archivo de cambios decisiones previas sobre el tema antes de plantear opciones |
+| `openspec-explore` | modo explorar como compañero de pensamiento: investigar problemas y aclarar requisitos antes o durante un cambio |
 | `openspec-propose` | crear un cambio y sus artefactos |
 | `openspec-apply-change` | implementar las tareas de un cambio |
 | `openspec-archive-change` | cerrar un cambio y sincronizar las specs |
@@ -208,7 +208,7 @@ Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `
 
 ## Commands
 
-Trece ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo se cargan cuando los escribes tú.
+Quince ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo se cargan cuando los escribes tú.
 
 | Comando | Para qué sirve |
 | --- | --- |
@@ -216,17 +216,13 @@ Trece ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo s
 | `/create-schema` | analizar o crear un esquema YAML de Aurora |
 | `/load-skill` | cargar una skill por nombre, o listarlas |
 | `/review-module` | revisión profunda de coherencia de un módulo |
-| `/openspec-explore` | pensar una idea antes de comprometerse con ella |
-| `/openspec-propose` | crear un cambio y generar sus artefactos |
-| `/openspec-apply-change` | implementar las tareas de un cambio |
-| `/openspec-archive-change` | cerrar un cambio completado |
 | `/business-rules:audit` | auditar el catálogo de business rules |
 | `/business-rules:check` | validar contra el catálogo de business rules |
 | `/business-rules:document` | documentar reglas implícitas en código existente |
 | `/business-rules:promote` | cristalizar reglas declaradas en un cambio archivado |
 | `/harness-rules:audit` | auditar el catálogo de harness rules |
 
-Dos de esos ficheros se llaman igual, `audit.md`, en directorios distintos. El índice de skills generado deduplica por nombre de fichero, así que informa de doce comandos donde hay trece ficheros; los comandos en sí son distintos y ambos funcionan.
+Varios de esos ficheros comparten nombre (`audit.md`, `check.md`, `document.md`), en directorios distintos. El índice de skills generado deduplica por nombre de fichero, así que informa de doce comandos donde hay quince ficheros; los comandos en sí son distintos y ambos funcionan.
 
 ## Agents
 

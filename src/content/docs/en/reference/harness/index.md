@@ -157,7 +157,7 @@ The seven skills currently indexed: `business-rules-guard`, `catalyst-delegation
 | `catalyst-update-skill-registry` | regenerating the skill registry after any skill changes |
 | `harness-rules-guard` | the harness-rule catalogue |
 | `judgment-day` | dual adversarial review |
-| `openspec-explore` | exploring an idea before committing to a change; searches the change archive for prior decisions on the topic before laying out options |
+| `openspec-explore` | thinking-partner explore mode: investigating problems and clarifying requirements before or during a change |
 | `openspec-propose` | creating a change and its artifacts |
 | `openspec-apply-change` | implementing the tasks of a change |
 | `openspec-archive-change` | closing a change and syncing specs |
@@ -208,7 +208,7 @@ The seven skills currently indexed: `business-rules-guard`, `catalyst-delegation
 
 ## Commands
 
-Thirteen command files in `.claude/commands/`, `contextual`, shipped. They load only when you type them.
+Fifteen command files in `.claude/commands/`, `contextual`, shipped. They load only when you type them.
 
 | Command | Purpose |
 | --- | --- |
@@ -216,17 +216,13 @@ Thirteen command files in `.claude/commands/`, `contextual`, shipped. They load 
 | `/create-schema` | analyse or create an Aurora YAML schema |
 | `/load-skill` | load a skill by name, or list them |
 | `/review-module` | deep coherence review of a module |
-| `/openspec-explore` | think an idea through before committing to it |
-| `/openspec-propose` | create a change and generate its artifacts |
-| `/openspec-apply-change` | implement the tasks of a change |
-| `/openspec-archive-change` | close a completed change |
 | `/business-rules:audit` | audit the business-rule catalogue |
 | `/business-rules:check` | validate against the business-rule catalogue |
 | `/business-rules:document` | document rules implicit in existing code |
 | `/business-rules:promote` | crystallise rules declared in an archived change |
 | `/harness-rules:audit` | audit the harness-rule catalogue |
 
-Two of these files are both named `audit.md`, in different directories. The generated skills index deduplicates by file name, so it reports twelve commands where thirteen files exist; the commands themselves are distinct and both work.
+Several of these files share a name (`audit.md`, `check.md`, `document.md`), in different directories. The generated skills index deduplicates by file name, so it reports twelve commands where fifteen files exist; the commands themselves are distinct and both work.
 
 ## Agents
 
