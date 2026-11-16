@@ -152,6 +152,16 @@ export default defineConfig({
               translations: { es: 'Campos personalizados' },
             },
             {
+              slug: 'reference/package-manifest',
+              label: 'Package manifest',
+              translations: { es: 'Manifiesto de paquete' },
+            },
+            {
+              slug: 'reference/aurora-yaml-deployment',
+              label: 'aurora.yaml deployment keys',
+              translations: { es: 'Claves de despliegue de aurora.yaml' },
+            },
+            {
               label: 'Frontend',
               translations: { es: 'Frontend' },
               items: [{ autogenerate: { directory: 'reference/frontend' } }],
