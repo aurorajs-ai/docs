@@ -29,6 +29,7 @@ Si Aurora es nuevo para ti, empieza con los [tutoriales](../tutorials/).
 - **[Activar el asistente en un módulo](./frontend/enable-the-assistant-on-a-module/)** — deja que el asistente de ayuda rellene el formulario de alta de un módulo.
 - **[Implementar un widget grid-elements-manager](./frontend/implement-grid-elements-manager/)** — embebe el CRUD de un módulo hijo dentro del detalle de su padre.
 - **[Gestionar themes](./frontend/manage-theme-palettes/)** — usa el selector de paletas y añade una paleta desde una exportación de tweakcn.
+- **[Publicar el contexto de una pantalla al asistente](./frontend/publish-screen-context-to-the-assistant/)** — haz que el asistente responda sobre el registro abierto en una pantalla escrita a mano.
 - **[Escribir un capítulo del manual](./frontend/write-a-manual-chapter/)** — crea el capítulo de una pantalla, marca sus procesos, añade un recorrido y compila el manual.
 
 ## Workflow

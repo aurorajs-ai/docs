@@ -39,6 +39,7 @@ Si quieres _hacer_ algo, usa las [guías](../guides/). Si necesitas datos exacto
 - **[El manual de usuario integrado](./frontend/in-app-user-manual/)** — un manual para el usuario final escrito por pantalla, compilado en cada build, buscable según permisos y complementado con recorridos guiados.
 - **[Preservation regions](./frontend/preservation-regions/)** — cómo te apropias de un trozo de un archivo generado y por qué ese trozo sobrevive a la regeneración.
 - **[Preferencias de interfaz por rol](./frontend/role-ui-preferences/)** — cómo la página de aterrizaje y la navegación oculta de un rol moldean la sesión al iniciar sesión y al impersonar.
+- **[Contexto de pantalla para el asistente](./frontend/screen-context/)** — cómo una pantalla escrita a mano le cuenta al asistente lo que muestra, mediante cinco secciones cerradas que el backend acota y nunca guarda.
 - **[Columnas pinned (TanStack)](./frontend/tanstack-column-pinning/)** — por qué fijar una columna la reordena en vez de moverla, y cómo la data-table escribe pinning y orden a la vez.
 - **[Paletas de theme](./frontend/theme-palettes/)** — cómo se resuelve la paleta de color activa y se propaga a toda la interfaz.
 
