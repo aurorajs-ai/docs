@@ -15,8 +15,10 @@ The end-to-end flow is always the same:
 ```
 client JSON  →  QueryStatementInput (passthrough, no server-side shape validation at the schema level)
              →  QueryDslValidator.validate()   (default-deny whitelist, depth ≤ 10, limit ≤ 10000)
-             →  DrizzleCriteria.translate()    (DSL → Drizzle RQB v2, or core-builder fallback)
-             →  SQL
+             →  masked-property and declared-relation guards   (see Validation & security)
+             →  DrizzleCriteria.translate()    (DSL → Drizzle statement)
+             →  step 1: parent rows   (core select builder)
+             →  step 2: relations     (second statement, for the page's rows only)
 ```
 
 `QueryStatementInput` is a GraphQL input object whose blocks (`where`, `relations`, `order`, `aggregation`) are each typed as the `JSON` scalar, with `limit`/`offset` as `Int` — so the schema imposes no shape validation on the DSL itself. The real shape validation happens server-side, in `QueryDslValidator`, before the statement is ever translated to SQL.
@@ -176,7 +178,7 @@ This is equivalent to `{ "and": [{ "status": {...} }, { "age": {...} }] }`, but 
 
 ### Filtering by relation fields
 
-A relation name placed **inside `where`** filters the **parent** rows via an `EXISTS` check against that relation — it does not load or shape the related rows:
+A relation name placed **inside `where`** filters the **parent** rows via an `EXISTS` check against that relation — it does not load or shape the related rows. The relation must be declared in the aggregate's field schema (see [Validation & security](#validation--security)):
 
 ```json
 { "where": { "role": { "name": { "iLike": "%admin%" } } } }
@@ -277,13 +279,23 @@ An array of `{ field, dir }` objects. `dir` is `"asc"` or `"desc"`.
 { "order": [{ "field": "role.name", "dir": "asc" }] }
 ```
 
-When Drizzle's Relational Query Builder cannot express "order the parent rows by a relation column" directly, the query transparently routes to Drizzle's core select builder (an explicit `JOIN`) instead — the caller receives the same result shape either way.
+Every read selects the parent rows with the core select builder, joining the relation when the order needs its column, and loads `relations` afterwards in a second statement. The caller receives the same result shape either way.
 
 **Constraints on dot-path ordering:**
 
-- Only **to-one** relations can be ordered by (a to-many relation has no single row to sort the parent against).
-- The relation's own key must resolve to a **single column** on the joined table (`relationName.columnName`) — no further nesting past one dot.
-- A dot-path `field` is **not allowed inside a relation node's own `order`** — only at the top level. Inside a `relations.<name>.order`, ordering is scoped to that relation's own columns; there is no join fallback available one level down.
+- A dot-path through **to-one** relations accepts exactly one relation hop before the column (`role.name`). More hops are rejected.
+- A dot-path may also end in a **to-many** relation, but only in one shape: at most one to-one relation, then one to-many relation, then a column (`countryI18n.name`, or `country.countryI18n.name`). The parent is ordered by the column of the **one** child row that the `where` of the same relation node in `relations` selects, so the statement must carry that node:
+
+  ```json
+  {
+    "relations": { "countryI18n": { "where": { "langId": { "eq": "<lang id>" } } } },
+    "order": [{ "field": "countryI18n.name", "dir": "asc" }]
+  }
+  ```
+
+  Each parent appears once. A statement with no such `where` fails, and so does one whose `where` selects more than one child row for a parent, because the engine never picks one.
+- Anything else that crosses a to-many relation (two to-many relations, a to-one after a to-many) and anything that crosses a many-to-many relation is rejected before any SQL is built, with an error that names the order field.
+- A dot-path `field` is **not allowed inside a relation node's own `order`** — only at the top level. Inside a `relations.<name>.order`, ordering is scoped to that relation's own columns.
 - `order.field` **cannot name an `aggregation.fields[].as` alias** — see [Aggregation limitations](#limitations) below.
 
 ## Pagination — `limit` / `offset`
@@ -305,11 +317,11 @@ type Pagination {
 }
 ```
 
-`total` lets the client compute page counts; `count` reflects how many rows this particular page actually contains (which can be less than `limit` on the last page). Unlike the old Sequelize-shaped contract, there is no `distinct` flag to de-duplicate root rows inflated by a join: `relations` never performs a row-multiplying join — each relation level is resolved as its own query — so no manual de-duplication is ever needed.
+`total` lets the client compute page counts; `count` reflects how many rows this particular page actually contains (which can be less than `limit` on the last page). Relations load in a **second statement** that runs only for the rows of the requested page, so a relation is never resolved for rows that `limit` and `offset` discarded. Unlike the old Sequelize-shaped contract, there is no `distinct` flag to de-duplicate root rows inflated by a join: `relations` never performs a row-multiplying join — each relation level is resolved as its own query — so no manual de-duplication is ever needed.
 
 ## `aggregation` — count / sum / avg / min / max / group
 
-The aggregation block is **always** routed to Drizzle's core select builder (the Relational Query Builder does not support aggregations). It carries only Aurora-owned keys — never a raw SQL string.
+The aggregation block is **always** routed to Drizzle's core select builder (the Relational Query Builder does not support aggregations). It carries only Aurora-owned keys — never a raw SQL string. It cannot be combined with `relations`: an aggregated row has no row identity to shape relations onto, and the validator rejects the statement.
 
 ```typescript
 interface AggregateField {
@@ -386,6 +398,40 @@ Every `QueryStatement` is walked by `QueryDslValidator` — a **default-deny whi
 
 Both caps are **process-wide defaults**, not configurable from the wire — a statement that violates either one never reaches the database. A statement exceeding the limit cap or the depth cap fails validation with a descriptive error before any translation happens.
 
+### Masked properties are not queryable
+
+A property whose type is `secret`, `password` or `encrypted` is masked on read, and a query cannot use it either. The statement is rejected when such a property appears in `where`, `order`, `aggregation.fields[].field` or `aggregation.groupBy`, including through a relation path (`credential.accessToken.token`). The statement is rejected whole: the engine never drops the property silently.
+
+The rejection is an HTTP `403` with `translation: 'Errors.MaskedPropertyNotQueryable'` and `params: { property, aggregate }`. `aggregate` names the aggregate that owns the property, which is the relation's target when the reference came through a relation. The response never carries a stored value.
+
+Backend code that has a real need (for example, looking a one-time token up by its value) opts out per call, naming the aggregate and the properties and writing down why:
+
+```typescript
+import { unsafeAllowMaskedPropertyQuery } from '@aurorajs.dev/core-back';
+
+const exemption = unsafeAllowMaskedPropertyQuery({
+  aggregate: 'IamUser',
+  properties: ['rememberToken'],
+  reason: 'Look the row up by the hash of a single-use token',
+});
+
+await repository.find({ queryStatement, exemption });
+```
+
+The call is rejected without at least one property, a non-empty aggregate and a non-empty `reason`, and an exemption scoped to another aggregate or property does not apply. The guard reads the field schemas that the generated `@config/drizzle/aurora-field-schemas.ts` registers at boot.
+
+### Relations must be declared in the field schema
+
+Every relation a statement names has to be declared in the aggregate's field schema. That covers a key of `relations`, a relation key inside `where`, and every non-final segment of an `order` or `aggregation` dot-path, at any depth. The field schema is what `@Format` and the masked-property guard read, so a relation that exists only in the Drizzle relations file would carry rows past both.
+
+An undeclared relation fails with HTTP `400` and `translation: 'Errors.RelationNotQueryable'`, `params: { relation, aggregate }`. An aggregate with no registered field schema fails closed with a `500`, because that is a wiring defect and not the caller's fault. Columns that the field schema omits (such as `rowId`) are not relations and stay filterable.
+
+Back-relations are not queryable: the custom-field value pointing to its parent, and the i18n companion pointing to its parent. For `i18nStrategy: table`, the generator declares the parent-to-companion relation (`<module>I18n`).
+
+### Tenant scope
+
+On a `hasTenant: true` module, the statement a client sends is classified against the field schema before it runs. A relation is crossed only when the module declares it traversable in tenant scope, and only one hop; any other relation in `relations`, `where`, `order` or `aggregation` is rejected with HTTP `400` and `translation: 'Errors.TenantScopeQueryRejected'`. See [Tenant scope](../../concepts/backend/tenant-scope/).
+
 ### Design decision: no raw SQL, ever
 
 The DSL exposes **no** `literal`, `fn`, `col`, or raw-SQL key anywhere — there is no escape hatch. This closes the injection surface the old Sequelize-shaped contract opened via `attributes: { literal: ... }` (an arbitrary SQL fragment could be smuggled in as a "projection"). There are also no subqueries in the general sense: the only "subquery-like" capability the DSL exposes is the relation-filter `EXISTS` check described in [Filtering by relation fields](#filtering-by-relation-fields) — and that is a fixed, validated shape, not an arbitrary nested SELECT.
@@ -397,7 +443,7 @@ If a use case genuinely needs raw aggregate SQL, multi-table joins beyond one re
 Every paginate/get/find/list endpoint accepts **two** independent `QueryStatement`-shaped arguments:
 
 - **`query`** — the client-supplied filter/sort/pagination payload. Comes straight from the request body (REST) or GraphQL variables.
-- **`constraint`** — the server-enforced scope (tenant isolation, permission filters, soft-delete exclusion). Set by the server side, never by the client.
+- **`constraint`** — the server-enforced scope (tenant isolation, permission filters). Set by the server side, never by the client.
 
 ```graphql
 hubPaginateAppsAccounts(query: QueryStatementInput, constraint: QueryStatementInput): Pagination!

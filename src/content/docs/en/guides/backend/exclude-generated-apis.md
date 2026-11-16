@@ -15,7 +15,7 @@ Stop the Catalyst CLI from emitting operations or files you do not want — eith
 
 ## Steps
 
-1. **Locate the module YAML.** It lives at `cliter/<bounded-context>/<module>.aurora.yaml`. For `iam/role`, that is `cliter/iam/role.aurora.yaml`.
+1. **Locate the module YAML.** It lives at `cliter/<bounded-context>/<module>.module.yaml`. For `iam/role`, that is `cliter/iam/role.module.yaml`.
 
 2. **Choose the granularity you need.**
 
@@ -26,11 +26,7 @@ Stop the Catalyst CLI from emitting operations or files you do not want — eith
 3. **Edit the YAML at its top level.** Both keys live next to `aggregateProperties` and `additionalApis`. The names you can list under `excludedOperations` are the ones from the [operations table](../../../concepts/backend/module-scaffolding/#operations-the-cli-recognizes).
 
    ```yaml
-   # cliter/iam/role.aurora.yaml
-   additionalApis:
-     - path: iam/role/inherit-permissions-role
-       resolverType: mutation
-       httpMethod: post
+   # cliter/iam/role.module.yaml
    excludedOperations:
      - count
      - getRaw
@@ -100,13 +96,15 @@ An `additionalApis` entry is generated in every layer. List the layers to leave 
 A password-reset endpoint that exists only over REST, as `iam/user` declares it:
 
 ```yaml
-# cliter/iam/user.aurora.yaml
+# cliter/iam/user.module.yaml
 additionalApis:
   - path: iam/user/forgot-password
     resolverType: mutation
     httpMethod: post
     excludedLayers: [graphql, ui]
 ```
+
+The `@app` handler that the generator writes for an `additionalApis` entry carries an `@ApplySchema` decorator with a fixed `operation: 'update'`. Check it once you regenerate: see [Field-schema decorators](../apply-field-schema-decorators/#steps).
 
 Regenerate the backend and the frontend module. The controller and the `@app` handler stay; the resolver, the SDL field and the frontend document are not generated, so the regeneration no longer proposes them as `.origin` hunks.
 
@@ -131,6 +129,18 @@ Double-check for typos. Operation names are case-sensitive and must match the [s
 
 **`.origin` files appeared for operations I did not touch.**
 That means the on-disk files have hand edits whose SHA-1 no longer matches the lockfile. This is unrelated to exclusion — see [Backend module scaffolding → Lockfile and `.origin` files](../../../concepts/backend/module-scaffolding/#lockfile-and-origin-files). Reconcile each `.origin` with `catalyst origin review` when you are ready, or run `catalyst origin list` to see what is pending.
+
+**`[masked-property-get-raw ERROR]` stops the generation.**
+The aggregate declares a `secret`, `password` or `encrypted` property and still generates `getRaw`. `getRaw` runs caller-supplied SQL, and a column alias walks past the mask. Add `getRaw` to `excludedOperations`, or drop the masked property. A `hasTenant: true` module gets the matching `[tenant-no-constraint-operation ERROR]` for `getRaw` and `upsert`: exclude both.
+
+**`[masked-property-i18n ERROR]` stops the generation.**
+A property is both `isI18n: true` and a masked type. Under the default embedded strategy the field is stored as a per-locale map, and the mask would be lost. Drop `isI18n` from the property, or set the module's `i18nStrategy: table`, where the mask is kept.
+
+**`[operation-name-collision ERROR]` stops the generation.**
+Two `additionalApis` entries derive the same GraphQL operation name, or one collides with a standard operation. The error names the offending entry and nothing is written. Rename the `path` of one entry so its derived name differs.
+
+**The run reports a declared-surface obligation after I excluded a GraphQL SDL file.**
+That is a warning, not an error. The generator still emits the services and handlers that import a type from `@api/graphql`, and it tells you which type your hand-maintained SDL has to declare. Run with `--verbose` to see each one.
 
 **I excluded an operation but the GraphQL schema still references it.**
 The GraphQL type exports regenerate after the module load. If you skipped that step with `--noGraphQLTypes`, run `pnpm back:graphql:types` by hand to refresh the exports.

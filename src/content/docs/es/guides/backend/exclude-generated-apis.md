@@ -15,7 +15,7 @@ Evitar que el CLI de Catalyst emita operaciones o archivos que no quieres — ya
 
 ## Pasos
 
-1. **Localiza la YAML del módulo.** Vive en `cliter/<bounded-context>/<module>.aurora.yaml`. Para `iam/role`, eso es `cliter/iam/role.aurora.yaml`.
+1. **Localiza la YAML del módulo.** Vive en `cliter/<bounded-context>/<module>.module.yaml`. Para `iam/role`, eso es `cliter/iam/role.module.yaml`.
 
 2. **Elige la granularidad que necesitas.**
 
@@ -26,11 +26,7 @@ Evitar que el CLI de Catalyst emita operaciones o archivos que no quieres — ya
 3. **Edita la YAML en su nivel superior.** Las dos claves viven junto a `aggregateProperties` y `additionalApis`. Los nombres que puedes listar en `excludedOperations` son los de la [tabla de operaciones](../../../concepts/backend/module-scaffolding/#operaciones-que-el-cli-reconoce).
 
    ```yaml
-   # cliter/iam/role.aurora.yaml
-   additionalApis:
-     - path: iam/role/inherit-permissions-role
-       resolverType: mutation
-       httpMethod: post
+   # cliter/iam/role.module.yaml
    excludedOperations:
      - count
      - getRaw
@@ -100,13 +96,15 @@ Una entrada de `additionalApis` se genera en todas las capas. Lista las capas qu
 Un endpoint de restablecimiento de contraseña que existe solo por REST, tal como lo declara `iam/user`:
 
 ```yaml
-# cliter/iam/user.aurora.yaml
+# cliter/iam/user.module.yaml
 additionalApis:
   - path: iam/user/forgot-password
     resolverType: mutation
     httpMethod: post
     excludedLayers: [graphql, ui]
 ```
+
+El handler de `@app` que el generador escribe para una entrada de `additionalApis` lleva un decorador `@ApplySchema` con un `operation: 'update'` fijo. Revísalo cuando regeneres: consulta [Decoradores de field-schema](../apply-field-schema-decorators/#pasos).
 
 Regenera el módulo de backend y el de frontend. El controller y el handler de `@app` se mantienen; el resolver, el campo del SDL y el documento del frontend no se generan, así que la regeneración deja de proponerlos como hunks `.origin`.
 
@@ -131,6 +129,18 @@ Revisa si hay errores de tipeo. Los nombres son sensibles a mayúsculas/minúscu
 
 **Aparecieron archivos `.origin` en operaciones que no toqué.**
 Eso significa que los archivos en disco tienen ediciones manuales cuyo SHA-1 ya no coincide con el del lockfile. No tiene relación con la exclusión — mira [Scaffolding de un módulo backend → Lockfile y archivos `.origin`](../../../concepts/backend/module-scaffolding/#lockfile-y-archivos-origin). Resuelve cada `.origin` con `catalyst origin review` cuando puedas, o usa `catalyst origin list` para ver lo pendiente.
+
+**`[masked-property-get-raw ERROR]` detiene la generación.**
+El agregado declara una propiedad `secret`, `password` o `encrypted` y sigue generando `getRaw`. `getRaw` ejecuta SQL que aporta quien llama, y un alias de columna esquiva la máscara. Añade `getRaw` a `excludedOperations`, o elimina la propiedad enmascarada. Un módulo `hasTenant: true` recibe el `[tenant-no-constraint-operation ERROR]` equivalente para `getRaw` y `upsert`: excluye ambas.
+
+**`[masked-property-i18n ERROR]` detiene la generación.**
+Una propiedad es a la vez `isI18n: true` y de un tipo enmascarado. Con la estrategia embebida por defecto el campo se guarda como un mapa por idioma y la máscara se perdería. Quita `isI18n` de la propiedad, o define `i18nStrategy: table` en el módulo, donde la máscara se conserva.
+
+**`[operation-name-collision ERROR]` detiene la generación.**
+Dos entradas de `additionalApis` derivan el mismo nombre de operación GraphQL, o una choca con una operación estándar. El error nombra la entrada culpable y no se escribe nada. Renombra el `path` de una de las entradas para que su nombre derivado sea distinto.
+
+**La ejecución informa de una obligación de superficie declarada después de excluir un archivo SDL de GraphQL.**
+Es una advertencia, no un error. El generador sigue emitiendo los services y handlers que importan un tipo de `@api/graphql`, y te dice qué tipo debe declarar tu SDL mantenido a mano. Ejecuta con `--verbose` para ver cada una.
 
 **Excluí una operación pero el esquema GraphQL todavía la referencia.**
 Los tipos de GraphQL se regeneran después del load del módulo. Si omitiste ese paso con `--noGraphQLTypes`, ejecuta `pnpm back:graphql:types` a mano para refrescar los exports.

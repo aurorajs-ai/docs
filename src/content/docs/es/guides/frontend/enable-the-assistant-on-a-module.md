@@ -12,6 +12,7 @@ Conseguir que el asistente de ayuda pueda explicar el formulario de un módulo y
 - Un módulo en `cliter/<bc>/<module>.module.yaml` con frontend generado.
 - Una acción guiada `create` del módulo en `cliter/<bc>/actions.yaml` (`catalyst generate front module` la añade cuando el bounded context tiene manual).
 - El CLI `catalyst` disponible en local.
+- Una aplicación con el paquete `tools` instalado (sin él no hay asistente), el asistente activado (`tools.assistant.isEnabled`) y un rol que tenga el permiso `tools.assistant.ask`, concedido en IAM como cualquier otro permiso. Consulta [Acceso y coste](../../../concepts/frontend/guided-actions/#acceso-y-coste).
 
 ## Pasos
 
@@ -33,7 +34,7 @@ Conseguir que el asistente de ayuda pueda explicar el formulario de un módulo y
      hasAssistant: false
    ```
 
-   Las propiedades `password` y `encrypted` quedan enmascaradas sin declarar nada, y las `readOnly` se excluyen.
+   Las propiedades `password` y `encrypted` quedan enmascaradas sin declarar nada, y las [`readOnly`](../../../concepts/backend/property-writability/) se excluyen.
 
 3. **Regenera el frontend.** Ejecuta `catalyst generate front module --force`. El `*-form.component.ts` generado ya se registra en `AssistedFormService`.
 
@@ -80,4 +81,5 @@ Conseguir que el asistente de ayuda pueda explicar el formulario de un módulo y
 ## Relacionado
 
 - [Concepto: Acciones guiadas y formularios asistidos](../../../concepts/frontend/guided-actions/)
+- [Concepto: El manual de usuario integrado](../../../concepts/frontend/in-app-user-manual/) — el manual con el que se compila la acción `create`.
 - [Cómo: Excluir APIs](../../backend/exclude-generated-apis/)

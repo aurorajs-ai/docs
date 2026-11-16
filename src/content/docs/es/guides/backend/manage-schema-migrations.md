@@ -5,7 +5,7 @@ description: "El ciclo completo para evolucionar el esquema de la base de datos:
 
 ## Objetivo
 
-Recorrer el ciclo completo para llevar un cambio de esquema desde la YAML de Aurora hasta una base de datos real, y saber qué hacer cuando el chequeo de CI (`schema-drift-check`) falla en tu PR.
+Recorrer el ciclo completo para llevar un cambio de esquema desde la YAML de Aurora hasta una base de datos real, y detectar el drift del esquema en tu propio CI con `pnpm db:check`.
 
 ## Antes de empezar
 
@@ -22,11 +22,22 @@ En Aurora Catalyst el esquema de la base de datos cambia **exclusivamente** a tr
 
 Si conoces Laravel, el paralelo es directo: `php artisan make:migration` + `php artisan migrate` es exactamente este mismo patrón — un artefacto explícito y un comando de aplicación separado. La diferencia de drizzle-kit es que el equivalente a `make:migration` se autogenera por diff: no escribes el DDL a mano, `drizzle-kit generate` lo calcula comparando tus `*.schema.ts` contra el último snapshot.
 
+### La primera migración de un proyecto
+
+Un proyecto creado con `catalyst new` no incluye migraciones ni valores de base de datos: el CLI distribuye definiciones de esquema, nunca migraciones, así que el historial de migraciones de un proyecto empieza con el primer `pnpm db:generate` que ejecuta su desarrollador. El orden es:
+
+1. Crea una base de datos PostgreSQL vacía y rellena su conexión en `backend/.env`.
+2. Instala los paquetes que necesita el proyecto, por ejemplo `catalyst add identity`.
+3. Desde el workspace del backend, ejecuta `pnpm db:generate --name init`.
+4. Arranca el backend (aplica las migraciones pendientes) o ejecuta `pnpm db:migrate`.
+
+Tras cada `catalyst add <paquete>` posterior, el comando imprime `pnpm db:generate --name <paquete>` por cada paquete cuyo backend cambió. Nunca genera ni aplica una migración por sí mismo.
+
 ## El ciclo completo
 
 ```mermaid
 flowchart LR
-    A["Editar *.aurora.yaml"] --> B["catalyst generate<br/>(emite *.schema.ts)"]
+    A["Editar *.module.yaml"] --> B["catalyst generate<br/>(emite *.schema.ts)"]
     B --> C["pnpm db:generate --name X<br/>(genera migration.sql + snapshot.json)"]
     C --> D["Revisar el .sql generado"]
     D --> E["Commit + PR"]
@@ -34,7 +45,7 @@ flowchart LR
     F --> G["Migración aplicada<br/>(drizzle.__drizzle_migrations)"]
 ```
 
-1. **Editas `*.aurora.yaml`** — el campo o la tabla nueva se declara ahí, nunca directamente en TypeScript.
+1. **Editas `*.module.yaml`** — el campo o la tabla nueva se declara ahí, nunca directamente en TypeScript.
 2. **`catalyst generate`** lee la YAML y emite (entre otros archivos) el `*.schema.ts` de drizzle bajo `infrastructure/drizzle/`. Este paso NO toca la base de datos ni genera ninguna migración — solo actualiza la definición TypeScript de la tabla.
 3. **`pnpm db:generate --name <nombre-descriptivo>`** — aquí entra drizzle-kit: diffea el `*.schema.ts` recién actualizado contra el último `snapshot.json` y escribe una carpeta nueva con `migration.sql` + `snapshot.json`. Es un paso **offline**: no abre conexión a la base de datos.
 4. **Revisas el `.sql`** generado antes de dar por bueno el cambio — confirma que describe solo lo esperado (los `CREATE`/`ALTER` previstos, ningún `DROP` accidental).
@@ -46,12 +57,12 @@ flowchart LR
 | Script | Qué hace | Ejemplo | Salida esperada |
 | --- | --- | --- | --- |
 | `pnpm db:generate --name <nombre>` | Genera una migración nueva a partir del diff de `*.schema.ts`. El nombre es obligatorio — sin él, el comando falla explícitamente en vez de inventar un apodo aleatorio. | `pnpm db:generate --name add-invoice-tables` | Crea `src/database/migrations/drizzle/<timestamp>_add-invoice-tables/` con `migration.sql` y `snapshot.json`. |
-| `pnpm db:migrate` | Aplica las migraciones pendientes sin arrancar Nest, reutilizando exactamente el mismo mecanismo que usa el boot. | `pnpm db:migrate` | `Applying drizzle schema migrations...` seguido de `Drizzle schema migrations up to date.` Si no hay pendientes, termina igual de rápido (no-op). |
-| `pnpm db:check` | Detecta drift sin tocar la base de datos: corre un `generate` de prueba y verifica si produce una carpeta nueva. Es el comando que corre en CI. | `pnpm db:check` | `Sin drift: *.schema.ts está alineado con el snapshot.` (exit 0) o un mensaje de drift más instrucciones (exit distinto de 0). |
+| `pnpm db:migrate` | Aplica las migraciones pendientes sin arrancar Nest, reutilizando exactamente el mismo mecanismo que usa el boot. | `pnpm db:migrate` | `[db:migrate] Applying pending migrations from <folder>...` seguido de `[db:migrate] Database is up to date.` Si no hay pendientes, termina igual de rápido (no-op). |
+| `pnpm db:check` | Detecta drift sin tocar la base de datos: corre un `generate` de prueba y verifica si produce una carpeta nueva. Es el comando que debes ejecutar en tu CI. | `pnpm db:check` | `Sin drift: *.schema.ts está alineado con el snapshot.` (exit 0) o un mensaje de drift más instrucciones (exit distinto de 0). |
 
-### Cuando falla `schema-drift-check` en tu PR
+### Detecta el drift en tu propio CI
 
-El workflow de CI `.github/workflows/schema-drift-check.yml` corre `pnpm db:check` en cada PR que toca un `*.schema.ts` o la carpeta de migraciones. Si falla, significa que editaste el esquema sin generar su migración correspondiente. La solución es siempre la misma: ejecuta `pnpm db:generate --name <descriptivo>` localmente, revisa el `.sql` resultante, y añade la carpeta generada al mismo commit/PR.
+`catalyst new` no incluye ningún workflow de CI para esta comprobación. Añade a tu propio pipeline un paso que ejecute `pnpm db:check` en cada PR que toque un `*.schema.ts` o la carpeta de migraciones. Si falla, significa que editaste el esquema sin generar su migración correspondiente. La solución es siempre la misma: ejecuta `pnpm db:generate --name <descriptivo>` localmente, revisa el `.sql` resultante, y añade la carpeta generada al mismo commit/PR.
 
 ## `DATABASE_MIGRATE_ON_BOOT`: quién aplica la migración y cuándo
 
@@ -67,7 +78,11 @@ DATABASE_MIGRATE_ON_BOOT=false pnpm db:migrate
 
 ### Hostings con usuario de base de datos restringido
 
-Si tu hosting (por ejemplo, un panel estilo Plesk) te da un usuario de base de datos sin privilegio `CREATE`, vas a encontrarte con esto: `migrate()` ejecuta `CREATE SCHEMA IF NOT EXISTS` de forma incondicional, y Postgres deniega esa sentencia para un usuario sin `CREATE` **aunque el schema ya exista**. No hay ninguna variable que evite esa llamada. El patrón es el mismo que en multi-réplica: `DATABASE_MIGRATE_ON_BOOT=false` + `pnpm db:migrate` ejecutado con credenciales privilegiadas en el paso de despliegue, dejando la aplicación en runtime con el usuario restringido.
+Si tu hosting (por ejemplo, un panel de hosting gestionado) te da un usuario de base de datos sin privilegio `CREATE`, vas a encontrarte con esto: `migrate()` ejecuta `CREATE SCHEMA IF NOT EXISTS` de forma incondicional, y Postgres deniega esa sentencia para un usuario sin `CREATE` **aunque el schema ya exista**. No hay ninguna variable que evite esa llamada. El patrón es el mismo que en multi-réplica: `DATABASE_MIGRATE_ON_BOOT=false` + `pnpm db:migrate` ejecutado con credenciales privilegiadas en el paso de despliegue, dejando la aplicación en runtime con el usuario restringido.
+
+### Acciones referenciales en una relación
+
+Una relación puede declarar `onDelete` y `onUpdate` (`cascade`, `restrict`, `no-action`, `set-null`, `set-default`). Solo surten efecto con `avoidConstraint: false`, y una acción sin declarar deja una clave foránea simple. Añadir o cambiar una modifica la restricción, así que `pnpm db:generate` produce una migración para ella: revisa que solo recree la restricción que querías. Si el cambio además pasa una relación de `avoidConstraint: true` a `false`, las filas que ya apuntan a nada hacen fallar la nueva restricción al aplicarla, así que límpialas antes.
 
 ## `DATABASE_MIGRATIONS_SCHEMA` / `DATABASE_MIGRATIONS_TABLE`
 

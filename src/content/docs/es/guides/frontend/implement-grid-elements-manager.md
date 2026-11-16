@@ -19,7 +19,7 @@ Que el usuario gestione los hijos del padre directamente desde la vista de detai
 1. **Activa el modo embed en el hijo.** En el YAML del hijo, declara `front.embedSupport: true`. Sin el flag, el codegen emite los ficheros de siempre y el regen del padre falla al intentar dispatchar el widget.
 
    ```yaml
-   # cliter/iam/permission.aurora.yaml
+   # cliter/iam/permission.module.yaml
    front:
      embedSupport: true
    ```
@@ -39,7 +39,7 @@ Que el usuario gestione los hijos del padre directamente desde la vista de detai
 3. **Declara el widget en la property del padre.** En el YAML del padre, la property de relación que apunta al hijo recibe `widget.type: grid-elements-manager`. Opcionalmente ubícalo dentro de un tab.
 
    ```yaml
-   # cliter/iam/bounded-context.aurora.yaml
+   # cliter/iam/bounded-context.module.yaml
    aggregateProperties:
      - name: permissions
        type: relationship
@@ -61,7 +61,7 @@ Que el usuario gestione los hijos del padre directamente desde la vista de detai
    catalyst generate front module --name=iam/bounded-context --force
    ```
 
-   El codegen lee `iam/permission.aurora.yaml`, encuentra la property cuya `relationship.type === 'many-to-one'` y `relationship.modulePath === 'iam/bounded-context'` (p. ej. `boundedContextId`) y emite la partial dentro del detail shell del padre — envuelta en `@if (mode() === 'edit')` para que solo aparezca cuando el padre ya tiene id. La lista embebida recibe `parentFilter: { field: 'boundedContextId', value: bcId() }` y `parentDefaults: { boundedContextId: bcId() }`.
+   El codegen lee `iam/permission.module.yaml`, encuentra la property cuya `relationship.type === 'many-to-one'` y `relationship.modulePath === 'iam/bounded-context'` (p. ej. `boundedContextId`) y emite la partial dentro del detail shell del padre — envuelta en `@if (mode() === 'edit')` para que solo aparezca cuando el padre ya tiene id. La lista embebida recibe `parentFilter: { field: 'boundedContextId', value: bcId() }` y `parentDefaults: { boundedContextId: bcId() }`.
 
 5. **Añade la key de traducción.** El título de la card del widget usa una key derivada del nombre plural del agregado hijo:
 

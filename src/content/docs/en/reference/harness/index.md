@@ -103,7 +103,7 @@ Two families:
 | Rule | Governs |
 | --- | --- |
 | `route-aurora-components.md` | `frontend/src/@aurora/components/**` |
-| `route-aurora-yaml.md` | `cliter/**/*.aurora.yaml` |
+| `route-module-yaml.md` | `cliter/**/*.module.yaml` |
 | `route-backend-test.md` | `backend/**/*.spec.ts`, `backend/**/*.e2e-spec.ts` |
 | `route-drizzle-schema.md` | `backend/**/*.schema.ts`, the migrations tree, the Drizzle config and the drift-check workflow |
 | `route-eta.md` | `**/*.eta` |
@@ -136,7 +136,7 @@ A skill activates through judgement by default: the model reads its `description
 
 `inject-prompt-context.ts` reads that index and scores it against the prompt with the same keyword primitive the business-rule and harness-rule blocks use (a term under 4 characters never matches), plus a +50 bonus when the prompt names the skill literally. It injects up to 3 matches as pointers — never skill bodies.
 
-The seven skills currently indexed: `business-rules-guard`, `catalyst-delegation`, `catalyst-langs`, `catalyst-query-dsl`, `catalyst-report-creator`, `catalyst-skill-creator`, `judgment-day`.
+The seven skills currently indexed: `catalyst-business-rules-guard`, `catalyst-delegation`, `catalyst-langs`, `catalyst-query-dsl`, `catalyst-report-creator`, `catalyst-skill-creator`, `judgment-day`.
 
 `typescript` deliberately opts out, and says so in its own `SKILL.md`: its real trigger is "any `.ts`/`.tsx` file", which as a keyword vocabulary would fire on almost every prompt or none — a non-discriminating trigger is worse than no trigger at all. It stays discoverable through the `[Project Skills Index]` and its `description` instead.
 
@@ -146,7 +146,7 @@ The seven skills currently indexed: `business-rules-guard`, `catalyst-delegation
 
 | Skill | Covers |
 | --- | --- |
-| `business-rules-guard` | the business-rule catalogue: adding, changing, derogating, citing by identifier |
+| `catalyst-business-rules-guard` | the business-rule catalogue: adding, changing, derogating, citing by identifier |
 | `catalyst-cli` | consuming the CLI: generation, `.origin` reconciliation, what belongs in YAML versus code |
 | `catalyst-delegation` | delegation contracts: skill discovery, escalation protocol, model assignment |
 | `catalyst-langs` | the language mechanism: panel versus data, adapters, adding a language |
@@ -155,7 +155,7 @@ The seven skills currently indexed: `business-rules-guard`, `catalyst-delegation
 | `catalyst-schema` | authoring and validating the Aurora YAML schemas |
 | `catalyst-skill-creator` | writing a new skill |
 | `catalyst-update-skill-registry` | regenerating the skill registry after any skill changes |
-| `harness-rules-guard` | the harness-rule catalogue |
+| `catalyst-harness-rules-guard` | the harness-rule catalogue |
 | `judgment-day` | dual adversarial review |
 | `openspec-explore` | thinking-partner explore mode: investigating problems and clarifying requirements before or during a change |
 | `openspec-propose` | creating a change and its artifacts |

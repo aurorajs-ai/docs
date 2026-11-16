@@ -52,8 +52,8 @@ export class OAuthClientReaderAdapter implements IIamClientReader {
 
   async findByIdWithApplications(id: string): Promise<IamClientWithApplications> {
     const client = await this.findByIdService.main(id, {
-      include: [{ association: 'applications' }],
-    });
+      relations: { applications: true },
+    } satisfies QueryStatement);
     if (!client) throw new NotFoundException(/* … */);
     return {
       id: client.id,
@@ -72,7 +72,7 @@ El adapter es el único lugar del código que conoce los dos mundos: el service 
 Un `Provider` de NestJS que ata el token al adapter usando `useExisting`. La bridge entry no crea ninguna instancia nueva — reusa la instancia del adapter que ya declara el supplier module.
 
 ```ts
-// backend/src/@bridges/iam-client-reader.bridge.ts
+// backend/src/@bridges/providers/iam-client-reader.bridge.ts
 export const iamClientReaderBridge: Provider = {
   provide: IAM_CLIENT_READER,
   useExisting: OAuthClientReaderAdapter,
@@ -81,14 +81,14 @@ export const iamClientReaderBridge: Provider = {
 
 ## El composition root: BridgesModule
 
-`backend/src/@bridges/bridges.module.ts` está decorado `@Global()`. Es el único composition root por el que pasan las dependencias cross-BC.
+`backend/src/@bridges/bridges.module.ts` está decorado `@Global()`. Es el único composition root por el que pasan las dependencias cross-BC. El CLI compone el archivo a partir de los manifiestos de los paquetes instalados y lleva una cabecera `@aurora-catalyst-generated`, así que no lo editas. Las entradas propias de tu proyecto van en `projectBridges` de `backend/src/project.composition.ts`, que el módulo esparce al final de cada uno de sus tres arrays.
 
 ```ts
 @Global()
 @Module({
-  imports: [OAuthModule, IamModule],
-  providers: [iamClientReaderBridge, credentialVerifierBridge, accountLoaderBridge],
-  exports: [IAM_CLIENT_READER, CREDENTIAL_VERIFIER, ACCOUNT_LOADER],
+  imports: [OAuthModule, IamModule, /* …supplier modules… */, ...projectBridges.imports],
+  providers: [iamClientReaderBridge, credentialVerifierBridge, accountLoaderBridge, /* … */, ...projectBridges.providers],
+  exports: [IAM_CLIENT_READER, CREDENTIAL_VERIFIER, ACCOUNT_LOADER, /* … */],
 })
 export class BridgesModule {}
 ```
@@ -123,14 +123,16 @@ Un futuro BC que importe `OAuthModule` ve `OAuthClientReaderAdapter` y nada más
 | `IAM_CLIENT_READER`            | read    | `@bridges/iam/client/ports/iam-client-reader.port.ts`                               | `@bridges/o-auth/client/adapters/o-auth-client-reader.adapter.ts`                | `iam` (BC)          | `o-auth` (BC)       |
 | `CREDENTIAL_VERIFIER`          | read    | `@aurora/modules/authentication/domain/ports/credential-verifier.port.ts`           | `@bridges/iam/user/adapters/iam-credential-verifier.adapter.ts`                  | `authentication`    | `iam` (BC)          |
 | `ACCOUNT_LOADER`               | read    | `@aurora/modules/authentication/domain/ports/account-loader.port.ts`                | `@bridges/iam/account/adapters/iam-account-loader.adapter.ts`                    | `authentication`    | `iam` (BC)          |
-| `IAM_BOUNDED_CONTEXT_SEEDER`   | write   | `@bridges/iam/bounded-context/ports/iam-bounded-context-seeder.port.ts`             | `@bridges/iam/bounded-context/adapters/iam-bounded-context-seeder.adapter.ts`    | `o-auth` (BC)       | `iam` (BC)          |
-| `IAM_PERMISSION_SEEDER`        | write   | `@bridges/iam/permission/ports/iam-permission-seeder.port.ts`                       | `@bridges/iam/permission/adapters/iam-permission-seeder.adapter.ts`              | `o-auth` (BC)       | `iam` (BC)          |
+| `IAM_BOUNDED_CONTEXT_WRITER`   | write   | `@bridges/iam/bounded-context/ports/iam-bounded-context-writer.port.ts`             | `@bridges/iam/bounded-context/adapters/`                                         | `hub` (BC)          | `iam` (BC)          |
+| `IAM_PERMISSION_WRITER`        | write   | `@bridges/iam/permission/ports/iam-permission-writer.port.ts`                       | `@bridges/iam/permission/adapters/iam-permission-writer.adapter.ts`              | `hub` (BC)          | `iam` (BC)          |
+
+Esta tabla muestra los cinco primeros tokens, no la lista completa. `bridges.module.ts` exporta todos los tokens, y cada paquete añade los suyos (las herramientas de plataforma, la máquina de estados, el motor de reglas, etc.).
 
 La primera fila es el caso canónico *read*: `iam` declara qué necesita de `o-auth`, el port vive en el territorio de iam bajo `@bridges/iam/`, y el adapter vive en el territorio de o-auth bajo `@bridges/o-auth/`.
 
 Las filas 2 y 3 son read ports cuyo consumer es un módulo de framework, no un BC. Sus ports viven en `@aurora/modules/authentication/domain/ports/` porque `authentication` es infraestructura de framework — el módulo de framework es dueño del contrato y cualquier BC concreto puede cumplirlo. Las dependencias BC-a-BC nuevas no usan este layout; viven bajo `@bridges/<consumer-bc>/`.
 
-Las dos últimas filas son ports *write* para el seeding de bootstrap de o-auth hacia iam — ver la sección siguiente.
+Las dos últimas filas son ports *write* para las filas que `hub` crea y borra en tiempo de ejecución cuando registra o elimina una app — ver la sección siguiente. Ningún port registra los permisos propios de un bounded context: eso se hace con una declaración, que se explica en [Declaración o port](#declaración-o-port).
 
 ## Read ports vs write ports
 
@@ -148,11 +150,11 @@ Caso canónico: `IIamClientReader.findByIdWithApplications()` devuelve un `IamCl
 
 ### Write ports — el consumer reenvía datos al supplier
 
-El consumer no tiene vocabulario propio sobre el recurso que escribe; solo está orquestando datos hacia un supplier que sí es dueño de ellos. El DTO ES el contrato de input del supplier, reutilizado tal cual desde upstream — normalmente un tipo framework-level de `@aurorajs.dev/core-back` (`SeederBoundedContext`, `RepositoryOptions`) o el tipo `*Input` GraphQL del supplier. El adapter es un pass-through sin mapping.
+El consumer no tiene vocabulario propio sobre el recurso que escribe; solo está orquestando datos hacia un supplier que sí es dueño de ellos. El DTO ES el contrato de input del supplier, reutilizado tal cual desde upstream — normalmente un tipo framework-level de `@aurorajs.dev/core-back` (`RepositoryOptions`) o el tipo `*Input` GraphQL del supplier. El adapter es un pass-through sin mapping.
 
-El DTO tiene la forma del supplier → **el archivo del port vive en el territorio del supplier** (`@bridges/<supplier-bc>/<resource>/ports/`). El port es en esencia la interfaz driving del supplier para escrituras cross-BC — un contrato que cualquier consumer del proyecto puede inyectar por token. El prefijo del archivo coincide con el supplier (p. ej. `iam-bounded-context-seeder.port.ts` bajo `@bridges/iam/bounded-context/ports/`).
+El DTO tiene la forma del supplier → **el archivo del port vive en el territorio del supplier** (`@bridges/<supplier-bc>/<resource>/ports/`). El port es en esencia la interfaz driving del supplier para escrituras cross-BC — un contrato que cualquier consumer del proyecto puede inyectar por token. El prefijo del archivo coincide con el supplier (p. ej. `iam-permission-writer.port.ts` bajo `@bridges/iam/permission/ports/`).
 
-Caso canónico: `IIamBoundedContextSeeder.seedAll(items, options)` acepta `SeederBoundedContext[]` y `RepositoryOptions` directamente de core-back. Escribir un DTO casi-duplicado a mano solo introduciría drift cuando el contrato de input del supplier evolucione, y no aporta valor de Anti-Corruption Layer (no hay proyección que hacer).
+Caso canónico: `IIamPermissionWriter` (token `IAM_PERMISSION_WRITER`) permite a `hub` crear, buscar, borrar y asociar permisos a un rol mientras registra o elimina una app. Acepta `RepositoryOptions` directamente de core-back, así que la escritura se une a la transacción de quien llama, y su input es un `{ id, name, boundedContextId }` plano. El seeder de permisos por app del hub y sus handlers de crear y borrar app lo inyectan. Escribir un DTO casi-duplicado a mano solo introduciría drift cuando el contrato de input del supplier evolucione, y no aporta valor de Anti-Corruption Layer (no hay proyección que hacer).
 
 ### Cómo elegir entre los dos
 
@@ -162,6 +164,15 @@ Caso canónico: `IIamBoundedContextSeeder.seedAll(items, options)` acepta `Seede
 > - **No** — el consumer reenvía datos que semánticamente pertenecen al supplier → reutiliza el tipo existente del supplier o del framework, y coloca el port en el territorio del supplier. **Write port.**
 
 Las dos variantes comparten la misma estructura de 4 archivos (port, token, adapter, bridge entry) y el mismo registro en el composition root. Solo cambian la procedencia del DTO y la ubicación del archivo del port.
+
+## Declaración o port
+
+Un port no es la única forma de cruzar la frontera de un BC. Pregúntate si el bounded context necesita una respuesta:
+
+- **Solo entrega datos y no espera respuesta.** Registrar el bounded context y sus permisos en IAM es el ejemplo. El bounded context lo declara y el receptor lo recoge. Un BC provee un `BoundedContextDeclaration` construido a partir de su propio `@app/<bc>/<bc>.seed.ts`, y cuando IAM está instalado encuentra todas las declaraciones al arrancar y las registra. Sin IAM la declaración queda inerte, así que el BC que declara nunca depende de IAM.
+- **Necesita una respuesta en tiempo de ejecución.** Leer un ajuste, validar una cuenta. La dependencia es real, así que usa un port en el consumer y un adapter en el supplier.
+
+Por tanto, un bounded context nunca depende de IAM para registrarse. Ya no existen ports seeder de IAM.
 
 ## Cuándo aplica
 

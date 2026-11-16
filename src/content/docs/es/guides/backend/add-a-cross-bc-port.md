@@ -47,16 +47,17 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
 
    ```ts
    // backend/src/@bridges/iam/client/ports/index.ts
-   export * from './iam-client-reader.port';
-   export * from './iam-client-reader.token';
+   export * from './iam-client-reader.port.js';
+   export * from './iam-client-reader.token.js';
    ```
 
 4. **Escribe el adapter del lado del supplier.** Implementa el port, inyecta por constructor el service interno del supplier y mapea el modelo del supplier al DTO del port.
 
    ```ts
    // backend/src/@bridges/o-auth/client/adapters/o-auth-client-reader.adapter.ts
-   import { OAuthFindClientByIdService } from '@app/o-auth/client';
-   import { IamClientWithApplications, IIamClientReader } from '@bridges/iam/client/ports';
+   import { OAuthFindClientByIdService } from '@app/o-auth/client/index.js';
+   import { QueryStatement } from '@aurorajs.dev/core-back';
+   import { IamClientWithApplications, IIamClientReader } from '@bridges/iam/client/index.js';
    import { Injectable, NotFoundException } from '@nestjs/common';
 
    @Injectable()
@@ -65,8 +66,8 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
 
      async findByIdWithApplications(id: string): Promise<IamClientWithApplications> {
        const client = await this.findByIdService.main(id, {
-         include: [{ association: 'applications' }],
-       });
+         relations: { applications: true },
+       } satisfies QueryStatement);
        if (!client) {
          throw new NotFoundException({
            message: `OAuthClient with id: ${id}, not found`,
@@ -90,7 +91,7 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
 
    ```ts
    // backend/src/@api/o-auth/o-auth.module.ts
-   import { OAuthClientReaderAdapter } from '@bridges/o-auth/client/adapters/o-auth-client-reader.adapter';
+   import { OAuthClientReaderAdapter } from '@bridges/o-auth/client/adapters/o-auth-client-reader.adapter.js';
 
    @Module({
      providers: [/* …services internos… */, OAuthClientReaderAdapter],
@@ -102,9 +103,9 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
 6. **Crea la bridge entry.** Un `Provider` de NestJS con `useExisting` para que el bridge reuse la instancia del supplier module en vez de crear una nueva.
 
    ```ts
-   // backend/src/@bridges/iam-client-reader.bridge.ts
-   import { IAM_CLIENT_READER } from '@bridges/iam/client/ports/iam-client-reader.token';
-   import { OAuthClientReaderAdapter } from '@bridges/o-auth/client/adapters/o-auth-client-reader.adapter';
+   // backend/src/@bridges/providers/iam-client-reader.bridge.ts
+   import { IAM_CLIENT_READER } from '@bridges/iam/client/ports/iam-client-reader.token.js';
+   import { OAuthClientReaderAdapter } from '@bridges/o-auth/client/adapters/o-auth-client-reader.adapter.js';
    import { Provider } from '@nestjs/common';
 
    export const iamClientReaderBridge: Provider = {
@@ -113,31 +114,25 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
    };
    ```
 
-7. **Engancha la entry en `BridgesModule`.** Añade el supplier module a `imports` (si no estaba ya), la bridge entry a `providers` y el token a `exports`.
+7. **Engancha la entry en `BridgesModule` a través de la composición de tu proyecto.** Añade el supplier module a `projectBridges.imports` (si no estaba ya), la bridge entry a `projectBridges.providers` y el token a `projectBridges.exports`.
 
    ```ts
-   // backend/src/@bridges/bridges.module.ts
-   @Global()
-   @Module({
-     imports: [OAuthModule, IamModule /* …otros supplier modules… */],
-     providers: [
-       iamClientReaderBridge,
-       /* …otras bridge entries… */
-     ],
-     exports: [
-       IAM_CLIENT_READER,
-       /* …otros tokens… */
-     ],
-   })
-   export class BridgesModule {}
+   // backend/src/project.composition.ts
+   export const projectBridges = {
+     imports: [OAuthModule /* …supplier modules… */],
+     providers: [iamClientReaderBridge /* …otras bridge entries… */],
+     exports: [IAM_CLIENT_READER /* …otros tokens… */],
+   };
    ```
+
+   `BridgesModule` esparce cada uno de estos arrays al final. No edites `bridges.module.ts`: el CLI lo compone a partir de los paquetes instalados y lo reescribe.
 
 8. **Inyecta el port por token en el consumer.** No hace falta tocar los `imports` del módulo del consumer — `BridgesModule` es `@Global()`.
 
    ```ts
    // backend/src/@app/iam/account/application/create/iam-create-account.handler.ts
-   import { IAM_CLIENT_READER } from '@bridges/iam/client/ports/iam-client-reader.token';
-   import type { IIamClientReader } from '@bridges/iam/client/ports/iam-client-reader.port';
+   import { IAM_CLIENT_READER } from '@bridges/iam/client/ports/iam-client-reader.token.js';
+   import type { IIamClientReader } from '@bridges/iam/client/ports/iam-client-reader.port.js';
    import { Inject } from '@nestjs/common';
 
    constructor(
@@ -160,7 +155,7 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
   {
     provide: IAM_CLIENT_READER,
     useValue: {
-      findByIdWithApplications: jest
+      findByIdWithApplications: vi
         .fn()
         .mockResolvedValue({ id, applicationCodes: ['app-a', 'app-b'] }),
     },
@@ -168,12 +163,12 @@ Conectar un consumer (un handler de un BC o un módulo de framework) con un BC s
   ```
 
 - La lista `exports` del supplier module contiene el adapter — y nada más de los internals del supplier que el consumer no deba ver.
-- `bridges.module.ts` es el único sitio que menciona los dos BCs en el mismo `imports`. El archivo del módulo del consumer sigue sin referenciar al supplier.
+- `bridges.module.ts` (a través de `projectBridges`) es el único sitio que menciona los dos BCs en el mismo `imports`. El archivo del módulo del consumer sigue sin referenciar al supplier.
 
 ## Solución de problemas
 
 **`Nest can't resolve dependencies of <Adapter>`.**
-A `BridgesModule.imports` le falta el supplier module, o el supplier module no incluyó al adapter en sus `providers`. `useExisting: AdapterClass` solo funciona cuando el adapter es alcanzable a través de un módulo importado.
+A `projectBridges.imports` le falta el supplier module, o el supplier module no incluyó al adapter en sus `providers`. `useExisting: AdapterClass` solo funciona cuando el adapter es alcanzable a través de un módulo importado.
 
 **El módulo del consumer tuvo que importar el supplier module para compilar.**
 Estás inyectando la clase del supplier directamente (o uno de sus services) en lugar del token del port. Cambia el consumer a `@Inject(TOKEN) port: IPort` y elimina el import. Si los tests del consumer fuerzan el import del supplier, mockea el port en su lugar.

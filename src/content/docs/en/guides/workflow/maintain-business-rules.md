@@ -237,10 +237,10 @@ The structural report is deterministic. The semantic section reports tensions as
 
 ## When to ask for help
 
-The skill `business-rules-guard` auto-loads when Claude detects you are touching the system. If you find yourself stuck on:
+The skill `catalyst-business-rules-guard` auto-loads when Claude detects you are touching the system. If you find yourself stuck on:
 
 - The exact format of a rule (frontmatter, body, sections) → ask Claude to apply the `format` reference of the skill.
 - A workflow decision (do I derogate, or is this a non-semantic edit?) → ask Claude to apply the `workflow` reference.
 - An audit finding you do not understand → ask Claude to apply the `audit` reference.
 
-The references files are mirrored as `.claude/skills/business-rules-guard/references/` in the catalyst repo. They are the live system manual; this guide is the catalyst-user-facing distillation.
+The references files are mirrored as `.claude/skills/catalyst-business-rules-guard/references/` in the catalyst repo. They are the live system manual; this guide is the catalyst-user-facing distillation.

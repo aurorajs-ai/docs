@@ -15,7 +15,7 @@ Dos mecanismos fijan esos límites. Una **acción guiada** es un botón que el a
 
 ### Acciones guiadas
 
-Cada bounded context declara sus acciones en `cliter/<bc>/actions.yaml`, un fichero por bounded context. Vive junto a `<module>.module.yaml` (el modelo de datos) y `processes.yaml` (los procesos de negocio), y se compila con el manual de usuario en el índice del manual.
+Cada bounded context declara sus acciones en `cliter/<bc>/actions.yaml`, un fichero por bounded context. Vive junto a `<module>.module.yaml` (el modelo de datos) y `processes.yaml` (los procesos de negocio), y se compila con el [manual de usuario integrado](../in-app-user-manual/) en el índice del manual.
 
 ```yaml
 - id: create-account
@@ -68,6 +68,16 @@ Una propiedad con `hasAssistant: false` se registra como enmascarada: la foto ll
 
 Úsalo cuando un valor no deba llegar al asistente o cuando el usuario no pueda ver lo que el asistente cambia. Por ejemplo, un interruptor que solo se muestra con más de un tenant no debería concederse en silencio.
 
+### Acceso y coste
+
+El asistente pertenece al paquete `tools`, así que una aplicación sin él no tiene asistente. Tres cosas lo condicionan:
+
+- **Un interruptor general.** El ajuste clave-valor `tools.assistant.isEnabled` viene vacío, lo que mantiene el asistente apagado hasta que un administrador lo activa.
+- **Un permiso.** Preguntar requiere `tools.assistant.ask`, concedido a los roles en IAM como cualquier otro permiso. No hay una lista aparte de roles permitidos.
+- **Un presupuesto.** Un administrador fija cuántos tokens puede gastar cada rol al mes, y el ajuste `tools.assistant.monthlyTokenCap` puede añadir un tope global para todas las cuentas. Una pregunta más larga que `tools.assistant.maxQuestionLength` (2000 caracteres por defecto) se rechaza antes de que cueste nada.
+
+El asistente guarda cada turno de conversación para que un revisor dedicado pueda leerlo. Leerlos requiere el permiso aparte `tools.assistantConversation.get`. Una purga diaria borra los turnos anteriores a `tools.assistant.conversationRetentionDays`, que viene en 90.
+
 ## Cuándo aplica
 
 - Un usuario pregunta al asistente cómo hacer algo y recibe un botón que lo lleva allí.
@@ -81,10 +91,11 @@ Una propiedad con `hasAssistant: false` se registra como enmascarada: la foto ll
 - **Nunca escribe texto ni relaciones.** Solo se escribe una opción exacta de un campo `enum` o `boolean` sin enmascarar. Los campos de texto y de relación reciben el foco del teclado.
 - **Solo ofrece lo declarado.** No hay descubrimiento de pantallas ni inferencia de acciones desde el modelo. La marca `hasAssistant` es por módulo: en un padre no dice nada de sus hijos.
 - **Los formularios excluidos del codegen no se registran.** Si listas un formulario en `excludedFiles`, el generador no emite el registro; lo registras a mano y un fallo ahí es tuyo. Los objetos anidados requieren cuidado: el registro direcciona solo campos de primer nivel.
-- **Los módulos de diálogo no pueden iniciar un tour sobre el formulario.** La URL no cambia, así que una acción `create` de un módulo de diálogo no lleva `tourId`.
+- **Los módulos de diálogo no pueden iniciar un tour sobre el formulario.** La URL no cambia, así que una acción `create` de un módulo de diálogo no lleva `tourId`. El generador sigue la misma regla: escribe `tourId: general.form` en la acción `create` que añade solo para un módulo que no está en modo diálogo.
 
 ## Relacionado
 
 - [Detail mode](../detail-mode/) — los dos shells entre los que elige `detailMode` en una acción guiada.
 - [Cómo: Activar el asistente en un módulo](../../../guides/frontend/enable-the-assistant-on-a-module/) — la marca del YAML, el enmascarado de campos y el registro de un formulario escrito a mano.
+- [El manual de usuario integrado](../in-app-user-manual/) — los capítulos y recorridos con los que se compila el catálogo de acciones.
 - [Regiones de preservación](../preservation-regions/) — cómo los ficheros frontend generados conservan tus ediciones al regenerar.

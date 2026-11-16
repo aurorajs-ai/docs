@@ -32,9 +32,9 @@ For the *why* behind the design — boot-time discovery, the accumulating decora
 2. **Decorate each provider with `@Handler(...)`.** Import the decorator from the framework module. A provider can answer one key, several at once (variadic), or several via stacked decorators — all forms accumulate:
 
    ```typescript
-   import { Handler } from '@aurora/modules/handler-registry';
+   import { Handler } from '@aurora/modules/handler-registry/index.js';
    import { Injectable } from '@nestjs/common';
-   import { ORDER_CREATED, ORDER_CANCELLED, OrderHandler } from './order-handler.contract';
+   import { ORDER_CREATED, ORDER_CANCELLED, OrderHandler } from './order-handler.contract.js';
 
    @Handler(ORDER_CREATED)
    @Injectable()
@@ -65,8 +65,8 @@ For the *why* behind the design — boot-time discovery, the accumulating decora
 
    ```typescript
    import { Injectable } from '@nestjs/common';
-   import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry';
-   import { OrderHandler } from './order-handler.contract';
+   import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry/index.js';
+   import { OrderHandler } from './order-handler.contract.js';
 
    @Injectable()
    export class OrderDispatcher {
@@ -90,9 +90,9 @@ Write a discovery spec. Build a `TestingModule` with `DiscoveryModule` and `Keye
 ```typescript
 import { DiscoveryModule } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
-import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry';
-import { UpdateInventoryHandler } from './update-inventory.handler';
-import { ORDER_CREATED } from './order-handler.contract';
+import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry/index.js';
+import { UpdateInventoryHandler } from './update-inventory.handler.js';
+import { ORDER_CREATED } from './order-handler.contract.js';
 
 it('discovers the @Handler provider under its key', async () => {
   const moduleRef = await Test.createTestingModule({

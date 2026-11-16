@@ -42,7 +42,7 @@ El campo del YAML acepta dos valores, y el generador emite una matriz de fichero
 
 En modo **view**, al clicar Crear en la lista navega a `/new`; al clicar Editar en una fila navega a `/edit/:id`. El detail shell delega el renderizado de campos a `<au-module-form>` y el acceso a datos a `useAggregateShell` — no posee FormGroup propio, ni validadores, ni markup de campos.
 
-En modo **dialog**, la lista embebe un `<hlm-dialog>` cuyo `[state]` está enlazado a un signal. Al clicar Crear se abre el diálogo con `mode = 'new'` e `initial = null`. Al clicar Editar en una fila, primero se llama a `shell.fetchForEdit(row.id)` para hidratar el agregado completo (incluyendo los includes relacionales que la query de la lista no cargó), luego se abre el diálogo con `mode = 'edit'` e `initial` ya hidratado. Cancelar y un guardado correcto cierran el diálogo.
+En modo **dialog**, la lista embebe un `<hlm-dialog>` cuyo `[state]` está enlazado a un signal. Al clicar Crear se abre el diálogo con `mode = 'new'` e `initial = null`. Al clicar Editar en una fila, primero se llama a `shell.fetchForEdit(row.id)` para hidratar el agregado completo (incluyendo las relaciones que la query de la lista no cargó), luego se abre el diálogo con `mode = 'edit'` e `initial` ya hidratado. Cancelar y un guardado correcto cierran el diálogo. Un clic fuera del diálogo no lo cierra, así que un formulario a medio rellenar nunca se pierde por accidente: la plantilla pone `closeOnOutsidePointerEvents="false"` en el `<hlm-dialog>`.
 
 ### Ajustar el ancho del diálogo con `front.dialogWidth`
 
