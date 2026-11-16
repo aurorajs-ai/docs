@@ -212,17 +212,23 @@ Quince ficheros de comando en `.claude/commands/`, `contextuales`, viajan. Solo 
 
 | Comando | Para qué sirve |
 | --- | --- |
-| `/catalyst-dev-mode` | alternar entre modo Framework y modo Solution |
+| `/annotate` | abrir la app en Chrome con la capa de anotación |
 | `/create-schema` | analizar o crear un esquema YAML de Aurora |
 | `/load-skill` | cargar una skill por nombre, o listarlas |
 | `/review-module` | revisión profunda de coherencia de un módulo |
+| `/polish` | abrir una sesión de pulido guiada en el navegador sobre un ámbito |
+| `/task` | empezar una tarea de Backlog tras comprobar que está lista |
 | `/business-rules:audit` | auditar el catálogo de business rules |
 | `/business-rules:check` | validar contra el catálogo de business rules |
 | `/business-rules:document` | documentar reglas implícitas en código existente |
 | `/business-rules:promote` | cristalizar reglas declaradas en un cambio archivado |
 | `/harness-rules:audit` | auditar el catálogo de harness rules |
+| `/manual:reconcile-prd` | alinear un PRD con lo construido, antes del primer manual de usuario |
+| `/manual:write` | escribir el primer manual de usuario de un bounded context |
+| `/processes:check` | validar contra el catálogo de procesos de negocio |
+| `/processes:document` | redactar el catálogo de procesos de un bounded context |
 
-Varios de esos ficheros comparten nombre (`audit.md`, `check.md`, `document.md`), en directorios distintos. El índice de skills generado deduplica por nombre de fichero, así que informa de doce comandos donde hay quince ficheros; los comandos en sí son distintos y ambos funcionan.
+Varios de esos ficheros comparten nombre (`audit.md`, `check.md`, `document.md`), en directorios distintos. El índice de skills generado deduplica por nombre de fichero, así que informa de doce comandos donde hay quince ficheros; los comandos en sí son distintos y todos funcionan.
 
 ## Agents
 

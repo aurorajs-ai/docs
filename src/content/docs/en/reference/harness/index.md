@@ -212,17 +212,23 @@ Fifteen command files in `.claude/commands/`, `contextual`, shipped. They load o
 
 | Command | Purpose |
 | --- | --- |
-| `/catalyst-dev-mode` | switch between Framework and Solution mode |
+| `/annotate` | open the app in Chrome with the annotation overlay |
 | `/create-schema` | analyse or create an Aurora YAML schema |
 | `/load-skill` | load a skill by name, or list them |
 | `/review-module` | deep coherence review of a module |
+| `/polish` | open a browser-guided polish session on a scope |
+| `/task` | start a Backlog task after checking that it is ready |
 | `/business-rules:audit` | audit the business-rule catalogue |
 | `/business-rules:check` | validate against the business-rule catalogue |
 | `/business-rules:document` | document rules implicit in existing code |
 | `/business-rules:promote` | crystallise rules declared in an archived change |
 | `/harness-rules:audit` | audit the harness-rule catalogue |
+| `/manual:reconcile-prd` | align a PRD with what was built, before the first user manual |
+| `/manual:write` | write the first user manual of a bounded context |
+| `/processes:check` | validate against the business-process catalogue |
+| `/processes:document` | draft the process catalogue of a bounded context |
 
-Several of these files share a name (`audit.md`, `check.md`, `document.md`), in different directories. The generated skills index deduplicates by file name, so it reports twelve commands where fifteen files exist; the commands themselves are distinct and both work.
+Several of these files share a name (`audit.md`, `check.md`, `document.md`), in different directories. The generated skills index deduplicates by file name, so it reports twelve commands where fifteen files exist; the commands themselves are distinct and all of them work.
 
 ## Agents
 
