@@ -32,7 +32,7 @@ DATABASE_SCHEMA = my-project
 
 ## 3. Entiende cómo se crean las tablas
 
-El scaffold no incluye tablas ni migraciones. El esquema de la base de datos cambia solo mediante migraciones versionadas, y la primera se genera a partir de los archivos de esquema de los paquetes que instalas. La generas en el paso siguiente, con `pnpm db:generate --name init`, y el backend la aplica cuando arranca.
+El scaffold no incluye tablas ni migraciones. El esquema de la base de datos cambia solo mediante migraciones versionadas, y la primera se genera a partir de los archivos de esquema de los paquetes que instalas. La generas en el tutorial siguiente, con los comandos `pnpm db:generate --name <paquete>` que imprime `catalyst add`, y el backend la aplica cuando arranca.
 
 :::note
 Las migraciones se aplican al arrancar por defecto (`DATABASE_MIGRATE_ON_BOOT`). La guía [Gestionar las migraciones de esquema](../../../guides/backend/manage-schema-migrations/) cubre el ciclo completo y cuándo desactivarlo.

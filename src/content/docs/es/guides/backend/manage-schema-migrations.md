@@ -5,7 +5,7 @@ description: "El ciclo completo para evolucionar el esquema de la base de datos:
 
 ## Objetivo
 
-Recorrer el ciclo completo para llevar un cambio de esquema desde la YAML de Aurora hasta una base de datos real, y saber qué hacer cuando el chequeo de CI (`schema-drift-check`) falla en tu PR.
+Recorrer el ciclo completo para llevar un cambio de esquema desde la YAML de Aurora hasta una base de datos real, y detectar el drift del esquema en tu propio CI con `pnpm db:check`.
 
 ## Antes de empezar
 

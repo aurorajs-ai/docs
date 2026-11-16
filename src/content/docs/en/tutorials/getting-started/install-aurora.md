@@ -32,7 +32,7 @@ DATABASE_SCHEMA = my-project
 
 ## 3. Know how the tables get created
 
-The scaffold ships no tables and no migrations. The database schema changes only through versioned migrations, and the first one is generated from the schema files of the packages you install. You generate it in the next step, with `pnpm db:generate --name init`, and the backend applies it when it boots.
+The scaffold ships no tables and no migrations. The database schema changes only through versioned migrations, and the first one is generated from the schema files of the packages you install. You generate it in the next tutorial, with the `pnpm db:generate --name <package>` commands that `catalyst add` prints, and the backend applies it when it boots.
 
 :::note
 Migrations apply at boot by default (`DATABASE_MIGRATE_ON_BOOT`). The guide [Manage schema migrations](../../../guides/backend/manage-schema-migrations/) covers the full cycle and when to turn that off.

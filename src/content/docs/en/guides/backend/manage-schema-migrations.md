@@ -5,7 +5,7 @@ description: "The complete cycle for evolving the database schema: edit the YAML
 
 ## Goal
 
-Walk through the complete cycle for taking a schema change from the Aurora YAML to a real database, and know what to do when the CI check (`schema-drift-check`) fails on your PR.
+Walk through the complete cycle for taking a schema change from the Aurora YAML to a real database, and catch schema drift in your own CI with `pnpm db:check`.
 
 ## Before you start
 
