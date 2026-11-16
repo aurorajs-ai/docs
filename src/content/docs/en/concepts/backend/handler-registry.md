@@ -11,7 +11,7 @@ The naive fix is a `switch` on the key, or a module that imports every possible 
 
 The handler registry is the alternative. A provider declares the keys it handles with a `@Handler(...)` decorator; the framework discovers every decorated provider once at boot and indexes them by key; and a dispatcher asks `resolveAll(key)` for the handlers registered under a key — without importing any of them, and without changing when a new one is added.
 
-The module lives at `backend/src/@aurora/modules/handler-registry/` and is imported through your code as `@aurora/modules/handler-registry`.
+The module lives at `backend/src/@aurora/modules/handler-registry/` and is imported through your code as `@aurora/modules/handler-registry/index.js` (the backend is ESM, so the barrel path carries its explicit `/index.js`).
 
 ## The three pieces
 

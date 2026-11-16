@@ -44,14 +44,14 @@ Las siguientes secciones describen cada componente. Agrúpalos por rol para tene
 
 - **Almacenamiento** — los `.md`, el schema, el índice JSON, el índice humano.
 - **Tooling** — los nueve scripts TypeScript y los aliases `pnpm br:*` que los envuelven.
-- **Superficie en Claude Code** — los cuatro slash commands, el skill `business-rules-guard` y los dos hooks.
+- **Superficie en Claude Code** — los cuatro slash commands, el skill `catalyst-business-rules-guard` y los dos hooks.
 - **Integración** — el pre-commit hook, el workflow de CI, la extensión de OpenSpec y la entrada en `CLAUDE.md`.
 
 ## Almacenamiento
 
 ### 1. Los `.md` del catálogo
 
-Ubicación: `cliter/<bounded-context>/business-rules/<aggregate>.md`. Un fichero por agregado, junto al `*.aurora.yaml` y al `CONTEXT.md` del mismo agregado. La cohesión con el YAML es deliberada — todo lo que describe el dominio vive bajo `cliter/`, incluidos sus invariantes.
+Ubicación: `cliter/<bounded-context>/business-rules/<aggregate>.md`. Un fichero por agregado, junto al `*.module.yaml` y al `CONTEXT.md` del mismo agregado. La cohesión con el YAML es deliberada — todo lo que describe el dominio vive bajo `cliter/`, incluidos sus invariantes.
 
 Cada fichero lleva un frontmatter de nivel-fichero y una sección `## BR-...` por regla. El formato detallado está documentado en [Anatomía de una business rule](../business-rule-anatomy/).
 
@@ -97,6 +97,10 @@ Las claves están en inglés a propósito. El JSON es un artefacto estructural c
 Ubicación: `docs/business-rules/INDEX.md`. Generado por el mismo script que produce el índice JSON, en la misma pasada. Una tabla plana con todas las reglas (ID, título, BCs, agregados, estado, severidad, last_updated, link) ordenadas por ID. Es la forma más rápida de que un humano obtenga una visión global sin abrir docenas de ficheros.
 
 Como el índice JSON, se sobrescribe en cada regeneración. Las ediciones manuales se pierden.
+
+### Quién es dueño del índice
+
+El índice se deriva de los ficheros `.md` que hay en disco, así que su único dueño es el proyecto que los contiene. El scaffold nunca incluye un índice: `catalyst new` genera el del propio proyecto con `pnpm br:generate`, fuera del commit del scaffold. Un paquete aporta sus ficheros `.md` de reglas, nunca un índice. `catalyst add <paquete>` copia las reglas del paquete y después regenera el índice del proyecto, y `pnpm br:generate` lo restaura en cualquier momento.
 
 ## Tooling
 
@@ -146,9 +150,9 @@ Ficheros bajo `.claude/commands/business-rules/`. El nombre de la subcarpeta se 
 
 Los `.md` en sí son documentación para Claude, no código ejecutable. Describen qué preguntar al usuario, cuándo correr el script subyacente y cómo continuar la sesión.
 
-### 8. El skill `business-rules-guard`
+### 8. El skill `catalyst-business-rules-guard`
 
-Ubicación: `.claude/skills/business-rules-guard/`. **No lo invoca ningún slash command.** Claude lo auto-carga cuando la conversación toca alguno de los triggers declarados en el `auto_invoke` del frontmatter:
+Ubicación: `.claude/skills/catalyst-business-rules-guard/`. **No lo invoca ningún slash command.** Claude lo auto-carga cuando la conversación toca alguno de los triggers declarados en el `auto_invoke` del frontmatter:
 
 - Mención de "business rules" o "reglas de negocio" en cualquier idioma.
 - Citas explícitas como `BR-PROD-EVENT-005`.
@@ -250,9 +254,9 @@ El paso 4 es donde la arquitectura paga su alquiler: un único comando coordina 
 
 Esta página es un tour. La documentación normativa vive en el propio repo de Aurora Catalyst, en:
 
-- `docs/business-rules/README.md` — guía operativa (workflows, comandos, convenciones).
+- `docs/business-rules/README.md` — mapa de orientación: dónde vive cada pieza, qué comandos operan el catálogo y dónde seguir leyendo. El formato de las reglas, los workflows y la guía de auditoría viven en los ficheros `references/` de la skill.
 - `docs/business-rules/ARCHITECTURE.md` — referencia técnica exhaustiva de cada componente.
 - `docs/business-rules/MIGRATION.md` — porte del sistema a otro repo.
-- `.claude/skills/business-rules-guard/SKILL.md` y sus ficheros `references/` — el manual vivo del sistema que Claude lee.
+- `.claude/skills/catalyst-business-rules-guard/SKILL.md` y sus ficheros `references/` — el manual vivo del sistema que Claude lee.
 
 Cuando haya duda, el repo de catalyst gana. Las páginas de este sitio destilan el sistema para usuarios de catalyst; el repo es la fuente de verdad.

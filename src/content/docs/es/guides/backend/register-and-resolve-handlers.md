@@ -32,9 +32,9 @@ Para el *porqué* del diseño — descubrimiento en el arranque, el decorador ac
 2. **Decora cada provider con `@Handler(...)`.** Importa el decorador desde el módulo del framework. Un provider puede atender una clave, varias a la vez (variádica) o varias mediante decoradores apilados — todas las formas acumulan:
 
    ```typescript
-   import { Handler } from '@aurora/modules/handler-registry';
+   import { Handler } from '@aurora/modules/handler-registry/index.js';
    import { Injectable } from '@nestjs/common';
-   import { ORDER_CREATED, ORDER_CANCELLED, OrderHandler } from './order-handler.contract';
+   import { ORDER_CREATED, ORDER_CANCELLED, OrderHandler } from './order-handler.contract.js';
 
    @Handler(ORDER_CREATED)
    @Injectable()
@@ -65,8 +65,8 @@ Para el *porqué* del diseño — descubrimiento en el arranque, el decorador ac
 
    ```typescript
    import { Injectable } from '@nestjs/common';
-   import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry';
-   import { OrderHandler } from './order-handler.contract';
+   import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry/index.js';
+   import { OrderHandler } from './order-handler.contract.js';
 
    @Injectable()
    export class OrderDispatcher {
@@ -90,9 +90,9 @@ Escribe un test de descubrimiento. Construye un `TestingModule` con `DiscoveryMo
 ```typescript
 import { DiscoveryModule } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
-import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry';
-import { UpdateInventoryHandler } from './update-inventory.handler';
-import { ORDER_CREATED } from './order-handler.contract';
+import { KeyedHandlerRegistry } from '@aurora/modules/handler-registry/index.js';
+import { UpdateInventoryHandler } from './update-inventory.handler.js';
+import { ORDER_CREATED } from './order-handler.contract.js';
 
 it('descubre el provider @Handler bajo su clave', async () => {
   const moduleRef = await Test.createTestingModule({

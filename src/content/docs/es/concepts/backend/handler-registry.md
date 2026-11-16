@@ -11,7 +11,7 @@ El arreglo ingenuo es un `switch` sobre la clave, o un módulo que importa todos
 
 El registro de handlers es la alternativa. Un provider declara las claves que atiende con un decorador `@Handler(...)`; el framework descubre cada provider decorado una sola vez en el arranque y los indexa por clave; y un dispatcher pide `resolveAll(key)` los handlers registrados bajo una clave — sin importar ninguno de ellos, y sin cambiar cuando se añade uno nuevo.
 
-El módulo vive en `backend/src/@aurora/modules/handler-registry/` y se importa desde tu código como `@aurora/modules/handler-registry`.
+El módulo vive en `backend/src/@aurora/modules/handler-registry/` y se importa desde tu código como `@aurora/modules/handler-registry/index.js` (el backend es ESM, así que la ruta del barrel lleva su `/index.js` explícito).
 
 ## Las tres piezas
 

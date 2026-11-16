@@ -10,7 +10,7 @@ Most of this section is **auto-generated** from the Aurora repositories by the `
 ## What lives here
 
 - **CLI commands** — every `catalyst <command>` with its flags, args, and examples (generated from `oclif readme`).
-- **YAML schema** — full reference of the `{bc}.aurora.yaml` fields.
+- **YAML schema** — full reference of the `<module>.module.yaml` fields.
 - **Lockfile** — structure of `cliter/{bc}/.locks/{scope}/{module}.lock.json`, including the `regions` field.
 
 ## What does NOT live here

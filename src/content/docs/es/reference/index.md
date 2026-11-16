@@ -10,7 +10,7 @@ La mayor parte de esta sección se **autogenera** desde los repos de Aurora medi
 ## Qué vive aquí
 
 - **Comandos del CLI** — cada `catalyst <comando>` con sus flags, args y ejemplos (generado por `oclif readme`).
-- **Esquema YAML** — referencia completa de los campos de `{bc}.aurora.yaml`.
+- **Esquema YAML** — referencia completa de los campos de `<module>.module.yaml`.
 - **Lockfile** — estructura de `cliter/{bc}/.locks/{scope}/{module}.lock.json`, incluyendo el campo `regions`.
 
 ## Qué NO vive aquí

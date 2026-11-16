@@ -1,45 +1,57 @@
 ---
 title: Añadir IAM + OAuth al hub
-description: Instala los paquetes de Identidad, genera las claves de firma, arranca el hub y entra como el admin sembrado.
+description: Instala el paquete Identity, genera la primera migración, arranca el hub y entra como el admin sembrado.
 sidebar:
   order: 3
 ---
 
 Ahora convierte el proyecto vacío del paso anterior en un **Aurora Hub**: una instancia Catalyst que es dueña de la identidad y firma sus propios tokens OAuth.
 
-## 1. Añade el paquete Identity del backend
+## 1. Añade el paquete Identity
 
 ```bash
-catalyst add back
+catalyst add identity
 ```
 
-Cuando te pida *Select a package to add*, elige **Identity (IAM + OAuth)**. Esto instala los bounded contexts `iam` y `o-auth` en el backend. Mira [`catalyst add`](/aurora-catalyst-docs/es/reference/cli-commands/add/).
+Esto instala los bounded contexts `iam` y `o-auth` en el backend y las pantallas de login e IAM correspondientes en el frontend, junto con el paquete `tools` que Identity necesita. Un paquete instala todas las mitades que declara, así que no hay un paso separado para backend y frontend. El comando imprime el plan antes de cambiar nada. Mira [`catalyst add`](../../../reference/cli-commands/add/).
 
-## 2. Añade el paquete Identity del frontend
+Al terminar, imprime lo que queda por hacer. Guarda esa lista para los pasos siguientes: el comando `pnpm db:generate` que debes ejecutar y las claves obligatorias que `backend/.env` todavía no tiene.
 
-```bash
-catalyst add front
+## 2. Establece las claves que listó el comando
+
+El paquete Identity declara los ajustes `MAILER_*` como claves obligatorias. `catalyst add` no las escribe: si faltan o están vacías en `backend/.env`, las lista bajo *Set these required keys in backend/.env*. Dales un valor. Para desarrollo local basta un sumidero de correo como Mailpit: acepta todos los mensajes y no entrega ninguno.
+
+```dotenv
+MAILER_ENABLED = true
+MAILER_HOST = localhost
+MAILER_PORT = 1025
+MAILER_SECURE = false
+MAILER_IGNORE_TLS = true
 ```
 
-Elige otra vez **Identity (IAM + OAuth)**. Esto cablea la UI de login y las pantallas de IAM correspondientes en el frontend.
+Usa `MAILER_SECURE = true` para el puerto 465. Cualquier otra clave `MAILER_*` que liste el comando (usuario, contraseña, remitente) puede quedarse como está para un sumidero.
 
-## 3. Genera las claves de firma
+## 3. Comprueba la estrategia de hub
 
-```bash
-catalyst keys
-```
-
-Esto escribe `oauth-private.key` y `oauth-public.key` en `backend/.keys/`. Un hub firma sus propios tokens, así que **lee la clave privada al arrancar y no levanta sin ella**. Mira [`catalyst keys`](/aurora-catalyst-docs/es/reference/cli-commands/keys/).
-
-## 4. Selecciona la estrategia de hub
-
-En `backend/.env`, pon la estrategia en `local-provider` — esto es lo que convierte a la app en un hub:
+Identity declara `OAUTH_STRATEGY = local-provider`, y `catalyst add` la escribe en `backend/.env` cuando la clave no existe. Abre el archivo y confirma el valor, porque este ajuste es lo que convierte a la app en un hub:
 
 ```dotenv
 OAUTH_STRATEGY = local-provider
 ```
 
-El default del scaffold es `none`, así que tienes que ponerlo explícitamente.
+Si el archivo ya tenía otro valor, cámbialo tú: el comando nunca sobrescribe una clave existente. Cuando la clave no está definida el valor por defecto es `none`, y `none` rechaza todo inicio de sesión.
+
+No necesitas `catalyst keys`: `catalyst new` ya escribió `oauth-private.key` y `oauth-public.key` en `backend/.keys/`. Un hub firma sus propios tokens, así que **lee la clave privada al arrancar y no levanta sin ella**.
+
+## 4. Genera la primera migración
+
+El scaffold todavía no tiene tablas. Genera la migración que crea las de Identity, desde la raíz del proyecto:
+
+```bash
+pnpm db:generate --name init
+```
+
+`--name` es obligatorio. Este paso es offline: no abre ninguna conexión a la base de datos. Revisa el `.sql` generado en `backend/src/database/migrations/drizzle/` y haz commit con el resto.
 
 ## 5. Arranca el hub
 
@@ -47,31 +59,31 @@ El default del scaffold es `none`, así que tienes que ponerlo explícitamente.
 pnpm dev
 ```
 
-En el primer arranque, el seeder de bootstrap crea las tablas de IAM/OAuth y las puebla — la cuenta admin por defecto, los roles y el cliente OAuth Password.
+En el primer arranque el backend aplica la migración, y después el seeder de bootstrap puebla las tablas: la cuenta admin por defecto, los roles y la aplicación OAuth `aurora` con su cliente Authorization Code. La aplicación `aurora` es un **cliente público**: el frontend se identifica con el código `aurora` y demuestra la posesión con PKCE, así que no guarda ningún secreto.
 
 ## 6. Conecta el frontend con el hub
 
-Antes de entrar, alinea las dos puntas de la conexión: las credenciales OAuth del frontend y el origen permitido en el backend.
+Antes de entrar, alinea las dos puntas de la conexión: el código de aplicación OAuth del frontend y el origen permitido en el backend.
 
-**Frontend — credenciales OAuth.** El frontend inicia sesión mediante el grant de tipo Password presentando un **código de aplicación** y un **secreto** OAuth. Estos tienen que coincidir con la aplicación OAuth que el seeder acaba de registrar en la base de datos (paso 5). Cada fichero de entorno bajo `frontend/src/environments/` lleva su propio bloque `oAuth`:
+**Frontend — código de aplicación.** El frontend inicia sesión con el flujo Authorization Code con PKCE. Envía el **código de aplicación** OAuth y nada más: no hay secreto. El código tiene que coincidir con la aplicación que registró el seeder. Cada archivo de entorno bajo `frontend/src/environments/` lleva su propio bloque `oAuth`:
 
 ```ts
 // frontend/src/environments/environment.ts (y .local.ts, .dev.ts, .qa.ts, .prod.ts)
+authStrategy: 'local',
 oAuth: {
   applicationCode: 'aurora',
-  applicationSecret: 'aurora-dev-secret',
 },
 ```
 
-El scaffold trae estos valores de desarrollo ya alineados con la aplicación sembrada, así que el login local funciona tal cual. Cuando registres una aplicación distinta —o sobrescribas `BOOTSTRAP_OAUTH_APP_CODE` / `BOOTSTRAP_OAUTH_APP_SECRET` en el backend— define `applicationCode` y `applicationSecret` en **cada** `environment.*.ts` con los datos registrados en la base de datos, o el grant Password será rechazado.
+El scaffold trae estos valores ya alineados con la aplicación sembrada, así que el login local funciona tal cual. Cuando registres una aplicación distinta, o sobrescribas `BOOTSTRAP_OAUTH_APP_CODE` en el backend, define `applicationCode` en **cada** `environment.*.ts` con el código registrado en la base de datos.
 
-**Backend — origen permitido (CORS).** En `backend/.env`, pon `APP_CORS_ORIGIN` con la URL del frontend que va a llamar al hub:
+**Backend — origen permitido (CORS).** En `backend/.env`, pon `APP_CORS_ORIGIN` con la URL del frontend que va a iniciar sesión contra el hub:
 
 ```dotenv
 APP_CORS_ORIGIN = http://localhost:4200
 ```
 
-El scaffold lo deja vacío, lo que habilita un CORS abierto sin credenciales: suficiente para el login local por password. Pero los flujos con credenciales del hub (la cookie `hub_session` del Authorization Code) necesitan una allowlist explícita —un comodín no vale con credenciales—, así que conviene fijarlo al origen real del frontend desde el principio.
+La petición de inicio de sesión lleva el `Origin` del frontend, y el hub rechaza cualquier `Origin` que no esté en esta lista. Cuando la variable no está definida, solo se permite el origen del propio backend, así que el frontend que corre en otro puerto no puede iniciar sesión. Fíjala al origen real del frontend desde el principio.
 
 ## 7. Entra
 
@@ -82,15 +94,11 @@ Abre el frontend en [http://localhost:4200](http://localhost:4200) e inicia sesi
 | Email | `admin@aurora.dev` |
 | Contraseña | `admin1234` |
 
-## 8. Permite tus satélites en CORS
+La contraseña sembrada es pública: cámbiala desde la aplicación, o define `BOOTSTRAP_ADMIN_EMAIL` y `BOOTSTRAP_ADMIN_PASSWORD` antes del primer arranque.
 
-Si vas a añadir apps satélite (el siguiente paso), amplía el `APP_CORS_ORIGIN` que fijaste en el paso 6 con el origen de cada frontend que vaya a llamar a este hub, separados por comas:
+## 8. Sabe qué orígenes permite el hub
 
-```dotenv
-APP_CORS_ORIGIN = http://localhost:4200,http://localhost:4201
-```
-
-Mantén el propio frontend del hub (`:4200`) y suma el de cada satélite (p. ej. `:4201`).
+Si vas a añadir apps satélite (el siguiente paso), la lista que fijaste en el paso 6 no cambia. Un satélite envía a sus usuarios al frontend del propio hub para iniciar sesión, así que el origen que ve el hub en la petición de inicio de sesión es el del frontend del hub. El backend del satélite habla con el servidor del hub de servidor a servidor, sin ningún `Origin` de navegador de por medio. Amplía la lista solo si otro frontend sirve la página de inicio de sesión del hub.
 
 ## Siguiente
 

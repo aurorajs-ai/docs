@@ -42,7 +42,7 @@ The YAML field accepts two values, and the generator emits a different file matr
 
 In **view** mode, clicking Create on the list navigates to `/new`; clicking Edit on a row navigates to `/edit/:id`. The detail shell delegates field rendering to `<au-module-form>` and data access to `useAggregateShell` — it owns no FormGroup, no validators, no field markup of its own.
 
-In **dialog** mode, the list embeds an `<hlm-dialog>` whose `[state]` is bound to a signal. Clicking Create opens the dialog with `mode = 'new'` and `initial = null`. Clicking Edit on a row first calls `shell.fetchForEdit(row.id)` to hydrate the full aggregate (including relational includes the list query did not load), then opens the dialog with `mode = 'edit'` and the hydrated `initial`. Cancel and successful save both close the dialog.
+In **dialog** mode, the list embeds an `<hlm-dialog>` whose `[state]` is bound to a signal. Clicking Create opens the dialog with `mode = 'new'` and `initial = null`. Clicking Edit on a row first calls `shell.fetchForEdit(row.id)` to hydrate the full aggregate (including the relations the list query did not load), then opens the dialog with `mode = 'edit'` and the hydrated `initial`. Cancel and successful save both close the dialog. A click outside the dialog does not close it, so a half-filled form is never lost by accident: the template sets `closeOnOutsidePointerEvents="false"` on the `<hlm-dialog>`.
 
 ### Sizing the dialog with `front.dialogWidth`
 

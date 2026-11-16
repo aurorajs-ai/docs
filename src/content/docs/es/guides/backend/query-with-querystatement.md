@@ -1,129 +1,107 @@
 ---
 title: Componer un QueryStatement
-description: Construye cláusulas where/include/order con el enum Operator, propaga constraint para el scoping por tenant y sortea la brecha de seguridad entre include y format.
+description: Construye cláusulas where/relations/order en un handler o service, reenvía constraint para acotar el alcance y carga relaciones sin filtrar campos enmascarados.
 ---
 
 ## Objetivo
 
-Componer un `QueryStatement` tipado dentro de un handler — `where`, `include`, `order`, `limit` — usando el enum `Operator` en lugar de strings literales, y cargar relaciones sin filtrar campos enmascarados.
+Componer un `QueryStatement` tipado dentro de un handler o service — `where`, `relations`, `order`, `limit` — y cargar relaciones sin filtrar campos enmascarados. Para ver cada operador, bloque y límite del lenguaje, consulta la [referencia de Query Statement](../../../reference/query-statement/).
 
 ## Antes de empezar
 
-- Tienes un handler backend scaffoldeado (un handler de lectura es el caso habitual).
-- Entiendes los dos parámetros `QueryStatement` que recibe un handler de catalyst:
-  - `queryStatement` — el payload **orientado al cliente** de filtro / orden / paginación, enviado por el resolver o el controller.
-  - `constraint` — el **scope del servidor** (tenant id, filtro de permisos), inyectado río arriba por middleware o decoradores.
+- Tienes un handler o service de backend generado (lo habitual es un handler de lectura).
+- Entiendes los dos parámetros `QueryStatement` que recibe un handler de Catalyst:
+  - `queryStatement` — el payload de filtro / orden / paginación **que envía el cliente**, desde el resolver o el controller.
+  - `constraint` — el **alcance impuesto por el servidor** (id de tenant, filtro de permisos), inyectado antes por un middleware o por decoradores. En un módulo `hasTenant: true`, el alcance por tenant también decide qué relaciones puede recorrer un cliente: consulta [Alcance por tenant](../../../concepts/backend/tenant-scope/).
 
   Trátalos como de solo lectura. Combinarlos es trabajo de la capa de servicio.
-- `@aurorajs.dev/core-back` está instalado — viene con cualquier backend de Catalyst.
+- `@aurorajs.dev/core-back` está instalado — viene con todo backend de Catalyst.
 
 ## Pasos
 
-1. **Importa los helpers tipados.** Tipa siempre el statement y usa siempre el enum:
+1. **Tipa la sentencia.** Anótala siempre, para que el compilador compruebe la forma de cada bloque:
 
    ```typescript
-   import { Operator, QueryStatement } from '@aurorajs.dev/core-back';
+   import { QueryStatement } from '@aurorajs.dev/core-back';
    ```
 
-2. **Construye `where` con `Operator.X` — nunca con strings literales.**
+2. **Construye `where` con claves de operador sin adornos.** Un campo se asocia a un objeto de comparación, y los campos hermanos se combinan con AND:
 
    ```typescript
    const queryStatement: QueryStatement = {
      where: {
-       [Operator.and]: [
-         { isActive: true },
-         { name: { [Operator.iLike]: `${query.prefix}%` } },
+       and: [
+         { isActive: { eq: true } },
+         { name: { iLike: `${query.prefix}%` } },
        ],
      },
-     order: [['createdAt', 'DESC']],
+     order: [{ field: 'createdAt', dir: 'desc' }],
      limit: query.limit ?? 50,
    };
    ```
 
-   ¿Por qué no `'[iLike]'`? Un typo como `'[ilike]'` (con `l` minúscula) falla en silencio en runtime: el operador no se reconoce y el filtro degenera en una comparación literal. `Operator.iLike` se valida en compile-time; `Operator.iLikE` es error de compilación.
+   El vocabulario de operadores es cerrado: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `notIn`, `between`, `isNull`, `iLike`, `contains`, `overlap`, más los conectores `and`, `or` y `not`. Una clave fuera de esa lista se rechaza antes de ejecutar ningún SQL, así que un error tipográfico falla de forma visible en lugar de degenerar en otro filtro. Si prefieres constantes a claves de texto, `WHERE_OPERATOR` y `LOGICAL_OPERATOR` salen de `@aurorajs.dev/core-back`.
 
-   El catálogo completo de `Operator` cubre comparación (`eq`, `ne`, `gt`, `gte`, `lt`, `lte`), inclusión (`in`, `notIn`), patrones de texto (`like`, `iLike`, `startsWith`, `endsWith`, `substring`, `regexp`, …), rangos (`between`, `notBetween`), composición lógica (`and`, `or`, `not`, `is`), operadores PG de rango / array (`overlap`, `contains`, `contained`, …) y cuantificadores (`any`, `all`). Importa y usa el enum — no escribas la forma string a mano.
-
-3. **Carga relaciones con `include`.** El `field` del relationship en la YAML (por ejemplo, `field: tenant`) se convierte en la clave de asociación:
+3. **Carga relaciones con `relations`.** Un nombre de relación se asocia a `true`, o a un nodo que da forma a los hijos cargados:
 
    ```typescript
    const queryStatement: QueryStatement = {
-     where: { id: accountId },
-     include: [{ association: 'user' }, { association: 'tenant' }],
+     where: { id: { eq: accountId } },
+     relations: { user: true, tenant: true },
    };
    ```
 
    Anida para cargar un grafo:
 
    ```typescript
-   { include: [{ association: 'user', include: [{ association: 'preferences' }] }] }
+   { relations: { state: { relations: { category: true } } } }
    ```
 
-4. **Propaga `queryStatement` y `constraint` al servicio sin modificarlos.** Si necesitas aumentar el objeto, crea uno nuevo con spread; no mutes los que recibiste.
+   Mantén separados los dos ejes. Una clave de relación dentro de `where` filtra las filas **padre** y no carga nada. Una clave de relación dentro de `relations` carga hijos y nunca filtra a los padres. Pedir la relación en el selection set de GraphQL tampoco la carga: sin una entrada en `relations`, el campo llega como `null`.
+
+4. **Reenvía `queryStatement` y `constraint` al service sin cambios.** Construye un objeto nuevo si necesitas ampliarlos; no mutes los que llegan. Cuando añadas una relación a la sentencia de quien llama, esparce las relaciones que ya traía:
 
    ```typescript
-   return await this.getService.main(queryStatement, constraint, handlerMeta);
+   return await this.getService.main(
+     {
+       ...queryStatement,
+       relations: { ...queryStatement?.relations, state: { relations: { category: true } } },
+     },
+     constraint,
+     handlerMeta,
+   );
    ```
 
 ### Cargar relaciones de forma segura
 
-`@Format` y `@ApplySchema` aplican la FieldSchema solo a los campos de **primer nivel** del registro devuelto. `formatRecord` no entra recursivamente en las relaciones cargadas con `include`. Cualquier campo con un `format()` protector — `type: 'password'` devuelve `undefined`, y lo mismo vale para tokens, secretos o blobs firmados — queda enmascarado en la entidad raíz pero pasa intacto en una relación cargada por include:
+`@Format` y `@ApplySchema` formatean el registro devuelto con el field schema del agregado, y entran recursivamente en cada relación que el field schema declara como entrada `relation`. Por tanto, un campo enmascarado de una relación cargada (`type: 'password'`, `secret`, `encrypted`) también queda enmascarado ahí.
 
-```typescript
-// IamAccount con @Format(IamAccountFieldSchema) e include: user
-// account.password      → undefined  (correcto — aplicó la máscara de primer nivel)
-// account.user.password → '$2b$10$...' ← FILTRA el hash bcrypt
-```
+Eso solo vale para las relaciones que el field schema **declara**. El generador declara cada relación a partir de la YAML, y el motor de consultas lo hace cumplir: una sentencia que nombra una relación ausente del field schema — en `relations`, en `where` o en un dot-path de `order` o `aggregation` — falla con HTTP `400` y `Errors.RelationNotQueryable`. Una relación que solo existe en el archivo de relaciones de Drizzle no es accesible desde una consulta. Las relaciones inversas (un valor de campo personalizado hacia su padre, una compañera i18n hacia su padre) no se pueden consultar en absoluto.
 
-El fix aguas arriba está trackeado como **SPEC-07** en `aurora-catalyst/packages/cli/ROADMAP.md` (un `formatRecord` recursivo que aplica el schema propio de cada relación). Hasta que aterrice, dos patrones viables:
-
-**Opción A — format manual sobre la relación.** Preferible cuando el cliente necesita la entidad relacionada de forma atómica:
-
-```typescript
-import { formatRecord } from '@aurorajs.dev/core-back';
-import { IamUserFieldSchema } from '@app/iam/user/domain';
-
-async main(
-  id: string,
-  constraint?: QueryStatement,
-  handlerMeta?: HandlerMeta,
-): Promise<IamAccount> {
-  const account = await this.findByIdService.main(
-    id,
-    { ...constraint, include: [{ association: 'user' }] },
-    handlerMeta,
-  );
-
-  if (account.user) {
-    // Workaround temporal de SPEC-07 — formatRecord no recursa en include.
-    account.user = formatRecord(account.user, IamUserFieldSchema, handlerMeta?.timezone);
-  }
-
-  return account;
-}
-```
-
-Este es uno de los pocos casos donde llamar a `formatRecord` directamente está justificado — el decorador no sabe nada de la relación incluida. Deja un comentario apuntando a SPEC-07 para que un refactor futuro pueda eliminar el workaround cuando el fix aterrice.
-
-**Opción B — evita `include` en entidades con campos enmascarados.** Carga la relación en un endpoint separado donde sea la entidad raíz y `@Format` la enmascare correctamente. Es la opción más segura cuando la carga atómica no es estrictamente necesaria.
+Si escribes una relación a mano, declárala en la YAML del módulo y regenera, en lugar de añadirla solo al archivo de relaciones.
 
 ## Verifica que funcionó
 
-- Inspecciona el SQL generado (vía logs de Sequelize o en la base de datos): el predicado usa el operador correcto (`ILIKE`, `BETWEEN`, `IN`, …) y no trata la clave del operador como un nombre de columna.
-- Para un `include` con una relación sensible, confirma que el campo enmascarado NO aparece en el JSON devuelto después de aplicar el workaround.
-- Confirma que `constraint` no se refleja en la respuesta ni en mensajes de error — transporta el scope de tenant / permisos y tiene que quedarse del lado servidor.
+- Ejecuta el handler con una consulta que use `iLike` o `between` y revisa las filas: el predicado se aplica a la columna que nombraste.
+- Carga una relación que tenga un campo enmascarado y confirma que el campo no aparece en el JSON devuelto.
+- Confirma que `constraint` no se devuelve en la respuesta ni en los mensajes de error — lleva alcance de tenant / permisos que debe quedarse en el servidor.
 
 ## Solución de problemas
 
-**El filtro matchea todas las filas o ninguna.** Suele ser un typo en un operador como string literal. Pásate al enum `Operator.X` — TypeScript atrapa el error en compile-time.
+**La sentencia falla antes de llegar a la base de datos.** El validador es default-deny: un operador desconocido, una clave de nivel superior desconocida, un `limit` superior a 10000 o un anidamiento de más de 10 niveles se rechazan con un mensaje que nombra la ruta. Consulta la [referencia](../../../reference/query-statement/#validación-y-seguridad).
 
-**El merge del servicio se rompe después del handler.** Mutaste `queryStatement` o `constraint`. Trátalos como inmutables. Si necesitas un criteria aumentado, créalo nuevo con spread.
+**HTTP `400` con `Errors.RelationNotQueryable`.** La sentencia nombra una relación que el field schema del agregado no declara. Declara la relación en la YAML y regenera.
 
-**`attributes` usado para ocultar una columna sensible.** `attributes` es una proyección (qué columnas seleccionar), no una frontera de seguridad. Cualquier consumidor que omita `attributes` filtrará la columna. Enmascara campos sensibles vía el handler `format` del field schema (`@Format` / `@ApplySchema`), que se aplica en cada lectura sin importar cómo se construyó la query.
+**HTTP `400` con `Errors.TenantScopeQueryRejected`.** El módulo es `hasTenant: true` y la sentencia cruza una relación que no está declarada como atravesable en el alcance por tenant. Consulta [Alcance por tenant](../../../concepts/backend/tenant-scope/).
 
-**La relación cargada sigue filtrando el hash.** Aplicaste `@Format` pero omitiste la Opción A. `formatRecord` no recursa — llámalo manualmente sobre la relación, o directamente no uses `include`.
+**HTTP `403` con `Errors.MaskedPropertyNotQueryable`.** La sentencia filtra, ordena o agrega por una propiedad `secret`, `password` o `encrypted`, directamente o a través de una relación. Quítala de la sentencia. El código de backend de confianza que de verdad la necesita pasa `unsafeAllowMaskedPropertyQuery(...)` como `exemption` de la llamada al repositorio: consulta la [referencia](../../../reference/query-statement/#las-propiedades-enmascaradas-no-se-pueden-consultar).
+
+**El merge del service se rompe después de que corra mi handler.** Mutaste `queryStatement` o `constraint`. Trátalos como de solo lectura. Si necesitas un objeto combinado, construye uno nuevo con un spread.
+
+**Quieres ocultar una columna con una proyección.** El lenguaje no tiene clave de proyección: no existe `attributes`. Enmascara los campos sensibles con el handler `format` del field schema (`@Format` / `@ApplySchema`), que corre en toda lectura sin importar cómo se construyó la consulta.
 
 ## Relacionado
 
-- [Decoradores de field-schema](../apply-field-schema-decorators/) — el lado de validación / format de la capa declarativa.
-- [Scaffolding de un módulo backend](../../../concepts/backend/module-scaffolding/) — cómo se declaran los relationships en YAML.
+- [Referencia de Query Statement](../../../reference/query-statement/) — cada operador, bloque y límite.
+- [Decoradores de field-schema](../apply-field-schema-decorators/) — el lado de validación / formato de la capa declarativa.
+- [Scaffolding de un módulo backend](../../../concepts/backend/module-scaffolding/) — cómo se declaran las relaciones en la YAML.

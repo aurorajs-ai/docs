@@ -15,7 +15,7 @@ Two mechanisms draw those limits. A **guided action** is a button the assistant 
 
 ### Guided actions
 
-Each bounded context declares its actions in `cliter/<bc>/actions.yaml`, one file per bounded context. The file sits beside `<module>.module.yaml` (the data model) and `processes.yaml` (the business processes). It is compiled together with the user manual into the manual index.
+Each bounded context declares its actions in `cliter/<bc>/actions.yaml`, one file per bounded context. The file sits beside `<module>.module.yaml` (the data model) and `processes.yaml` (the business processes). It is compiled together with the [in-app user manual](../in-app-user-manual/) into the manual index.
 
 ```yaml
 - id: create-account
@@ -68,6 +68,16 @@ A property with `hasAssistant: false` is registered as masked: the snapshot carr
 
 Use it when a value must not reach the assistant, or when the user could not see what the assistant changed. For example, a switch that is only visible with more than one tenant should not be granted silently.
 
+### Access and cost
+
+The assistant belongs to the `tools` package, so an application without it has no assistant. Three things gate it:
+
+- **A master switch.** The key-value setting `tools.assistant.isEnabled` ships empty, which keeps the assistant off until an administrator turns it on.
+- **A permission.** Asking requires `tools.assistant.ask`, granted to roles in IAM like any other permission. There is no separate list of allowed roles.
+- **A budget.** An administrator sets how many tokens each role may spend per month, and the setting `tools.assistant.monthlyTokenCap` can add a global cap across all accounts. A question longer than `tools.assistant.maxQuestionLength` (2000 characters by default) is refused before it costs anything.
+
+The assistant stores each conversation turn so that a dedicated reviewer can read it. Reading them needs the separate permission `tools.assistantConversation.get`. A daily purge deletes turns older than `tools.assistant.conversationRetentionDays`, which ships at 90.
+
 ## When it applies
 
 - A user asks the assistant how to do something and gets a button that takes them there.
@@ -81,10 +91,11 @@ Use it when a value must not reach the assistant, or when the user could not see
 - **It never writes text or relations.** Only an exact option of an unmasked `enum` or `boolean` field is written. Text fields and relation fields receive keyboard focus instead.
 - **It only offers what is declared.** There is no screen discovery and no inference of actions from the model. The flag `hasAssistant` is per module: on a parent it says nothing about its children.
 - **Forms excluded from codegen are not registered.** If you list a form in `excludedFiles`, the generator does not emit the registration; you register it by hand, and a mistake there is yours. Nested objects need care: the registry addresses top-level fields only.
-- **Dialog modules cannot start a tour on the form.** The URL does not change, so a `create` action of a dialog module takes no `tourId`.
+- **Dialog modules cannot start a tour on the form.** The URL does not change, so a `create` action of a dialog module takes no `tourId`. The generator follows the same rule: it writes `tourId: general.form` on the `create` action it appends only for a module that is not in dialog mode.
 
 ## Related
 
 - [Detail mode](../detail-mode/) — the two shells that `detailMode` on a guided action chooses between.
 - [How-to: Enable the assistant on a module](../../../guides/frontend/enable-the-assistant-on-a-module/) — the YAML flag, field masking and registering a hand-written form.
+- [The in-app user manual](../in-app-user-manual/) — the chapters and tours that the action catalog is compiled with.
 - [Preservation regions](../preservation-regions/) — how generated frontend files keep your edits across regeneration.

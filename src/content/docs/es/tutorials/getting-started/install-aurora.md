@@ -14,35 +14,28 @@ Con el CLI ya instalado, este paso genera un nuevo proyecto Aurora Catalyst. El 
 catalyst new my-project
 ```
 
-Esto crea un monorepo Aurora (un workspace `backend/` + `frontend/`) llamado `my-project`. Mira [`catalyst new`](/aurora-catalyst-docs/es/reference/cli-commands/new/).
+Esto crea un monorepo Aurora (un workspace `backend/` + `frontend/`) llamado `my-project`, instala sus dependencias, escribe `backend/.env` y genera el par de claves de firma OAuth en `backend/.keys/`. También hace commit del scaffold en una rama `aurora/scaffold`, que `catalyst add` y `catalyst upgrade` usan después como base de fusión. Mira [`catalyst new`](../../../reference/cli-commands/new/).
 
-## 2. Establece la conexión a la base de datos
+## 2. Crea una base de datos y establece la conexión
 
-Abre `backend/.env` y apunta el bloque `DATABASE_*` a una base de datos SQL que puedas alcanzar:
+Crea una base de datos PostgreSQL vacía, abre `backend/.env` y apunta el bloque `DATABASE_*` a ella:
 
 ```dotenv
-DATABASE_DIALECT = postgres
 DATABASE_HOST = localhost
 DATABASE_PORT = 5432
 DATABASE_USER = postgres
 DATABASE_PASSWORD = postgres
-DATABASE_SCHEMA = database-schema
+DATABASE_SCHEMA = my-project
 ```
 
-El scaffold usa PostgreSQL por defecto. Cada app Catalyst necesita su **propia** base de datos o esquema — si vas a levantar varias apps, dale a cada una la suya para que no choquen.
+`DATABASE_SCHEMA` es el nombre de la base de datos. Cada app Catalyst necesita su **propia** base de datos — si vas a levantar varias apps, dale a cada una la suya para que no choquen.
 
-## 3. Deja que Catalyst cree las tablas
+## 3. Entiende cómo se crean las tablas
 
-En el mismo `backend/.env`, activa la sincronización del esquema:
+El scaffold no incluye tablas ni migraciones. El esquema de la base de datos cambia solo mediante migraciones versionadas, y la primera se genera a partir de los archivos de esquema de los paquetes que instalas. La generas en el paso siguiente, con `pnpm db:generate --name init`, y el backend la aplica cuando arranca.
 
-```dotenv
-DATABASE_SYNCHRONIZE = true
-```
-
-Con la sincronización activada, el ORM construye el esquema a partir de las entidades al arrancar, así no tienes que escribir migraciones solo para empezar.
-
-:::caution
-`DATABASE_SYNCHRONIZE = true` es solo para desarrollo local. Puede alterar o borrar columnas para que cuadren con las entidades. Desactívalo — y usa migraciones — antes de apuntar la app a cualquier base de datos compartida o de producción.
+:::note
+Las migraciones se aplican al arrancar por defecto (`DATABASE_MIGRATE_ON_BOOT`). La guía [Gestionar las migraciones de esquema](../../../guides/backend/manage-schema-migrations/) cubre el ciclo completo y cuándo desactivarlo.
 :::
 
 ## Siguiente

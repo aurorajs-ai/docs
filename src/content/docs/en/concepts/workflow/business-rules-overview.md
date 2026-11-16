@@ -56,13 +56,13 @@ The deliberate gap between the two layers is the heart of the system's lightness
 cliter/
 ├── production-planning/
 │   ├── CONTEXT.md
-│   ├── production-order-header.aurora.yaml
+│   ├── production-order-header.module.yaml
 │   └── business-rules/
 │       ├── production-order-header.md           ← rules of this aggregate
 │       └── production-order-position-event.md
 ├── iam/
 │   ├── CONTEXT.md
-│   ├── account.aurora.yaml
+│   ├── account.module.yaml
 │   └── business-rules/
 │       └── account.md
 └── business-rules-index.json                    ← generated
@@ -76,7 +76,7 @@ The next page — [Anatomy of a business rule](../business-rule-anatomy/) — br
 
 - **You want to author or modify a rule.** Read [Anatomy of a business rule](../business-rule-anatomy/) and the maintenance guide.
 - **You want to understand how the index, the hooks, and the CI fit together.** Read [System architecture](../business-rules-architecture/).
-- **You want the canonical source of truth.** It lives in the Aurora Catalyst repo at `docs/business-rules/README.md` (operational) and `docs/business-rules/ARCHITECTURE.md` (technical). The pages on this site distill them for catalyst users; the repo is the normative reference.
+- **You want the canonical source of truth.** It lives in the Aurora Catalyst repo at `docs/business-rules/README.md` (an orientation map: where each piece lives and which commands operate the catalogue) and `docs/business-rules/ARCHITECTURE.md` (technical). The rule format lives in the skill, at `.claude/skills/catalyst-business-rules-guard/references/format.md`. The pages on this site distill them for catalyst users; the repo is the normative reference.
 
 ## Trade-offs and limits
 

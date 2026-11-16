@@ -15,8 +15,10 @@ El flujo de extremo a extremo es siempre el mismo:
 ```
 JSON del cliente  →  QueryStatementInput (passthrough, sin validación de forma a nivel de schema)
                   →  QueryDslValidator.validate()   (whitelist default-deny, profundidad ≤ 10, limit ≤ 10000)
-                  →  DrizzleCriteria.translate()    (DSL → Drizzle RQB v2, o fallback al core builder)
-                  →  SQL
+                  →  guardas de propiedades enmascaradas y de relaciones declaradas   (ver Validación y seguridad)
+                  →  DrizzleCriteria.translate()    (DSL → sentencia de Drizzle)
+                  →  paso 1: filas padre   (core select builder)
+                  →  paso 2: relaciones    (segunda sentencia, solo para las filas de la página)
 ```
 
 `QueryStatementInput` es un input object de GraphQL cuyos bloques (`where`, `relations`, `order`, `aggregation`) están tipados cada uno como el scalar `JSON`, con `limit`/`offset` como `Int` — así que el schema no impone ninguna validación de forma sobre el DSL en sí. La validación real de la forma ocurre server-side, en `QueryDslValidator`, antes de que la sentencia se traduzca a SQL.
@@ -277,13 +279,23 @@ Un array de objetos `{ field, dir }`. `dir` es `"asc"` o `"desc"`.
 { "order": [{ "field": "role.name", "dir": "asc" }] }
 ```
 
-Cuando el Relational Query Builder de Drizzle no puede expresar directamente "ordenar las filas padre por una columna de una relación", la consulta se enruta de forma transparente al core select builder de Drizzle (un `JOIN` explícito) — quien llama recibe la misma forma de resultado en cualquiera de los dos casos.
+Toda lectura selecciona las filas padre con el core select builder, une la relación cuando el orden necesita su columna, y carga `relations` después en una segunda sentencia. Quien llama recibe la misma forma de resultado en ambos casos.
 
 **Restricciones de la ordenación por dot-path:**
 
-- Solo se puede ordenar por relaciones **to-one** (una relación to-many no tiene una única fila contra la que ordenar al padre).
-- La propia clave de relación debe resolver a una **única columna** en la tabla unida (`nombreRelación.nombreColumna`) — sin anidar más allá de un punto.
-- Un `field` con dot-path **no está permitido dentro del `order` propio de un nodo de relación** — solo a nivel superior. Dentro de un `relations.<nombre>.order`, la ordenación queda acotada a las columnas propias de esa relación; no hay fallback de join disponible un nivel más abajo.
+- Un dot-path a través de relaciones **to-one** admite exactamente un salto de relación antes de la columna (`role.name`). Más saltos se rechazan.
+- Un dot-path también puede terminar en una relación **to-many**, pero solo con una forma: como máximo una relación to-one, luego una relación to-many y luego una columna (`countryI18n.name`, o `country.countryI18n.name`). El padre se ordena por la columna de la **única** fila hija que selecciona el `where` del mismo nodo de relación en `relations`, así que la sentencia debe llevar ese nodo:
+
+  ```json
+  {
+    "relations": { "countryI18n": { "where": { "langId": { "eq": "<id del idioma>" } } } },
+    "order": [{ "field": "countryI18n.name", "dir": "asc" }]
+  }
+  ```
+
+  Cada padre aparece una sola vez. Falla una sentencia sin ese `where`, y también una cuyo `where` selecciona más de una fila hija por padre, porque el motor nunca elige una por su cuenta.
+- Cualquier otra forma que cruce una relación to-many (dos relaciones to-many, o una to-one después de una to-many) y cualquiera que cruce una relación many-to-many se rechaza antes de construir ningún SQL, con un error que nombra el campo del orden.
+- Un `field` con dot-path **no está permitido dentro del `order` propio de un nodo de relación** — solo a nivel superior. Dentro de un `relations.<nombre>.order`, la ordenación queda acotada a las columnas propias de esa relación.
 - `order.field` **no puede nombrar un alias de `aggregation.fields[].as`** — ver [Limitaciones de la agregación](#limitaciones) más abajo.
 
 ## Paginación — `limit` / `offset`
@@ -305,11 +317,11 @@ type Pagination {
 }
 ```
 
-`total` le permite al cliente calcular el número de páginas; `count` refleja cuántas filas contiene realmente esta página (que puede ser menor que `limit` en la última página). A diferencia del contrato legacy de Sequelize, no hay un flag `distinct` para deduplicar filas raíz infladas por un join: `relations` nunca ejecuta un join que multiplique filas — cada nivel de relación se resuelve como su propia consulta — así que nunca hace falta una deduplicación manual.
+`total` le permite al cliente calcular el número de páginas; `count` refleja cuántas filas contiene realmente esta página (que puede ser menor que `limit` en la última página). Las relaciones se cargan en una **segunda sentencia** que solo se ejecuta para las filas de la página pedida, así que nunca se resuelve una relación para filas que `limit` y `offset` descartaron. A diferencia del contrato legacy de Sequelize, no hay un flag `distinct` para deduplicar filas raíz infladas por un join: `relations` nunca ejecuta un join que multiplique filas — cada nivel de relación se resuelve como su propia consulta — así que nunca hace falta una deduplicación manual.
 
 ## `aggregation` — count / sum / avg / min / max / group
 
-El bloque de agregación **siempre** se enruta al core select builder de Drizzle (el Relational Query Builder no soporta agregaciones). Solo lleva claves propias de Aurora — nunca un string SQL crudo.
+El bloque de agregación **siempre** se enruta al core select builder de Drizzle (el Relational Query Builder no soporta agregaciones). Solo lleva claves propias de Aurora — nunca un string SQL crudo. No se puede combinar con `relations`: una fila agregada no tiene identidad de fila sobre la que cargar relaciones, y el validador rechaza la sentencia.
 
 ```typescript
 interface AggregateField {
@@ -386,6 +398,40 @@ Cada `QueryStatement` es recorrido por `QueryDslValidator` — una **whitelist d
 
 Ambos topes son valores **por defecto a nivel de proceso**, no configurables desde el wire — una sentencia que viole cualquiera de los dos nunca llega a la base de datos. Una sentencia que supera el tope de `limit` o el de profundidad falla la validación con un error descriptivo antes de que ocurra cualquier traducción.
 
+### Las propiedades enmascaradas no se pueden consultar
+
+Una propiedad de tipo `secret`, `password` o `encrypted` se enmascara al leer, y una consulta tampoco puede usarla. La sentencia se rechaza cuando una propiedad así aparece en `where`, `order`, `aggregation.fields[].field` o `aggregation.groupBy`, incluso a través de una ruta de relación (`credential.accessToken.token`). Se rechaza la sentencia entera: el motor nunca descarta la propiedad en silencio.
+
+El rechazo es un HTTP `403` con `translation: 'Errors.MaskedPropertyNotQueryable'` y `params: { property, aggregate }`. `aggregate` nombra el agregado dueño de la propiedad, que es el destino de la relación cuando la referencia llegó a través de una relación. La respuesta nunca incluye un valor almacenado.
+
+El código de backend que tiene una necesidad real (por ejemplo, buscar un token de un solo uso por su valor) se exime llamada a llamada, nombrando el agregado y las propiedades y dejando escrito el motivo:
+
+```typescript
+import { unsafeAllowMaskedPropertyQuery } from '@aurorajs.dev/core-back';
+
+const exemption = unsafeAllowMaskedPropertyQuery({
+  aggregate: 'IamUser',
+  properties: ['rememberToken'],
+  reason: 'Buscar la fila por el hash de un token de un solo uso',
+});
+
+await repository.find({ queryStatement, exemption });
+```
+
+La llamada se rechaza si no incluye al menos una propiedad, un agregado no vacío y un `reason` no vacío, y una exención acotada a otro agregado u otra propiedad no se aplica. La guarda lee los field schemas que el archivo generado `@config/drizzle/aurora-field-schemas.ts` registra al arrancar.
+
+### Las relaciones deben estar declaradas en el field schema
+
+Toda relación que nombra una sentencia tiene que estar declarada en el field schema del agregado. Esto cubre una clave de `relations`, una clave de relación dentro de `where` y cada segmento no final de un dot-path de `order` o `aggregation`, a cualquier profundidad. El field schema es lo que leen `@Format` y la guarda de propiedades enmascaradas, así que una relación que solo existe en el archivo de relaciones de Drizzle dejaría pasar filas por delante de ambos.
+
+Una relación sin declarar falla con HTTP `400` y `translation: 'Errors.RelationNotQueryable'`, `params: { relation, aggregate }`. Un agregado sin field schema registrado falla cerrado con un `500`, porque es un defecto de cableado y no culpa de quien llama. Las columnas que el field schema omite (como `rowId`) no son relaciones y se pueden seguir filtrando.
+
+Las relaciones inversas no se pueden consultar: el valor del campo personalizado que apunta a su padre, y la compañera i18n que apunta a su padre. Con `i18nStrategy: table`, el generador declara la relación del padre hacia la compañera (`<module>I18n`).
+
+### Alcance por tenant
+
+En un módulo `hasTenant: true`, la sentencia que envía un cliente se clasifica contra el field schema antes de ejecutarse. Una relación solo se cruza cuando el módulo la declara atravesable en el alcance de tenant, y solo un salto; cualquier otra relación en `relations`, `where`, `order` o `aggregation` se rechaza con HTTP `400` y `translation: 'Errors.TenantScopeQueryRejected'`. Consulta [Alcance por tenant](../../concepts/backend/tenant-scope/).
+
 ### Decisión de diseño: nunca SQL crudo
 
 El DSL no expone **ninguna** clave `literal`, `fn`, `col`, ni SQL crudo en ningún sitio — no hay escape hatch. Esto cierra la superficie de inyección que abría el contrato legacy de Sequelize vía `attributes: { literal: ... }` (se podía colar un fragmento SQL arbitrario disfrazado de "proyección"). Tampoco hay subconsultas en el sentido general: la única capacidad "parecida a una subconsulta" que expone el DSL es el chequeo `EXISTS` de filtro por relación descrito en [Filtrar por campos de una relación](#filtrar-por-campos-de-una-relación) — y esa es una forma fija y validada, no un `SELECT` anidado arbitrario.
@@ -397,7 +443,7 @@ Si un caso de uso realmente necesita SQL de agregación crudo, joins entre más 
 Todo endpoint de paginación/get/find/list acepta **dos** argumentos independientes con forma `QueryStatement`:
 
 - **`query`** — el payload de filtro/orden/paginación que provee el cliente. Viene directamente del body de la petición (REST) o de las variables de GraphQL.
-- **`constraint`** — el alcance impuesto por el servidor (aislamiento por tenant, filtros de permisos, exclusión de borrado lógico). Lo fija el lado del servidor, nunca el cliente.
+- **`constraint`** — el alcance impuesto por el servidor (aislamiento por tenant, filtros de permisos). Lo fija el lado del servidor, nunca el cliente.
 
 ```graphql
 hubPaginateAppsAccounts(query: QueryStatementInput, constraint: QueryStatementInput): Pagination!

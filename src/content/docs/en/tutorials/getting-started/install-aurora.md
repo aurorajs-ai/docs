@@ -14,35 +14,28 @@ With the CLI installed, this step scaffolds a new Aurora Catalyst project. The p
 catalyst new my-project
 ```
 
-This creates an Aurora monorepo (a `backend/` + `frontend/` workspace) named `my-project`. See [`catalyst new`](/aurora-catalyst-docs/en/reference/cli-commands/new/).
+This creates an Aurora monorepo (a `backend/` + `frontend/` workspace) named `my-project`, installs its dependencies, writes `backend/.env`, and generates the OAuth signing key pair under `backend/.keys/`. It also commits the scaffold on an `aurora/scaffold` branch, which `catalyst add` and `catalyst upgrade` use later as the merge base. See [`catalyst new`](../../../reference/cli-commands/new/).
 
-## 2. Set the database connection
+## 2. Create a database and set the connection
 
-Open `backend/.env` and point the `DATABASE_*` block at a SQL database you can reach:
+Create an empty PostgreSQL database, then open `backend/.env` and point the `DATABASE_*` block at it:
 
 ```dotenv
-DATABASE_DIALECT = postgres
 DATABASE_HOST = localhost
 DATABASE_PORT = 5432
 DATABASE_USER = postgres
 DATABASE_PASSWORD = postgres
-DATABASE_SCHEMA = database-schema
+DATABASE_SCHEMA = my-project
 ```
 
-The scaffold defaults to PostgreSQL. Each Catalyst app needs its **own** database or schema — if you run more than one app, give each its own so they don't clash.
+`DATABASE_SCHEMA` is the name of the database. Each Catalyst app needs its **own** database — if you run more than one app, give each its own so they don't clash.
 
-## 3. Let Catalyst create the tables
+## 3. Know how the tables get created
 
-In the same `backend/.env`, turn schema synchronization on:
+The scaffold ships no tables and no migrations. The database schema changes only through versioned migrations, and the first one is generated from the schema files of the packages you install. You generate it in the next step, with `pnpm db:generate --name init`, and the backend applies it when it boots.
 
-```dotenv
-DATABASE_SYNCHRONIZE = true
-```
-
-With synchronize on, the ORM builds the schema from the entities at boot, so you don't have to write migrations just to get started.
-
-:::caution
-`DATABASE_SYNCHRONIZE = true` is for local development only. It can alter or drop columns to match the entities. Turn it off — and use migrations — before pointing the app at any shared or production database.
+:::note
+Migrations apply at boot by default (`DATABASE_MIGRATE_ON_BOOT`). The guide [Manage schema migrations](../../../guides/backend/manage-schema-migrations/) covers the full cycle and when to turn that off.
 :::
 
 ## Next

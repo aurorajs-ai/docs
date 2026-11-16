@@ -5,11 +5,11 @@ description: "Receta de extremo a extremo para un módulo frontend generado — 
 
 ## Objetivo
 
-Coger un módulo frontend recién scaffoldeado y configurarlo a través de su `*.aurora.yaml` para que la regeneración produzca el form, la list y el detail con el shell correcto, los widgets relacionales correctos, el layout correcto y el cableado de embed correcto — sin editar a mano el código generado.
+Coger un módulo frontend recién scaffoldeado y configurarlo a través de su `*.module.yaml` para que la regeneración produzca el form, la list y el detail con el shell correcto, los widgets relacionales correctos, el layout correcto y el cableado de embed correcto — sin editar a mano el código generado.
 
 ## Antes de empezar
 
-- Un módulo scaffoldeado bajo `cliter/<bounded-context>/<module>.aurora.yaml`.
+- Un módulo scaffoldeado bajo `cliter/<bounded-context>/<module>.module.yaml`.
 - El CLI `catalyst` disponible localmente (`catalyst generate front module --force` funciona).
 - Ficheros de traducción para el bounded context y el módulo — Aurora genera la estructura, nunca las cadenas.
 
@@ -33,15 +33,48 @@ Coger un módulo frontend recién scaffoldeado y configurarlo a través de su `*
    | `grid-select-multiple-elements`     | many-to-many renderizado como tabla multi-fila                       |
    | `grid-elements-manager`             | CRUD one-to-many embebido dentro del detail del padre                |
 
+   Para un `string[]` de texto libre que el usuario escribe (no un conjunto cerrado entre el que elegir), usa en cambio un widget de lista de cadenas. Ambos renderizan el control `<au-string-list>` y solo son válidos en `type: array` con `arrayOptions.type: varchar`; cualquier otra declaración aborta la generación antes de escribir ningún archivo, y el error nombra la propiedad.
+
+   | `widget.type`        | Renderiza                                                            | Elígelo cuando                                                              |
+   | -------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+   | `dialog-string-list` | Un resumen de una línea que abre un diálogo                          | El formulario es denso, o ya está dentro de un diálogo (`front.detailMode: dialog`) |
+   | `inline-string-list` | Un panel plegable dentro del formulario; cada cambio se aplica al instante | La página de detalle tiene espacio vertical para la lista              |
+
+   ```yaml
+   - name: redirectUris
+     type: array
+     arrayOptions:
+       type: varchar
+     widget:
+       type: dialog-string-list
+   ```
+
+   El YAML no tiene claves para ordenar, añadir en bloque ni validar; el campo generado usa los valores por defecto del control, y sus textos vienen de las claves i18n raíz `StringList.*`. Un array sin `widget` no renderiza nada en el formulario.
+
 4. **Agrupa y tabula el form.** `widget.group` agrupa visualmente campos relacionados dentro del form (un wrapper por grupo, cada uno con su propia pasada de auto-expansión). `widget.tab` reparte los campos en paneles `<hlm-tabs-content>`. Ambos son contenedores independientes — la matemática del span no cruza entre ellos.
 
 5. **Ajusta los anchos de los campos.** La tabla de defaults cubre la mayoría de los casos — `boolean` / `date` / `time` → 3, numéricos → 4, `varchar` por `maxLength` (≤30 → 4, 31–80 → 6, >80 → 12), `text` y relaciones grid → 12. Sobreescribe por property con `widget.span: 1–12` cuando el default no encaje. El último campo de una fila incompleta se auto-expande para rellenar el hueco. Concepto: [Ancho de campos en formulario](../../../concepts/frontend/form-field-widths/).
 
-6. **(Opcional) Opta al módulo al modo embed.** Si este módulo es un HIJO que debe editarse dentro del detail de su padre, declara `front.embedSupport: true` a nivel raíz. El codegen emite entonces la lista polimórfica (`mode: 'standalone' | 'embed'`), el componente form-embed y la factory de columnas embed. El YAML del PADRE declara aparte `widget.type: grid-elements-manager` sobre la property que apunta aquí. Concepto: [Embed mode (padre-hijo)](../../../concepts/frontend/embed-mode/). Receta: [Implementar un widget grid-elements-manager](../implement-grid-elements-manager/).
+6. **(Opcional) Añade un tooltip de ayuda a un campo.** Declara `widget.hint` con un `text` y, opcionalmente, un `example`. Añade un icono de información junto a la etiqueta de cualquier campo con etiqueta (escalares, enums, booleanos y selects de relación), con o sin `widget.type`:
 
-7. **Personaliza campos más allá de lo que el YAML expresa.** La plantilla del form-component emite los marcadores `AURORA:FORM-FIELDS-START/END` alrededor del bloque de campos. Cualquier cosa que escribas dentro de esa región sobrevive a la regeneración byte por byte — validadores custom, reordenamientos manuales, markup libre, todo lo que el layout no exprese de forma declarativa. Concepto: [Regiones de preservación](../../../concepts/frontend/preservation-regions/).
+   ```yaml
+   - name: service
+     type: varchar
+     widget:
+       hint:
+         text: SAP OData service that exposes the data.
+         example: API_BUSINESS_PARTNER
+   ```
 
-8. **Regenera.**
+   Regenera y edita después las claves de traducción sembradas. El formulario nunca lee el texto de la YAML: lee `<Field>Hint` y `<Field>Example` de `frontend/public/i18n/<bc>/{en,es}.json`, donde el generador escribe el texto de la YAML solo si falta, en ambos idiomas. Tras la primera ejecución el JSON es el dueño del texto, así que traduce a mano el valor en español y ten presente que editar la YAML más tarde no cambia una clave que ya existe. La `description` y el `example` de la propiedad nunca se convierten en tooltip.
+
+7. **Bloquea los campos que el usuario no debe editar con la bandera de la YAML, no a mano.** Un valor que es del servidor (un estado de ciclo de vida, un valor por defecto de base de datos) es `readOnly: true`. El formulario generado no tiene entonces control, entrada de modelo ni validador para él. No borres en su lugar el control del formulario generado: el validador se queda, y uno requerido deja el formulario inválido sin que el usuario pueda rellenar nada. Un valor que el cliente aporta una vez, al crear, y que no cambia después es `createOnly: true`: el formulario lo muestra deshabilitado en modo `edit` y lo deja fuera del payload guardado. Un bloqueo meramente visual no es una bandera de esquema. Consulta [Escribibilidad de propiedades](../../../concepts/backend/property-writability/).
+
+8. **(Opcional) Opta al módulo al modo embed.** Si este módulo es un HIJO que debe editarse dentro del detail de su padre, declara `front.embedSupport: true` a nivel raíz. El codegen emite entonces la lista polimórfica (`mode: 'standalone' | 'embed'`), el componente form-embed y la factory de columnas embed. El YAML del PADRE declara aparte `widget.type: grid-elements-manager` sobre la property que apunta aquí. Concepto: [Embed mode (padre-hijo)](../../../concepts/frontend/embed-mode/). Receta: [Implementar un widget grid-elements-manager](../implement-grid-elements-manager/).
+
+9. **Personaliza campos más allá de lo que el YAML expresa.** La plantilla del form-component emite los marcadores `AURORA:FORM-FIELDS-START/END` alrededor del bloque de campos. Cualquier cosa que escribas dentro de esa región sobrevive a la regeneración byte por byte — validadores custom, reordenamientos manuales, markup libre, todo lo que el layout no exprese de forma declarativa. Concepto: [Regiones de preservación](../../../concepts/frontend/preservation-regions/).
+
+10. **Regenera.**
 
    ```bash
    catalyst generate front module --name=<bounded-context>/<module> --force
@@ -49,7 +82,7 @@ Coger un módulo frontend recién scaffoldeado y configurarlo a través de su `*
 
    Para escenarios embed, regenera el **hijo primero** para que el regen del padre pueda leer el YAML del hijo con `embedSupport: true` ya puesto.
 
-9. **Añade las keys de traducción.** Aurora publica `Aurora.NoResults` para los estados vacíos; el resto te toca. Las labels de campos, los headers de columnas de la lista, el título de la card del widget embed y las labels de las secciones del form vienen de tus ficheros transloco usando keys derivadas de los nombres del bounded context, del módulo y del agregado.
+11. **Añade las keys de traducción.** Aurora publica `Aurora.NoResults` para los estados vacíos; el resto te toca. Las labels de campos, los headers de columnas de la lista, el título de la card del widget embed y las labels de las secciones del form vienen de tus ficheros transloco usando keys derivadas de los nombres del bounded context, del módulo y del agregado.
 
 ## Verifica que funcionó
 
@@ -84,5 +117,6 @@ Es lo esperado — el widget es una sección, no un campo, y siempre renderiza a
 - [Ancho de campos en formulario](../../../concepts/frontend/form-field-widths/) — el sistema del grid.
 - [Embed mode (padre-hijo)](../../../concepts/frontend/embed-mode/) — el modelo padre-hijo.
 - [Regiones de preservación](../../../concepts/frontend/preservation-regions/) — poseer una porción de código generado.
+- [Escribibilidad de propiedades](../../../concepts/backend/property-writability/) — qué hacen `readOnly` y `createOnly` en el formulario y en la API.
 - [Implementar un widget grid-elements-manager](../implement-grid-elements-manager/) — receta enfocada al widget embed.
 - [Referencia de `catalyst generate`](../../../reference/cli-commands/generate/) — cada flag y argumento.

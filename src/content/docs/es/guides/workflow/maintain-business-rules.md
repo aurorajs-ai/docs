@@ -237,10 +237,10 @@ El reporte estructural es determinista. La sección semántica reporta tensiones
 
 ## Cuándo pedir ayuda
 
-El skill `business-rules-guard` se auto-carga cuando Claude detecta que estás tocando el sistema. Si te encuentras atascado en:
+El skill `catalyst-business-rules-guard` se auto-carga cuando Claude detecta que estás tocando el sistema. Si te encuentras atascado en:
 
 - La forma exacta de una regla (frontmatter, body, secciones) → pide a Claude que aplique la reference `format` del skill.
 - Una decisión de workflow (¿derogo, o es una edición no-semántica?) → pide a Claude que aplique la reference `workflow`.
 - Un finding del audit que no entiendes → pide a Claude que aplique la reference `audit`.
 
-Los ficheros de references viven en `.claude/skills/business-rules-guard/references/` en el repo de catalyst. Son el manual vivo del sistema; esta guía es la destilación cara al usuario de catalyst.
+Los ficheros de references viven en `.claude/skills/catalyst-business-rules-guard/references/` en el repo de catalyst. Son el manual vivo del sistema; esta guía es la destilación cara al usuario de catalyst.

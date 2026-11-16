@@ -21,22 +21,24 @@ Pick the correct field-schema decorator for the handler you just scaffolded, wir
    Does the handler RECEIVE a payload?
      ├── No  → @Format(schema)
      └── Yes → Does it RETURN the entity?
-                ├── Yes → @ApplySchema(schema)
-                └── No  → @Sanitize(schema)
+                ├── Yes → @ApplySchema({ schema, operation })
+                └── No  → @Sanitize({ schema, operation })
    ```
 
    `@ApplySchema` composes sanitize (input) + format (output). `@Format` only formats the return (reads are idempotent). `@Sanitize` only sanitizes the payload (write-only flows whose return is `void`, a boolean, or a summary type).
 
-   **`@Sanitize` is rarely written on its own.** The CLI never emits it: every write handler it generates returns the entity, so it gets `@ApplySchema`. And `@ApplySchema` composes it internally — `applyDecorators(Format(schema), Sanitize({ schema, payloadIndex }))` — so sanitation already runs there. Wire a bare `@Sanitize` only on a hand-written write handler whose return value is not the entity. When you read `@Sanitize` in a code comment or a test name, it refers to that inner branch of `@ApplySchema`, not to a separately written decorator.
+   **`@ApplySchema` and `@Sanitize` take an object, and `operation` is mandatory.** It is `'create'` or `'update'`, and it tells the sanitizer which write the handler performs. A call that omits it does not compile; there is no default. The generator emits `'create'` for `create` and `createBatch`, and `'update'` for `updateById`, `update` and `upsert`. `@Format` takes no `operation`: the read direction has no write operations. The operation matters on aggregates with writable-once or never-writable properties, because the sanitizer rejects the payload key with a `400` rather than dropping it silently. See [Property writability](../../../concepts/backend/property-writability/).
+
+   **`@Sanitize` is rarely written on its own.** The CLI never emits it: every write handler it generates returns the entity, so it gets `@ApplySchema`. And `@ApplySchema` composes it internally — `applyDecorators(Format(schema), Sanitize({ schema, payloadIndex, operation }))` — so sanitation already runs there. Wire a bare `@Sanitize` only on a hand-written write handler whose return value is not the entity. When you read `@Sanitize` in a code comment or a test name, it refers to that inner branch of `@ApplySchema`, not to a separately written decorator.
 
 2. **Wire `@ApplySchema` on a write handler that returns the entity.** Real example from `iam/tag`:
 
    ```typescript
    import { ApplySchema, EmitEvent } from '@aurorajs.dev/core-back';
-   import { IamTagFieldSchema } from '@app/iam/tag/domain';
+   import { IamTagFieldSchema } from '@app/iam/tag/domain/index.js';
 
    @EmitEvent('iam.tag.created')
-   @ApplySchema(IamTagFieldSchema)
+   @ApplySchema({ schema: IamTagFieldSchema, operation: 'create' })
    async main(payload: IamCreateTagInput, handlerMeta?: HandlerMeta): Promise<IamTag> {
      await this.createService.main(payload, handlerMeta);
      return await this.findByIdService.main(payload.id, {}, handlerMeta);
@@ -63,13 +65,13 @@ Pick the correct field-schema decorator for the handler you just scaffolded, wir
 4. **If the payload is not the first argument, use the object form.**
 
    ```typescript
-   @ApplySchema({ schema: IamTagFieldSchema, payloadIndex: 1 })
+   @ApplySchema({ schema: IamTagFieldSchema, payloadIndex: 1, operation: 'update' })
    async main(constraint, payload, handlerMeta?) { … }
    ```
 
    Same option on `@Sanitize`. `@Format` has no `payloadIndex` — it always operates on the return value.
 
-5. **On update handlers, compute the delta with `Obj.diff`.** After sanitation, persist only what changed. Real usage from `iam-update-tag-by-id.handler.ts`:
+5. **On update handlers, compute the delta with `Obj.diffAtomic`.** After sanitation, persist only what changed. Real usage from `iam-update-tag-by-id.handler.ts`:
 
    ```typescript
    import { Obj } from '@aurorajs.dev/core-back';
@@ -77,16 +79,25 @@ Pick the correct field-schema decorator for the handler you just scaffolded, wir
    const tag = await this.findByIdService.main(payload.id, constraint, handlerMeta);
    if (!tag) throw new NotFoundException(`IamTag with id: ${payload.id}, not found`);
 
-   const dataToUpdate = Obj.diff(payload, tag);
+   const dataToUpdate = Obj.diffAtomic(payload, tag);
 
    await this.updateByIdService.main(
-     { ...dataToUpdate, id: payload.id }, // re-add id — diff omits matching keys
+     { ...dataToUpdate, id: payload.id }, // re-add id — the diff omits matching keys
      constraint,
      handlerMeta,
    );
    ```
 
-   `Obj.diff` omits keys whose values match between both sides, so the `id` must be re-added explicitly as the target key.
+   `Obj.diffAtomic` omits keys whose values match between both sides, so the `id` must be re-added explicitly as the target key. Use it, not `Obj.diff`: one property is one column, so a changed array or `jsonb` value must be emitted whole. `Obj.diff` would emit only the changed fragment and overwrite the column with it.
+
+6. **Adjust the decorator on a generated `additionalApis` handler.** A mutation handler generated for an `additionalApis` entry arrives with `@ApplySchema({ schema, operation: 'update' })` already in place. The operation is fixed, not inferred from what the handler does, so check it:
+
+   - Change `operation` to `'create'` if the handler only inserts.
+   - Add `payloadIndex: N` if the payload is not argument 0.
+   - Remove the decorator if the payload is no longer aggregate-shaped. This is required, not cosmetic: a primitive payload arrives mangled, because the pipeline copies it with a spread.
+   - A query-type additional API gets no decorator.
+
+7. **Treat `decimal` as a JavaScript number in both directions.** A `decimal` property is a `number` on read and on write, with at most 15 significant digits. `@Format` turns the numeric string the database returns (`"21.00"`) into a number, so a record you read and send back unchanged passes write validation. Validate decimals as numbers only. If a YAML `decimals: [precision, scale]` declares a precision above 15, `catalyst generate` aborts at schema load: lower the precision in the YAML.
 
 ## Verify it worked
 
@@ -96,7 +107,7 @@ Pick the correct field-schema decorator for the handler you just scaffolded, wir
 
 ## Troubleshooting
 
-**An included relation leaks a sensitive field.** `formatRecord` does not recurse into relations loaded via `include`. That is a separate concern — see [Compose a QueryStatement](../query-with-querystatement/#loading-relations-safely).
+**A relation returns a sensitive field unmasked.** `@Format` recurses into every relation declared as a `relation` entry of the field schema, so a nested secret is masked there too. A relation missing from the field schema is not queryable at all, so it never reaches the formatter. See [Compose a QueryStatement](../query-with-querystatement/#loading-relations-safely).
 
 **Validation runs twice** — once by the decorator, once inside `main()`. Remove the in-handler check. `@ApplySchema` already enforced `maxLength`, `nullable`, `enumOptions`, and declared `rules`. Keep only business rules the FieldSchema cannot express (cross-field invariants, domain math).
 
@@ -107,4 +118,5 @@ Pick the correct field-schema decorator for the handler you just scaffolded, wir
 ## Related
 
 - [Backend module scaffolding](../../../concepts/backend/module-scaffolding/) — why `*.field-schema.ts` is generated from YAML and never hand-edited.
+- [Property writability](../../../concepts/backend/property-writability/) — what `readOnly` and `createOnly` do to the payload the decorator sanitizes.
 - [Compose a QueryStatement](../query-with-querystatement/) — the query side of the declarative data-access layer.

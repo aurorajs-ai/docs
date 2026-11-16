@@ -5,23 +5,23 @@ title: "Pipeline"
 `catalyst pipeline`
 ===================
 
-Generate a deploy workflow from templates (interactive).
+Generate a deploy workflow and its supporting files from templates (interactive).
 
 * [`catalyst pipeline`](#catalyst-pipeline)
 
 ## `catalyst pipeline`
 
-Generate a deploy workflow from templates (interactive).
+Generate a deploy workflow and its supporting files from templates (interactive).
 
 ```
 USAGE
   $ catalyst pipeline [-f]
 
 FLAGS
-  -f, --force  Overwrite existing workflow file
+  -f, --force  Overwrite existing files of the set
 
 DESCRIPTION
-  Generate a deploy workflow from templates (interactive).
+  Generate a deploy workflow and its supporting files from templates (interactive).
 
 EXAMPLES
   $ catalyst pipeline

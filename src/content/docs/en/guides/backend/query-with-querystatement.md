@@ -1,129 +1,107 @@
 ---
 title: Compose a QueryStatement
-description: Build where/include/order clauses with the Operator enum, forward constraint for tenant scoping, and work around the include → format security gap.
+description: Build where/relations/order clauses in a handler or service, forward constraint for scoping, and load relations without leaking masked fields.
 ---
 
 ## Goal
 
-Compose a typed `QueryStatement` inside a handler — `where`, `include`, `order`, `limit` — using the `Operator` enum instead of string literals, and load relations without leaking masked fields.
+Compose a typed `QueryStatement` inside a handler or service — `where`, `relations`, `order`, `limit` — and load relations without leaking masked fields. For every operator, block and limit of the language, see the [Query Statement reference](../../../reference/query-statement/).
 
 ## Before you start
 
-- You have a backend handler scaffolded (a read handler is the common case).
+- You have a backend handler or service scaffolded (a read handler is the common case).
 - You understand the two `QueryStatement` parameters a catalyst handler receives:
   - `queryStatement` — the **client-facing** filter / sort / pagination payload, from the resolver or controller.
-  - `constraint` — the **server-side scope** (tenant id, permission filter), injected upstream by middleware or decorators.
+  - `constraint` — the **server-side scope** (tenant id, permission filter), injected upstream by middleware or decorators. On a `hasTenant: true` module, the tenant scope also decides which relations a client may traverse: see [Tenant scope](../../../concepts/backend/tenant-scope/).
 
   Treat both as read-only. Merging them is the service layer's job.
 - `@aurorajs.dev/core-back` is installed — it ships with every Catalyst backend.
 
 ## Steps
 
-1. **Import the typed helpers.** Always type the statement and always use the enum:
+1. **Type the statement.** Always annotate it, so the compiler checks the shape of each block:
 
    ```typescript
-   import { Operator, QueryStatement } from '@aurorajs.dev/core-back';
+   import { QueryStatement } from '@aurorajs.dev/core-back';
    ```
 
-2. **Build `where` with `Operator.X` — never string literals.**
+2. **Build `where` with bare operator keys.** A field maps to a comparison object, and sibling fields are ANDed:
 
    ```typescript
    const queryStatement: QueryStatement = {
      where: {
-       [Operator.and]: [
-         { isActive: true },
-         { name: { [Operator.iLike]: `${query.prefix}%` } },
+       and: [
+         { isActive: { eq: true } },
+         { name: { iLike: `${query.prefix}%` } },
        ],
      },
-     order: [['createdAt', 'DESC']],
+     order: [{ field: 'createdAt', dir: 'desc' }],
      limit: query.limit ?? 50,
    };
    ```
 
-   Why not `'[iLike]'`? A typo like `'[ilike]'` (lowercase `l`) fails silently at runtime: the operator is not recognised and the filter degenerates into a literal value comparison. `Operator.iLike` is type-checked; `Operator.iLikE` is a compile error.
+   The operator vocabulary is closed: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `notIn`, `between`, `isNull`, `iLike`, `contains`, `overlap`, plus the connectors `and`, `or` and `not`. A key outside that list is rejected before any SQL runs, so a typo fails loudly instead of degrading into a different filter. If you prefer constants to string keys, `WHERE_OPERATOR` and `LOGICAL_OPERATOR` come from `@aurorajs.dev/core-back`.
 
-   The full `Operator` catalog covers comparison (`eq`, `ne`, `gt`, `gte`, `lt`, `lte`), inclusion (`in`, `notIn`), text patterns (`like`, `iLike`, `startsWith`, `endsWith`, `substring`, `regexp`, …), ranges (`between`, `notBetween`), logical composition (`and`, `or`, `not`, `is`), PG range / array operators (`overlap`, `contains`, `contained`, …), and quantifiers (`any`, `all`). Import and use the enum — do not hard-code the string form.
-
-3. **Load relations with `include`.** The YAML's relationship `field` (for example, `field: tenant`) becomes the association key:
+3. **Load relations with `relations`.** A relation name maps to `true`, or to a node that shapes the loaded children:
 
    ```typescript
    const queryStatement: QueryStatement = {
-     where: { id: accountId },
-     include: [{ association: 'user' }, { association: 'tenant' }],
+     where: { id: { eq: accountId } },
+     relations: { user: true, tenant: true },
    };
    ```
 
    Nest for graph loading:
 
    ```typescript
-   { include: [{ association: 'user', include: [{ association: 'preferences' }] }] }
+   { relations: { state: { relations: { category: true } } } }
    ```
 
-4. **Forward `queryStatement` and `constraint` to the service unchanged.** Build a new object if you need to augment; do not mutate the incoming ones.
+   Keep two axes apart. A relation key inside `where` filters the **parent** rows and loads nothing. A relation key inside `relations` loads children and never filters the parents. Asking for the relation in a GraphQL selection set does not load it either: without a `relations` entry the field comes back `null`.
+
+4. **Forward `queryStatement` and `constraint` to the service unchanged.** Build a new object if you need to augment; do not mutate the incoming ones. When you add a relation to a caller's statement, spread the relations that are already there:
 
    ```typescript
-   return await this.getService.main(queryStatement, constraint, handlerMeta);
+   return await this.getService.main(
+     {
+       ...queryStatement,
+       relations: { ...queryStatement?.relations, state: { relations: { category: true } } },
+     },
+     constraint,
+     handlerMeta,
+   );
    ```
 
 ### Loading relations safely
 
-`@Format` and `@ApplySchema` apply the FieldSchema only to the **top-level** fields of the returned record. `formatRecord` does not recurse into relations loaded via `include`. Any field with a protective `format()` — `type: 'password'` returns `undefined`, and the same shape applies to tokens, secrets, or signed blobs — is masked on the root entity but passes through untouched on an included relation:
+`@Format` and `@ApplySchema` format the returned record with the aggregate's field schema, and they recurse into every relation the field schema declares as a `relation` entry. A masked field of a loaded relation (`type: 'password'`, `secret`, `encrypted`) is therefore masked there too.
 
-```typescript
-// IamAccount with @Format(IamAccountFieldSchema) and include: user
-// account.password      → undefined  (correct — top-level mask ran)
-// account.user.password → '$2b$10$...' ← LEAKS the bcrypt hash
-```
+That only holds for relations the field schema **declares**. The generator declares every relation from the YAML, and the query engine enforces it: a statement that names a relation missing from the field schema — in `relations`, in `where`, or in an `order` or `aggregation` dot-path — fails with HTTP `400` and `Errors.RelationNotQueryable`. A relation that exists only in the Drizzle relations file is not reachable from a query. Back-relations (a custom-field value to its parent, an i18n companion to its parent) are not queryable at all.
 
-The upstream fix is tracked as **SPEC-07** in `aurora-catalyst/packages/cli/ROADMAP.md` (a recursive `formatRecord` that applies each relation's own schema). Until it lands, two viable patterns:
-
-**Option A — manual format on the related record.** Preferred when the client needs the related entity atomically:
-
-```typescript
-import { formatRecord } from '@aurorajs.dev/core-back';
-import { IamUserFieldSchema } from '@app/iam/user/domain';
-
-async main(
-  id: string,
-  constraint?: QueryStatement,
-  handlerMeta?: HandlerMeta,
-): Promise<IamAccount> {
-  const account = await this.findByIdService.main(
-    id,
-    { ...constraint, include: [{ association: 'user' }] },
-    handlerMeta,
-  );
-
-  if (account.user) {
-    // Temporary workaround for SPEC-07 — formatRecord does not recurse into include.
-    account.user = formatRecord(account.user, IamUserFieldSchema, handlerMeta?.timezone);
-  }
-
-  return account;
-}
-```
-
-This is one of the rare cases where calling `formatRecord` directly is justified — the decorator does not know about the included relation. Leave a code comment pointing at SPEC-07 so a future refactor can drop the workaround once the fix lands.
-
-**Option B — avoid `include` for entities with masked fields.** Load the related record on a separate endpoint where it becomes the root entity and `@Format` masks it correctly. Safer default when atomic loading is not strictly required.
+If you hand-write a relation, declare it in the module's YAML and regenerate, instead of adding it to the relations file alone.
 
 ## Verify it worked
 
-- Inspect the generated SQL (via Sequelize logs or the database): the predicate uses the right operator (`ILIKE`, `BETWEEN`, `IN`, …) instead of treating the operator key as a column name.
-- For `include` with a sensitive relation, confirm the masked field is absent from the returned JSON after applying the workaround.
+- Run the handler with a query that uses `iLike` or `between`, and check the rows: the predicate applies to the column you named.
+- Load a relation that has a masked field, and confirm the field is absent from the returned JSON.
 - Confirm `constraint` is not echoed in the response or in error messages — it carries tenant / permission scope that must stay server-side.
 
 ## Troubleshooting
 
-**The filter matches every row or no row.** Usually a string-literal operator typo. Switch to `Operator.X` imports — TypeScript catches the mistake at compile time.
+**The statement fails before reaching the database.** The validator is default-deny: an unknown operator, an unknown top-level key, a `limit` above 10000, or nesting deeper than 10 levels is rejected with a message that names the path. Check the [reference](../../../reference/query-statement/#validation--security).
 
-**The service's merge breaks after my handler runs.** You mutated `queryStatement` or `constraint`. Treat them as read-only. If you need a merged criteria object, build a new one from a spread.
+**HTTP `400` with `Errors.RelationNotQueryable`.** The statement names a relation that the aggregate's field schema does not declare. Declare the relationship in the YAML and regenerate.
 
-**`attributes` used to hide a sensitive column.** `attributes` is a projection (columns to SELECT), not a security boundary. Any consumer who omits `attributes` will leak the column. Mask sensitive fields through the field schema's `format` handler (`@Format` / `@ApplySchema`), enforced on every read regardless of how the query was built.
+**HTTP `400` with `Errors.TenantScopeQueryRejected`.** The module is `hasTenant: true` and the statement crosses a relation that is not declared traversable in tenant scope. See [Tenant scope](../../../concepts/backend/tenant-scope/).
 
-**Included relation still leaks the hash.** You applied `@Format` but skipped Option A. `formatRecord` does not recurse — call it manually on the related record, or drop the `include`.
+**HTTP `403` with `Errors.MaskedPropertyNotQueryable`.** The statement filters, sorts or aggregates by a `secret`, `password` or `encrypted` property, directly or through a relation. Remove it from the statement. Trusted backend code that really needs it passes `unsafeAllowMaskedPropertyQuery(...)` as the `exemption` of the repository call: see the [reference](../../../reference/query-statement/#masked-properties-are-not-queryable).
+
+**The service's merge breaks after my handler runs.** You mutated `queryStatement` or `constraint`. Treat them as read-only. If you need a merged object, build a new one from a spread.
+
+**You want to hide a column with a projection.** The language has no projection key: there is no `attributes`. Mask sensitive fields through the field schema's `format` handler (`@Format` / `@ApplySchema`), which runs on every read regardless of how the query was built.
 
 ## Related
 
+- [Query Statement reference](../../../reference/query-statement/) — every operator, block and limit.
 - [Field-schema decorators](../apply-field-schema-decorators/) — the validation / format side of the declarative layer.
 - [Backend module scaffolding](../../../concepts/backend/module-scaffolding/) — how relationships are declared in YAML.

@@ -103,7 +103,7 @@ Las **rules de ruta** enrutan a la skill que cubre un tipo de fichero.
 | Rule | Gobierna |
 | --- | --- |
 | `route-aurora-components.md` | `frontend/src/@aurora/components/**` |
-| `route-aurora-yaml.md` | `cliter/**/*.aurora.yaml` |
+| `route-module-yaml.md` | `cliter/**/*.module.yaml` |
 | `route-backend-test.md` | `backend/**/*.spec.ts`, `backend/**/*.e2e-spec.ts` |
 | `route-drizzle-schema.md` | `backend/**/*.schema.ts`, el árbol de migraciones, la configuración de Drizzle y el workflow de drift |
 | `route-eta.md` | `**/*.eta` |
@@ -136,7 +136,7 @@ Por defecto una skill se activa por criterio: el modelo lee su `description` y d
 
 `inject-prompt-context.ts` lee ese índice y lo puntúa contra el prompt con la misma primitiva de keywords que usan los bloques de business rules y harness rules (un término de menos de 4 caracteres nunca casa), más un bonus de +50 cuando el prompt nombra la skill literalmente. Inyecta hasta 3 coincidencias como punteros — nunca el cuerpo de la skill.
 
-Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `catalyst-langs`, `catalyst-query-dsl`, `catalyst-report-creator`, `catalyst-skill-creator`, `judgment-day`.
+Las siete skills indexadas hoy: `catalyst-business-rules-guard`, `catalyst-delegation`, `catalyst-langs`, `catalyst-query-dsl`, `catalyst-report-creator`, `catalyst-skill-creator`, `judgment-day`.
 
 `typescript` queda fuera a propósito, y lo dice en su propio `SKILL.md`: su disparador real es «cualquier fichero `.ts`/`.tsx`», que como vocabulario de keywords dispararía casi siempre o nunca — un disparador que no discrimina es peor que ninguno. Sigue siendo descubrible a través del `[Project Skills Index]` y su `description`.
 
@@ -146,7 +146,7 @@ Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `
 
 | Skill | Cubre |
 | --- | --- |
-| `business-rules-guard` | el catálogo de business rules: añadir, modificar, derogar, citar por identificador |
+| `catalyst-business-rules-guard` | el catálogo de business rules: añadir, modificar, derogar, citar por identificador |
 | `catalyst-cli` | consumir el CLI: generación, reconciliación `.origin`, qué va en YAML y qué en código |
 | `catalyst-delegation` | contratos de delegación: descubrimiento de skills, protocolo de escalado, asignación de modelo |
 | `catalyst-langs` | el mecanismo de idiomas: panel frente a datos, adaptadores, añadir un idioma |
@@ -155,7 +155,7 @@ Las siete skills indexadas hoy: `business-rules-guard`, `catalyst-delegation`, `
 | `catalyst-schema` | escribir y validar los esquemas YAML de Aurora |
 | `catalyst-skill-creator` | escribir una skill nueva |
 | `catalyst-update-skill-registry` | regenerar el registro de skills tras cualquier cambio en ellas |
-| `harness-rules-guard` | el catálogo de harness rules |
+| `catalyst-harness-rules-guard` | el catálogo de harness rules |
 | `judgment-day` | revisión adversarial doble |
 | `openspec-explore` | modo explorar como compañero de pensamiento: investigar problemas y aclarar requisitos antes o durante un cambio |
 | `openspec-propose` | crear un cambio y sus artefactos |

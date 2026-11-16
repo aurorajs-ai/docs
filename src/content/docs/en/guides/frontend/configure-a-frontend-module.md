@@ -5,11 +5,11 @@ description: "End-to-end recipe for a generated frontend module — pick the det
 
 ## Goal
 
-Take a freshly-scaffolded frontend module and configure it through its `*.aurora.yaml` so the regenerated form, list, and detail come out with the right shell, the right relational widgets, the right layout, and the right child-embed wiring — without hand-editing the generated code.
+Take a freshly-scaffolded frontend module and configure it through its `*.module.yaml` so the regenerated form, list, and detail come out with the right shell, the right relational widgets, the right layout, and the right child-embed wiring — without hand-editing the generated code.
 
 ## Before you start
 
-- A scaffolded module under `cliter/<bounded-context>/<module>.aurora.yaml`.
+- A scaffolded module under `cliter/<bounded-context>/<module>.module.yaml`.
 - The `catalyst` CLI available locally (`catalyst generate front module --force` works).
 - Translation files for the bounded context and module — Aurora generates the structure but never the strings.
 
@@ -33,15 +33,48 @@ Take a freshly-scaffolded frontend module and configure it through its `*.aurora
    | `grid-select-multiple-elements`     | many-to-many rendered as a multi-row table picker                 |
    | `grid-elements-manager`             | one-to-many CRUD embedded inside the parent's detail              |
 
+   For a free-text `string[]` the user types (not a closed set to pick from), use a string-list widget instead. Both render the `<au-string-list>` control and are valid **only** on `type: array` with `arrayOptions.type: varchar`; any other declaration aborts generation before a file is written, and the error names the property.
+
+   | `widget.type`        | Renders                                                              | Pick it when                                                              |
+   | -------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+   | `dialog-string-list` | A one-line summary that opens a dialog                               | The form is dense, or already inside a dialog (`front.detailMode: dialog`) |
+   | `inline-string-list` | A collapsible panel inside the form; every change applies at once    | The detail page has vertical room for the list                            |
+
+   ```yaml
+   - name: redirectUris
+     type: array
+     arrayOptions:
+       type: varchar
+     widget:
+       type: dialog-string-list
+   ```
+
+   The YAML has no keys for sorting, bulk add or validation; the generated field uses the control's defaults, and its texts come from the root `StringList.*` i18n keys. An array with no `widget` renders nothing in the form.
+
 4. **Group and tab the form.** `widget.group` clusters related fields visually inside the form (one wrapper per group, each with its own auto-expand pass). `widget.tab` spreads fields across `<hlm-tabs-content>` panels. Both are independent containers — span math never crosses between them.
 
 5. **Tweak field widths.** The default span table covers most cases — `boolean` / `date` / `time` → 3, numerics → 4, `varchar` by `maxLength` (≤30 → 4, 31–80 → 6, >80 → 12), `text` and grid relations → 12. Override per property with `widget.span: 1–12` when the default does not fit. The last field of an incomplete row auto-expands to fill the gap. Concept: [Form field widths](../../../concepts/frontend/form-field-widths/).
 
-6. **(Optional) Opt the module into embed mode.** If this module is a CHILD that should be edited inside its parent's detail, declare `front.embedSupport: true` at the top level. The codegen then emits the polymorphic list (`mode: 'standalone' | 'embed'`), the form-embed component, and the embed columns factory. The PARENT's YAML separately declares `widget.type: grid-elements-manager` on the property pointing here. Concept: [Embed mode (parent-child)](../../../concepts/frontend/embed-mode/). Recipe: [Implement a grid-elements-manager widget](../implement-grid-elements-manager/).
+6. **(Optional) Add a help tooltip to a field.** Declare `widget.hint` with a `text` and, optionally, an `example`. It adds an info icon beside the label of any labelled form field (scalars, enums, booleans and relationship selects), with or without a `widget.type`:
 
-7. **Customize fields beyond the YAML's reach.** The form-component template emits `AURORA:FORM-FIELDS-START/END` markers around the field block. Anything you write inside that region survives regeneration byte-for-byte — custom validators, hand-tuned field reorderings, freeform markup, anything the layout cannot express declaratively. Concept: [Preservation regions](../../../concepts/frontend/preservation-regions/).
+   ```yaml
+   - name: service
+     type: varchar
+     widget:
+       hint:
+         text: SAP OData service that exposes the data.
+         example: API_BUSINESS_PARTNER
+   ```
 
-8. **Regenerate.**
+   Regenerate, then edit the seeded translation keys. The form never reads the YAML text: it reads `<Field>Hint` and `<Field>Example` from `frontend/public/i18n/<bc>/{en,es}.json`, where the generator writes the YAML text add-if-missing in both languages. After the first run the JSON owns the text, so translate the Spanish value by hand, and know that editing the YAML later does not change a key that already exists. The property `description` and `example` never become a tooltip.
+
+7. **Lock the fields the user must not edit with the YAML flag, not by hand.** A value the server owns (a lifecycle status, a database default) is `readOnly: true`. The generated form then has no control, model entry or validator for it. Do not delete the control from the generated form instead: the validator stays behind, and a required one leaves the form invalid with nothing the user can fill in. A value the client supplies once, at creation, and never changes afterward is `createOnly: true`: the form renders it disabled in `edit` mode and leaves it out of the saved payload. A purely visual lock is not a schema flag. See [Property writability](../../../concepts/backend/property-writability/).
+
+8. **(Optional) Opt the module into embed mode.** If this module is a CHILD that should be edited inside its parent's detail, declare `front.embedSupport: true` at the top level. The codegen then emits the polymorphic list (`mode: 'standalone' | 'embed'`), the form-embed component, and the embed columns factory. The PARENT's YAML separately declares `widget.type: grid-elements-manager` on the property pointing here. Concept: [Embed mode (parent-child)](../../../concepts/frontend/embed-mode/). Recipe: [Implement a grid-elements-manager widget](../implement-grid-elements-manager/).
+
+9. **Customize fields beyond the YAML's reach.** The form-component template emits `AURORA:FORM-FIELDS-START/END` markers around the field block. Anything you write inside that region survives regeneration byte-for-byte — custom validators, hand-tuned field reorderings, freeform markup, anything the layout cannot express declaratively. Concept: [Preservation regions](../../../concepts/frontend/preservation-regions/).
+
+10. **Regenerate.**
 
    ```bash
    catalyst generate front module --name=<bounded-context>/<module> --force
@@ -49,7 +82,7 @@ Take a freshly-scaffolded frontend module and configure it through its `*.aurora
 
    For embed scenarios, regenerate the **child first** so the parent's regen can read the child's YAML with `embedSupport: true` already in place.
 
-9. **Add the translation keys.** Aurora ships `Aurora.NoResults` for empty states; everything else is on you. Field labels, list column headers, the embed widget card title, and the form section labels all come from your transloco files using keys derived from the bounded context, module, and aggregate names.
+11. **Add the translation keys.** Aurora ships `Aurora.NoResults` for empty states; everything else is on you. Field labels, list column headers, the embed widget card title, and the form section labels all come from your transloco files using keys derived from the bounded context, module, and aggregate names.
 
 ## Verify it worked
 
@@ -84,5 +117,6 @@ Expected — the widget is a section, not a field, and always renders full-width
 - [Form field widths](../../../concepts/frontend/form-field-widths/) — the grid system.
 - [Embed mode (parent-child)](../../../concepts/frontend/embed-mode/) — the parent-child model.
 - [Preservation regions](../../../concepts/frontend/preservation-regions/) — owning a slice of generated code.
+- [Property writability](../../../concepts/backend/property-writability/) — what `readOnly` and `createOnly` do on the form and on the API.
 - [Implement a grid-elements-manager widget](../implement-grid-elements-manager/) — focused recipe for the embed widget.
 - [`catalyst generate` reference](../../../reference/cli-commands/generate/) — every flag and argument.
