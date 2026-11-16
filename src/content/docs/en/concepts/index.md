@@ -39,6 +39,7 @@ If you want to _do_ something, use the [how-to guides](../guides/). If you need 
 - **[The in-app user manual](./frontend/in-app-user-manual/)** — an end-user manual written per screen, compiled at build time, searched by permission and complemented by guided tours.
 - **[Preservation regions](./frontend/preservation-regions/)** — how you own a slice of a generated file and why that slice survives regeneration.
 - **[Role UI preferences](./frontend/role-ui-preferences/)** — how a role's landing page and hidden navigation shape the session at sign-in and impersonation.
+- **[Screen context for the assistant](./frontend/screen-context/)** — how a hand-written screen tells the assistant what it shows, through five closed sections that the backend bounds and never stores.
 - **[Column pinning (TanStack)](./frontend/tanstack-column-pinning/)** — why pinning a column reorders rather than moves it, and how the data-table writes both pinning and order.
 - **[Theme palettes](./frontend/theme-palettes/)** — how the active color palette is resolved and propagated to the whole UI.
 
