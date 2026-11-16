@@ -15,6 +15,7 @@ If you are new to Aurora, start with the [tutorials](../tutorials/) instead.
 - **[Field-schema decorators](./backend/apply-field-schema-decorators/)** — validate payloads and format return values with `@ApplySchema`, `@Format` and `@Sanitize`.
 - **[Author a report cube](./backend/author-a-report-cube/)** — declare dimensions, measures, joins and a curated report, and register it.
 - **[Configure account security](./backend/configure-account-security/)** — set up password reset and TOTP two-factor authentication for a deployment.
+- **[Declare a bounded context's queues](./backend/declare-bc-queues/)** — declare the BullMQ queues a BC owns with `QueueDeclarationModule.forFeature`.
 - **[Exclude CLI-generated APIs from a module](./backend/exclude-generated-apis/)** — skip operations or files when regenerating a module.
 - **[Manage schema migrations with drizzle-kit](./backend/manage-schema-migrations/)** — edit the YAML, generate the migration, review and apply it.
 - **[Compose a QueryStatement](./backend/query-with-querystatement/)** — build `where`, `relations` and `order` clauses and load relations safely.

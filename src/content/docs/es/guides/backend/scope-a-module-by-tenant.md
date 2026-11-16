@@ -63,7 +63,7 @@ Hacer que cada endpoint generado de un módulo devuelva y acepte solo filas de l
    catalyst generate back module --name=<bounded-context>/<module> --force
    ```
 
-5. **Los endpoints manuales usan el decorador tú mismo.** Si añades una lectura propia sobre un agregado `hasTenant`, aplica `@TenantConstraint` de `@aurorajs.dev/core-back`. Necesita el field schema del agregado y la posición del argumento de la consulta. Los resolvers generados muestran la forma completa.
+5. **Los endpoints manuales usan el decorador tú mismo.** Si añades una lectura propia sobre un agregado `hasTenant`, aplica `@TenantConstraint` de `@aurorajs.dev/core-back`. Necesita el field schema del agregado y la posición del argumento de la consulta. Si la columna de tenant es un array como `tenantIds`, indica también `targetProperty: 'tenantIds'` e `isArray: true`. Los resolvers generados muestran la forma completa.
 
    ```ts
    @TenantConstraint({
@@ -74,7 +74,16 @@ Hacer que cada endpoint generado de un módulo devuelva y acepte solo filas de l
    async main(account, queryStatement, constraint, meta) { /* … */ }
    ```
 
-   `queryStatementIndex` es `null` cuando el método no recibe consulta, y `aggregateFieldIndex` señala el campo agregado de `sum`, `max` y `min`. Ambos son obligatorios a propósito: un valor por defecto dejaría una consulta sin comprobar en silencio.
+   Solo `queryStatementIndex` es obligatorio: es `null` cuando el método no recibe consulta, y no tiene valor por defecto a propósito, porque uno dejaría una consulta sin comprobar en silencio. `aggregateFieldIndex` es opcional; indícalo solo en `sum`, `max` y `min`, donde señala el campo agregado. `targetProperty` vale `'tenantId'` por defecto e `isArray` vale `false`; cámbialos cuando la columna de tenant sea un array como `tenantIds`:
+
+   ```ts
+   @TenantConstraint({
+     fieldSchema: ContactFieldSchema,
+     queryStatementIndex: 1,
+     targetProperty: 'tenantIds',
+     isArray: true,
+   })
+   ```
 
 ## Verifica que funciona
 

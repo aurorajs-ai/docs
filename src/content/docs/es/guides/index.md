@@ -15,6 +15,7 @@ Si Aurora es nuevo para ti, empieza con los [tutoriales](../tutorials/).
 - **[Decoradores de field-schema](./backend/apply-field-schema-decorators/)** — valida payloads y formatea valores de retorno con `@ApplySchema`, `@Format` y `@Sanitize`.
 - **[Crear un cubo de informes](./backend/author-a-report-cube/)** — declara dimensiones, medidas, joins y un informe curado, y regístralo.
 - **[Configurar la seguridad de la cuenta](./backend/configure-account-security/)** — configura el restablecimiento de contraseña y la autenticación en dos pasos TOTP de un despliegue.
+- **[Declarar las colas de un bounded context](./backend/declare-bc-queues/)** — declara las colas BullMQ que posee un BC con `QueueDeclarationModule.forFeature`.
 - **[Excluir APIs](./backend/exclude-generated-apis/)** — omite operaciones o archivos al regenerar un módulo.
 - **[Gestionar migraciones de esquema con drizzle-kit](./backend/manage-schema-migrations/)** — edita el YAML, genera la migración, revísala y aplícala.
 - **[Componer un QueryStatement](./backend/query-with-querystatement/)** — construye cláusulas `where`, `relations` y `order` y carga relaciones de forma segura.

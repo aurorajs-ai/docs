@@ -15,7 +15,7 @@ catalyst add identity
 
 Esto instala los bounded contexts `iam` y `o-auth` en el backend y las pantallas de login e IAM correspondientes en el frontend, junto con el paquete `tools` que Identity necesita. Un paquete instala todas las mitades que declara, así que no hay un paso separado para backend y frontend. El comando imprime el plan antes de cambiar nada. Mira [`catalyst add`](../../../reference/cli-commands/add/).
 
-Al terminar, imprime lo que queda por hacer. Guarda esa lista para los pasos siguientes: el comando `pnpm db:generate` que debes ejecutar y las claves obligatorias que `backend/.env` todavía no tiene.
+Al terminar, imprime lo que queda por hacer. Guarda esa lista para los pasos siguientes: los comandos `pnpm db:generate` que debes ejecutar y las claves obligatorias que `backend/.env` todavía no tiene.
 
 ## 2. Establece las claves que listó el comando
 
@@ -45,10 +45,11 @@ No necesitas `catalyst keys`: `catalyst new` ya escribió `oauth-private.key` y 
 
 ## 4. Genera la primera migración
 
-El scaffold todavía no tiene tablas. Genera la migración que crea las de Identity, desde la raíz del proyecto:
+El scaffold todavía no tiene tablas. `catalyst add` imprimió un comando `pnpm db:generate --name <paquete>` por cada paquete que cambió (Identity requiere `tools`, así que espera ver ambos). Ejecuta cada comando impreso desde la raíz del proyecto, por ejemplo:
 
 ```bash
-pnpm db:generate --name init
+pnpm db:generate --name tools
+pnpm db:generate --name identity
 ```
 
 `--name` es obligatorio. Este paso es offline: no abre ninguna conexión a la base de datos. Revisa el `.sql` generado en `backend/src/database/migrations/drizzle/` y haz commit con el resto.

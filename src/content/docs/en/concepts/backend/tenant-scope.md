@@ -15,7 +15,7 @@ The same declaration closes a less obvious leak. A query language that can follo
 
 ### Who the caller is: `dTenants`
 
-Every account carries `dTenants`, a denormalized list of the tenant ids it may act in. It is derived from the account's direct tenant memberships. If the account has `hasAddChildTenants` set, it also includes every current descendant of those tenants. It is read-only to clients and recomputed on account create, on account update and on every token issuance (password, authorization code, refresh token, client credentials and impersonation). The refresh writes only when the value changed. If it fails, token issuance still succeeds with the stored snapshot and the error is logged.
+Every account carries `dTenants`, a denormalized list of the tenant ids it may act in. It is derived from the account's direct tenant memberships. If the account has `hasAddChildTenants` set, it also includes every current descendant of those tenants. It is read-only to clients and recomputed on account create, on account update and on every token issuance (authorization code, refresh token, client credentials and impersonation). The refresh writes only when the value changed. If it fails, token issuance still succeeds with the stored snapshot and the error is logged.
 
 An account with an empty `dTenants` is not "unrestricted". It matches no row.
 

@@ -67,7 +67,7 @@ Los tokens de suplantación no salen del endpoint de tokens. Los emite una mutac
 Cuando un satélite delega el login usa el flujo **Authorization Code con PKCE** de OAuth 2.1. El backend del satélite actúa como **Backend-for-Frontend (BFF)**: es el cliente OAuth confidencial, así que el client secret vive solo en el backend del satélite y nunca llega al navegador.
 
 ```
-SPA ─/auth/login─▶ BFF satélite ──302 /authorize?code_challenge,client_id=aurora,state─▶ HUB
+SPA ─/auth/login─▶ BFF satélite ──302 /authorize?code_challenge,client_id=<app code>,state─▶ HUB
                    (guarda el code_verifier por state)                                    │
 HUB (sin sesión) ─302─▶ HUB /sign-in?continue=…  → el usuario entra → cookie hub_session  │
 HUB ──302 redirect_uri=…/callback?code=&state=────────────────────────────────────────────┘
@@ -106,7 +106,7 @@ Un satélite no puede leer las filas del hub, así que guarda la cuenta en cach�
 ## Concesiones y límites
 
 - **`none` es solo para arranque.** Existe para que una instalación limpia arranque; si lo llevas a producción, todo endpoint sin permiso declarado queda abierto.
-- **`aurora-hub` sigue leyendo una clave privada al arrancar.** Aunque un satélite valida vía el JWKS del hub y nunca firma nada, el firmador de JWT se construye al arrancar y lee `OAUTH_PRIVATE_KEY_PATH` en cualquier modo distinto de `none`. Por eso un satélite necesita `.keys/oauth-private.key` presente o revienta al arrancar — genérala con [`catalyst keys`](/aurora-catalyst-docs/es/reference/cli-commands/keys/) incluso en modo hub.
+- **Solo `local-provider` necesita un par de claves.** El firmador de JWT carga la clave privada únicamente en modo `local-provider`. Un satélite en modo `aurora-hub` valida vía el JWKS del hub, nunca firma nada y arranca sin ningún archivo de claves; el hub (`local-provider`) no arranca sin la suya, consulta [`catalyst keys`](/aurora-catalyst-docs/es/reference/cli-commands/keys/).
 - **Un redirect URI por cliente.** `OAuthClient.redirect` es una sola cadena y se compara de forma exacta; un cliente sirve un único callback de satélite.
 - **El almacén del verifier PKCE es en memoria.** Es correcto para un satélite de instancia única; detrás de varias réplicas, un verifier guardado en una instancia es invisible para otra, así que hace falta un almacén compartido antes de escalar horizontalmente.
 - **La revocación se retrasa en los satélites, no en el hub.** El hub comprueba la fila del token en cada petición. Un satélite guarda en caché la cuenta validada por token durante cinco minutos, así que una revocación o un cambio de permisos le llega pasada esa ventana.

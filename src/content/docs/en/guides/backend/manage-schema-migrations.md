@@ -57,12 +57,12 @@ flowchart LR
 | Script | What it does | Example | Expected output |
 | --- | --- | --- | --- |
 | `pnpm db:generate --name <name>` | Generates a new migration from the `*.schema.ts` diff. The name is mandatory — without it, the command fails explicitly instead of inventing a random nickname. | `pnpm db:generate --name add-invoice-tables` | Creates `src/database/migrations/drizzle/<timestamp>_add-invoice-tables/` with `migration.sql` and `snapshot.json`. |
-| `pnpm db:migrate` | Applies pending migrations without starting Nest, reusing the exact same mechanism the boot uses. | `pnpm db:migrate` | `Applying drizzle schema migrations...` followed by `Drizzle schema migrations up to date.` If there's nothing pending, it finishes just as fast (a no-op). |
-| `pnpm db:check` | Detects drift without touching the database: runs a probe `generate` and checks whether it produces a new folder. This is the command CI runs. | `pnpm db:check` | `Sin drift: *.schema.ts está alineado con el snapshot.` (exit 0), or a drift message plus instructions (non-zero exit). |
+| `pnpm db:migrate` | Applies pending migrations without starting Nest, reusing the exact same mechanism the boot uses. | `pnpm db:migrate` | `[db:migrate] Applying pending migrations from <folder>...` followed by `[db:migrate] Database is up to date.` If there's nothing pending, it finishes just as fast (a no-op). |
+| `pnpm db:check` | Detects drift without touching the database: runs a probe `generate` and checks whether it produces a new folder. This is the command to run in your CI. | `pnpm db:check` | `Sin drift: *.schema.ts está alineado con el snapshot.` (exit 0), or a drift message plus instructions (non-zero exit). |
 
-### When `schema-drift-check` fails on your PR
+### Catch drift in your own CI
 
-The `.github/workflows/schema-drift-check.yml` CI workflow runs `pnpm db:check` on every PR that touches a `*.schema.ts` file or the migrations folder. If it fails, it means you edited the schema without generating its corresponding migration. The fix is always the same: run `pnpm db:generate --name <descriptive>` locally, review the resulting `.sql`, and add the generated folder to the same commit/PR.
+`catalyst new` does not ship a CI workflow for this check. Add a step that runs `pnpm db:check` to your own pipeline on every PR that touches a `*.schema.ts` file or the migrations folder. If it fails, it means you edited the schema without generating its corresponding migration. The fix is always the same: run `pnpm db:generate --name <descriptive>` locally, review the resulting `.sql`, and add the generated folder to the same commit/PR.
 
 ## `DATABASE_MIGRATE_ON_BOOT`: who applies the migration, and when
 

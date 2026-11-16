@@ -57,12 +57,12 @@ flowchart LR
 | Script | Qué hace | Ejemplo | Salida esperada |
 | --- | --- | --- | --- |
 | `pnpm db:generate --name <nombre>` | Genera una migración nueva a partir del diff de `*.schema.ts`. El nombre es obligatorio — sin él, el comando falla explícitamente en vez de inventar un apodo aleatorio. | `pnpm db:generate --name add-invoice-tables` | Crea `src/database/migrations/drizzle/<timestamp>_add-invoice-tables/` con `migration.sql` y `snapshot.json`. |
-| `pnpm db:migrate` | Aplica las migraciones pendientes sin arrancar Nest, reutilizando exactamente el mismo mecanismo que usa el boot. | `pnpm db:migrate` | `Applying drizzle schema migrations...` seguido de `Drizzle schema migrations up to date.` Si no hay pendientes, termina igual de rápido (no-op). |
-| `pnpm db:check` | Detecta drift sin tocar la base de datos: corre un `generate` de prueba y verifica si produce una carpeta nueva. Es el comando que corre en CI. | `pnpm db:check` | `Sin drift: *.schema.ts está alineado con el snapshot.` (exit 0) o un mensaje de drift más instrucciones (exit distinto de 0). |
+| `pnpm db:migrate` | Aplica las migraciones pendientes sin arrancar Nest, reutilizando exactamente el mismo mecanismo que usa el boot. | `pnpm db:migrate` | `[db:migrate] Applying pending migrations from <folder>...` seguido de `[db:migrate] Database is up to date.` Si no hay pendientes, termina igual de rápido (no-op). |
+| `pnpm db:check` | Detecta drift sin tocar la base de datos: corre un `generate` de prueba y verifica si produce una carpeta nueva. Es el comando que debes ejecutar en tu CI. | `pnpm db:check` | `Sin drift: *.schema.ts está alineado con el snapshot.` (exit 0) o un mensaje de drift más instrucciones (exit distinto de 0). |
 
-### Cuando falla `schema-drift-check` en tu PR
+### Detecta el drift en tu propio CI
 
-El workflow de CI `.github/workflows/schema-drift-check.yml` corre `pnpm db:check` en cada PR que toca un `*.schema.ts` o la carpeta de migraciones. Si falla, significa que editaste el esquema sin generar su migración correspondiente. La solución es siempre la misma: ejecuta `pnpm db:generate --name <descriptivo>` localmente, revisa el `.sql` resultante, y añade la carpeta generada al mismo commit/PR.
+`catalyst new` no incluye ningún workflow de CI para esta comprobación. Añade a tu propio pipeline un paso que ejecute `pnpm db:check` en cada PR que toque un `*.schema.ts` o la carpeta de migraciones. Si falla, significa que editaste el esquema sin generar su migración correspondiente. La solución es siempre la misma: ejecuta `pnpm db:generate --name <descriptivo>` localmente, revisa el `.sql` resultante, y añade la carpeta generada al mismo commit/PR.
 
 ## `DATABASE_MIGRATE_ON_BOOT`: quién aplica la migración y cuándo
 

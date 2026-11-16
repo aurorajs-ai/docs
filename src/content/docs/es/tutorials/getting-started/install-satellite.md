@@ -26,7 +26,7 @@ catalyst add authorization-code
 Esto instala el paquete BFF que gestiona el ida y vuelta `/authorize` → `/callback` → token. Un satélite no necesita ningún paquete `iam` ni `o-auth` propio — la identidad vive en el hub.
 
 :::note
-Un satélite en modo `aurora-hub` valida los tokens contra el JWKS del hub y **nunca firma nada**. Aun así lee una clave privada al arrancar, así que deja en su sitio el par de claves que `catalyst new` escribió en `backend/.keys/`. No tienes que generar nada más.
+Un satélite en modo `aurora-hub` valida los tokens contra el JWKS del hub y **nunca firma nada**. Tampoco necesita un par de claves: el firmador omite la carga de claves en todos los modos salvo `local-provider`, así que los archivos que `catalyst new` escribe en `backend/.keys/` son inofensivos y no se usan aquí. No tienes que generar nada más.
 :::
 
 ## 3. Registra el satélite en el hub

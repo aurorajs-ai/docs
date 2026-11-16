@@ -26,7 +26,7 @@ catalyst add authorization-code
 This installs the BFF package that drives the `/authorize` → `/callback` → token round-trip. A satellite needs no `iam` or `o-auth` package of its own — identity lives on the hub.
 
 :::note
-A satellite in `aurora-hub` mode validates tokens against the hub's JWKS and **never signs anything**. It still reads a private key at boot, though, so keep the key pair that `catalyst new` wrote under `backend/.keys/` where it is. You do not generate anything extra.
+A satellite in `aurora-hub` mode validates tokens against the hub's JWKS and **never signs anything**. It needs no key pair either: the signer skips key loading in every mode except `local-provider`, so the files `catalyst new` writes under `backend/.keys/` are harmless and unused here. You do not generate anything extra.
 :::
 
 ## 3. Register the satellite on the hub

@@ -67,7 +67,7 @@ Impersonation tokens do not come from the token endpoint. They are issued by a G
 When a satellite delegates login it uses the OAuth 2.1 **Authorization Code flow with PKCE**. The satellite backend acts as a **Backend-for-Frontend (BFF)**: it is the confidential OAuth client, so the client secret lives only on the satellite backend and never reaches the browser.
 
 ```
-SPA ─/auth/login─▶ satellite BFF ──302 /authorize?code_challenge,client_id=aurora,state─▶ HUB
+SPA ─/auth/login─▶ satellite BFF ──302 /authorize?code_challenge,client_id=<app code>,state─▶ HUB
                    (stashes code_verifier by state)                                        │
 HUB (no session) ─302─▶ HUB /sign-in?continue=…  → user logs in → hub_session cookie set   │
 HUB ──302 redirect_uri=…/callback?code=&state=─────────────────────────────────────────────┘
@@ -106,7 +106,7 @@ A satellite cannot read the hub's rows, so it caches the account by `jti` for fi
 ## Trade-offs and limits
 
 - **`none` is bootstrap-only.** It exists so a clean install boots; ship it to production and every endpoint without a declared permission is open.
-- **`aurora-hub` still reads a private key at boot.** Although a satellite validates via the hub's JWKS and never signs anything, the JWT signer is constructed at startup and reads `OAUTH_PRIVATE_KEY_PATH` for any mode other than `none`. A satellite therefore needs `.keys/oauth-private.key` present or it crashes at boot — generate it with [`catalyst keys`](/aurora-catalyst-docs/en/reference/cli-commands/keys/) even in hub mode.
+- **Only `local-provider` needs a key pair.** The JWT signer loads the private key only in `local-provider` mode. A satellite in `aurora-hub` mode validates via the hub's JWKS, never signs anything and starts without any key file; the hub (`local-provider`) will not start without its key, see [`catalyst keys`](/aurora-catalyst-docs/en/reference/cli-commands/keys/).
 - **One redirect URI per client.** `OAuthClient.redirect` is a single string and is matched exactly; a client serves one satellite callback.
 - **The PKCE verifier store is in-memory.** It is correct for a single-instance satellite; behind multiple replicas a verifier stashed on one instance is invisible to another, so a shared store is needed before scaling out.
 - **Revocation lags on satellites, not on the hub.** The hub checks the token row on every request. A satellite caches the validated account per token for five minutes, so a revocation or a permission change reaches it after that window.

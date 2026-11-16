@@ -15,7 +15,7 @@ La misma declaración cierra una fuga menos evidente. Un lenguaje de consulta qu
 
 ### Quién es el llamante: `dTenants`
 
-Cada cuenta lleva `dTenants`, una lista desnormalizada de los ids de tenant en los que puede actuar. Se deriva de las pertenencias directas de la cuenta a tenants. Si la cuenta tiene `hasAddChildTenants`, incluye además todos los descendientes actuales de esos tenants. Es de solo lectura para los clientes y se recalcula al crear la cuenta, al actualizarla y en cada emisión de token (password, authorization code, refresh token, client credentials e impersonación). El refresco solo escribe si el valor cambió. Si falla, la emisión del token sigue adelante con la instantánea almacenada y el error se registra en el log.
+Cada cuenta lleva `dTenants`, una lista desnormalizada de los ids de tenant en los que puede actuar. Se deriva de las pertenencias directas de la cuenta a tenants. Si la cuenta tiene `hasAddChildTenants`, incluye además todos los descendientes actuales de esos tenants. Es de solo lectura para los clientes y se recalcula al crear la cuenta, al actualizarla y en cada emisión de token (authorization code, refresh token, client credentials e impersonación). El refresco solo escribe si el valor cambió. Si falla, la emisión del token sigue adelante con la instantánea almacenada y el error se registra en el log.
 
 Una cuenta con `dTenants` vacío no es «sin restricción»: no coincide con ninguna fila.
 

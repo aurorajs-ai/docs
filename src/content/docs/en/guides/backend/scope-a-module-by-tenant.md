@@ -63,7 +63,7 @@ Make every generated endpoint of a module return and accept only rows of the cal
    catalyst generate back module --name=<bounded-context>/<module> --force
    ```
 
-5. **Hand-written endpoints use the decorator yourself.** If you add a read of your own on a `hasTenant` aggregate, apply `@TenantConstraint` from `@aurorajs.dev/core-back`. It needs the aggregate's field schema and the position of the query argument. The generated resolvers show the full shape.
+5. **Hand-written endpoints use the decorator yourself.** If you add a read of your own on a `hasTenant` aggregate, apply `@TenantConstraint` from `@aurorajs.dev/core-back`. It needs the aggregate's field schema and the position of the query argument. If the tenant column is an array such as `tenantIds`, also set `targetProperty: 'tenantIds'` and `isArray: true`. The generated resolvers show the full shape.
 
    ```ts
    @TenantConstraint({
@@ -74,7 +74,16 @@ Make every generated endpoint of a module return and accept only rows of the cal
    async main(account, queryStatement, constraint, meta) { /* … */ }
    ```
 
-   `queryStatementIndex` is `null` when the method takes no query, and `aggregateFieldIndex` points at the aggregated field of `sum`, `max` and `min`. Both are required on purpose: a default would silently leave a query unchecked.
+   Only `queryStatementIndex` is required: it is `null` when the method takes no query, and it has no default on purpose, because a default would silently leave a query unchecked. `aggregateFieldIndex` is optional; set it only on `sum`, `max` and `min`, where it points at the aggregated field. `targetProperty` defaults to `'tenantId'` and `isArray` to `false`; set them when the tenant column is an array such as `tenantIds`:
+
+   ```ts
+   @TenantConstraint({
+     fieldSchema: ContactFieldSchema,
+     queryStatementIndex: 1,
+     targetProperty: 'tenantIds',
+     isArray: true,
+   })
+   ```
 
 ## Verify it worked
 
