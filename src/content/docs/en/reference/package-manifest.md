@@ -15,6 +15,8 @@ A package has exactly one hand-written manifest at `cliter/packages/<package>.ya
 | --- | --- | --- |
 | `name` | string | Package name, the one you pass to `catalyst add`. |
 | `label` | string | Human-readable name. |
+| `kind` | `framework` \| `framework-solution` | Mandatory, never defaulted. `framework` ships in the public CLI; `framework-solution` ships from its own git repository. A manifest without `kind` fails validation. A `framework` manifest cannot require a `framework-solution`. |
+| `repository` | string | Git URL of the package's repository. Mandatory for `framework-solution`, rejected on `framework`. |
 | `requires` | list of strings | Packages installed together with this one. Names only, never version ranges. Resolved transitively. |
 | `env` | map | `.env` keys the package needs, applied after the merge. A string is a development default, written when the key is absent. `null` marks a required key with no valid default: the CLI never writes it and reports it when missing. |
 | `backend` | map | The backend half. A half with no `paths` is not installed. |
@@ -84,26 +86,37 @@ frontend:
 
 ## The lockfile
 
-`aurora.lock.yaml` in the project root has two keys: `cliVersion` (the CLI version that rendered the tip of `aurora/scaffold`) and `packages` (the installed package names, deduplicated and sorted). Any other key is an error.
+`aurora.lock.yaml` in the project root has two keys: `cliVersion` (the CLI version that rendered the tip of `aurora/scaffold`) and `packages` (the installed packages, deduplicated and sorted). Any other key is an error. Each entry of `packages` is either a plain name (a `framework` package the CLI ships) or an object `{ name, source }` (a `framework-solution`, with `source` the URL of its repository):
+
+```yaml
+cliVersion: 3.2.0
+packages:
+  - identity
+  - name: business-partner-portal
+    source: <repository-url>
+```
+
+`catalyst add <package> --from <repository-url>` writes the object form. `catalyst add` and `catalyst upgrade` fetch every `source` entry at the tag equal to the CLI version. For each one, the render also writes its manifest to `cliter/packages/<package>.yaml` of the project: never edit it.
 
 ## Package catalog
 
-| Package | Label | Requires |
-| --- | --- | --- |
-| `authorization-code` | Authorization Code | none |
-| `automation` | Automation | `identity` |
-| `business-partner-portal` | Business Partner Portal | `identity`, `queue-manager`, `common`, `storage-account`, `automation`, `fiscal`, `sap-integration` |
-| `common` | Common | `identity` |
-| `dashboard` | Dashboard | `identity` |
-| `fiscal` | Fiscal | `identity`, `common` |
-| `hub` | Hub | `identity` |
-| `identity` | Identity (IAM + OAuth) | `tools` |
-| `production-planning` | Production Planning | `identity` |
-| `queue-manager` | Queue Manager | none |
-| `reporting` | Reporting | `identity` |
-| `sap-integration` | SAP Integration | `identity`, `queue-manager` |
-| `storage-account` | Storage Account | `identity` |
-| `tools` | Tools | none |
+Every package is `framework` and ships in the CLI, except `business-partner-portal`, which is a `framework-solution`: install it with `catalyst add business-partner-portal --from <repository-url>`.
+
+| Package | Label | Kind | Requires |
+| --- | --- | --- | --- |
+| `authorization-code` | Authorization Code | `framework` | none |
+| `automation` | Automation | `framework` | `identity` |
+| `business-partner-portal` | Business Partner Portal | `framework-solution` | `identity`, `queue-manager`, `common`, `storage-account`, `automation`, `fiscal`, `sap-integration` |
+| `common` | Common | `framework` | `identity` |
+| `dashboard` | Dashboard | `framework` | `identity` |
+| `fiscal` | Fiscal | `framework` | `identity`, `common` |
+| `hub` | Hub | `framework` | `identity` |
+| `identity` | Identity (IAM + OAuth) | `framework` | `tools` |
+| `queue-manager` | Queue Manager | `framework` | none |
+| `reporting` | Reporting | `framework` | `identity` |
+| `sap-integration` | SAP Integration | `framework` | `identity`, `queue-manager` |
+| `storage-account` | Storage Account | `framework` | `identity` |
+| `tools` | Tools | `framework` | none |
 
 ## Related
 

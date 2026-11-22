@@ -15,6 +15,8 @@ Un paquete tiene exactamente un manifiesto escrito a mano en `cliter/packages/<p
 | --- | --- | --- |
 | `name` | string | Nombre del paquete, el que pasas a `catalyst add`. |
 | `label` | string | Nombre legible. |
+| `kind` | `framework` \| `framework-solution` | Obligatorio, nunca con valor por defecto. `framework` se distribuye en la CLI pública; `framework-solution` se distribuye desde su propio repositorio git. Un manifiesto sin `kind` falla la validación. Un manifiesto `framework` no puede requerir una `framework-solution`. |
+| `repository` | string | URL git del repositorio del paquete. Obligatorio en `framework-solution`, rechazado en `framework`. |
 | `requires` | lista de strings | Paquetes que se instalan junto con este. Solo nombres, nunca rangos de versión. Se resuelven de forma transitiva. |
 | `env` | mapa | Claves `.env` que el paquete necesita, aplicadas tras la fusión. Un string es un valor por defecto de desarrollo, que se escribe cuando la clave no existe. `null` marca una clave obligatoria sin un valor por defecto válido: la CLI nunca la escribe y la informa cuando falta. |
 | `backend` | mapa | La mitad de backend. Una mitad sin `paths` no se instala. |
@@ -84,26 +86,37 @@ frontend:
 
 ## El lockfile
 
-`aurora.lock.yaml`, en la raíz del proyecto, tiene dos claves: `cliVersion` (la versión de la CLI que renderizó la punta de `aurora/scaffold`) y `packages` (los nombres de los paquetes instalados, sin duplicados y ordenados). Cualquier otra clave es un error.
+`aurora.lock.yaml`, en la raíz del proyecto, tiene dos claves: `cliVersion` (la versión de la CLI que renderizó la punta de `aurora/scaffold`) y `packages` (los paquetes instalados, sin duplicados y ordenados). Cualquier otra clave es un error. Cada entrada de `packages` es un nombre simple (un paquete `framework` que incluye la CLI) o un objeto `{ name, source }` (una `framework-solution`, donde `source` es la URL de su repositorio):
+
+```yaml
+cliVersion: 3.2.0
+packages:
+  - identity
+  - name: business-partner-portal
+    source: <repository-url>
+```
+
+`catalyst add <package> --from <repository-url>` escribe la forma de objeto. `catalyst add` y `catalyst upgrade` descargan cada entrada `source` en la etiqueta igual a la versión de la CLI. Por cada una, el renderizado escribe además su manifiesto en `cliter/packages/<package>.yaml` del proyecto: no lo edites.
 
 ## Catálogo de paquetes
 
-| Paquete | Etiqueta | Requiere |
-| --- | --- | --- |
-| `authorization-code` | Authorization Code | ninguno |
-| `automation` | Automation | `identity` |
-| `business-partner-portal` | Business Partner Portal | `identity`, `queue-manager`, `common`, `storage-account`, `automation`, `fiscal`, `sap-integration` |
-| `common` | Common | `identity` |
-| `dashboard` | Dashboard | `identity` |
-| `fiscal` | Fiscal | `identity`, `common` |
-| `hub` | Hub | `identity` |
-| `identity` | Identity (IAM + OAuth) | `tools` |
-| `production-planning` | Production Planning | `identity` |
-| `queue-manager` | Queue Manager | ninguno |
-| `reporting` | Reporting | `identity` |
-| `sap-integration` | SAP Integration | `identity`, `queue-manager` |
-| `storage-account` | Storage Account | `identity` |
-| `tools` | Tools | ninguno |
+Todos los paquetes son `framework` y se distribuyen en la CLI, salvo `business-partner-portal`, que es una `framework-solution`: instálala con `catalyst add business-partner-portal --from <repository-url>`.
+
+| Paquete | Etiqueta | Tipo | Requiere |
+| --- | --- | --- | --- |
+| `authorization-code` | Authorization Code | `framework` | ninguno |
+| `automation` | Automation | `framework` | `identity` |
+| `business-partner-portal` | Business Partner Portal | `framework-solution` | `identity`, `queue-manager`, `common`, `storage-account`, `automation`, `fiscal`, `sap-integration` |
+| `common` | Common | `framework` | `identity` |
+| `dashboard` | Dashboard | `framework` | `identity` |
+| `fiscal` | Fiscal | `framework` | `identity`, `common` |
+| `hub` | Hub | `framework` | `identity` |
+| `identity` | Identity (IAM + OAuth) | `framework` | `tools` |
+| `queue-manager` | Queue Manager | `framework` | ninguno |
+| `reporting` | Reporting | `framework` | `identity` |
+| `sap-integration` | SAP Integration | `framework` | `identity`, `queue-manager` |
+| `storage-account` | Storage Account | `framework` | `identity` |
+| `tools` | Tools | `framework` | ninguno |
 
 ## Relacionado
 
