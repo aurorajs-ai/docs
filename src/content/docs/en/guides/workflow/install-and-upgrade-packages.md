@@ -1,6 +1,6 @@
 ---
 title: Install and upgrade packages
-description: Add a package to a project with catalyst add, upgrade the scaffold and every installed package with catalyst upgrade, resolve conflicts, generate the migration and keep the vendor branch pushed.
+description: Add a package to a project with catalyst add, install a framework solution from its repository, upgrade the scaffold and every installed package with catalyst upgrade, resolve conflicts, generate the migration and keep the vendor branch pushed.
 ---
 
 ## Goal
@@ -37,6 +37,22 @@ Add an Aurora package to an existing project, or bring the project to the scaffo
 
 4. **Set the required keys.** The CLI appends missing `backend/.env` keys that have a declared default and prints the required keys that have none, for you to set.
 
+### Install a framework solution from its repository
+
+A framework solution such as `business-partner-portal` is not in the CLI: it lives in its own private git repository, tagged with the CLI version. Ask the owner for the repository URL (the `repository` of the package's manifest).
+
+1. **Run the command with the URL.** The package name is required.
+
+   ```bash
+   catalyst add business-partner-portal --from <repository-url>
+   ```
+
+   The CLI clones the repository at the tag equal to the `cliVersion` of `aurora.lock.yaml`, with your own git credentials, and renders it with the packages the CLI ships. A failed fetch or a missing tag stops the command before anything is written.
+
+2. **Continue as for any package.** Resolve conflicts, generate the migration and set the keys, as in "Add a package".
+
+The lockfile now holds `{ name, source }` for the package, and `cliter/packages/<package>.yaml` holds its manifest. Never edit that file: the next render rewrites it.
+
 ### Upgrade the project
 
 1. **Run the upgrade.**
@@ -45,7 +61,7 @@ Add an Aurora package to an existing project, or bring the project to the scaffo
    catalyst upgrade
    ```
 
-   It refuses when the lockfile is missing, when `aurora/scaffold` does not exist or when tracked files are dirty. It renames any `<module>.aurora.yaml` to `<module>.module.yaml` in its own commit, then renders the scaffold and every locked package and merges them.
+   It refuses when the lockfile is missing, when `aurora/scaffold` does not exist or when tracked files are dirty. It renames any `<module>.aurora.yaml` to `<module>.module.yaml` in its own commit, then renders the scaffold and every locked package and merges them. It fetches each framework solution again from its `source` at the tag equal to the CLI version, so every repository must be reachable with your git credentials and carry that tag; otherwise the upgrade stops before changing anything and names the entry, the URL and the tag.
 
 2. **Resolve conflicts and run the post-merge steps**, as above. The upgrade also prints the `pnpm db:generate --name <package>` commands for the packages whose backend changed.
 
@@ -56,6 +72,13 @@ Add an Aurora package to an existing project, or bring the project to the scaffo
    ```
 
    Push it after every upgrade or add. A fresh clone gets it with `git fetch origin aurora/scaffold:aurora/scaffold`.
+
+### Migrate a package the CLI no longer ships
+
+Two packages left the CLI. Both migrations are one-time and manual, and the CLI README holds the full procedures ("Install a framework solution from its repository" and "Leave a package the CLI no longer ships"). The shape of each:
+
+- **`business-partner-portal` locked by bare name.** `catalyst upgrade` refuses the plain name, and `catalyst add --from` refuses because the lockfile `cliVersion` differs from the running CLI, so edit the lockfile once by hand. On a clean `main` with `aurora/scaffold` present, replace `- business-partner-portal` with `- name: business-partner-portal` plus `source: <repository-url>`, commit, then run `catalyst upgrade`.
+- **`production-planning`.** It is now a client solution: its code belongs to the client project. Remove it from `aurora.lock.yaml`, run `catalyst upgrade`, restore the files the merge deleted with `git checkout ORIG_HEAD -- <paths>`, and register its bounded context by hand in the two `project.composition.ts` files. Copy to the project, before upgrading, anything the monorepo holds for it that the project lacks, such as its `*.module.yaml` files.
 
 ### Undo or restore
 
@@ -74,6 +97,8 @@ Add an Aurora package to an existing project, or bring the project to the scaffo
 - **`catalyst add` says the CLI version differs from the lockfile.** Run `catalyst upgrade` first: `add` renders packages only at the lockfile's version.
 - **The CLI says `aurora.lock.yaml` is not found.** The project predates the lockfile. Adopt it by hand first: the CLI README describes two paths.
 - **A post-merge step failed, for example the install without network.** The command stops with a non-zero exit after the merge commit, names the failed step and the ones that did not run, and prints the pending `.env` keys. A rerun finds the package already installed, so run the named steps yourself.
+- **`catalyst add --from` or `catalyst upgrade` stops on a fetch.** The repository is unreachable with your git credentials, or it has no tag equal to the CLI version. The message names the entry, the URL and the tag. Fix the access, or ask the owner to publish the tag, and rerun: nothing was written.
+- **`catalyst add --from` refuses the package name.** The name is one the CLI ships, or the running CLI differs from the lockfile `cliVersion`. In the second case run `catalyst upgrade` first.
 - **An edit to a generated composition file disappeared.** Those files are generated whole from the manifests. Move your wiring to `backend/src/project.composition.ts` or `frontend/src/app/project.composition.ts`.
 
 ## Related
