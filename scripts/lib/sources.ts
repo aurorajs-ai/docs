@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,6 +58,21 @@ export function sourceAssetsPath(source: Source): string {
   return source.assetsSubdir
     ? path.join(sourcePath(source), source.assetsSubdir)
     : sourcePath(source);
+}
+
+/** The oclif `docs/` folder that `pnpm sync` mirrors into `reference/cli-commands/`. */
+export function cliDocsDir(source: Source): string {
+  return path.join(sourceAssetsPath(source), 'docs');
+}
+
+/**
+ * The CLI docs folder when it does not exist, otherwise `null`. The sync checks
+ * this BEFORE it empties the destination: a missing source must fail the run,
+ * never leave the reference deleted behind an exit code 0.
+ */
+export function missingCliDocs(source: Source): string | null {
+  const dir = cliDocsDir(source);
+  return existsSync(dir) ? null : dir;
 }
 
 export function findSource(slug: string): Source | undefined {
