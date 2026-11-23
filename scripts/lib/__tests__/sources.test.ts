@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { findSource, SIBLINGS_ROOT, sourceAssetsPath, sourcePath } from '../sources.js';
 
@@ -16,8 +16,18 @@ describe('SOURCES — cli consolidated into the aurora-catalyst monorepo', () =>
 });
 
 describe('sourcePath — always the repo root, regardless of assetsSubdir', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('cli resolves to the monorepo root', () => {
+    vi.stubEnv('CATALYST_REPO_PATH', '');
     expect(sourcePath(findSource('cli')!)).toBe(path.resolve(SIBLINGS_ROOT, 'aurora-catalyst'));
+  });
+
+  it('cli resolves to CATALYST_REPO_PATH when the checkout has another folder name', () => {
+    vi.stubEnv('CATALYST_REPO_PATH', '../catalyst');
+    expect(sourcePath(findSource('cli')!)).toBe(path.resolve('../catalyst'));
   });
 });
 

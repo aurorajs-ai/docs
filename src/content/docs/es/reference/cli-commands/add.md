@@ -15,14 +15,16 @@ Add an Aurora package to an existing project through its "aurora/scaffold" branc
 
 ```
 USAGE
-  $ catalyst add [PACKAGE] [-v]
+  $ catalyst add [PACKAGE] [--from <value>] [-v]
 
 ARGUMENTS
   [PACKAGE]  Package to add. Omit it to pick one from a list. Each package installs every half it declares (backend,
              frontend) and the packages it requires.
 
 FLAGS
-  -v, --verbose  Report all steps on screen.
+  -v, --verbose       Report all steps on screen.
+      --from=<value>  Git URL of the repository that holds the package. Requires the package argument; the repository is
+                      fetched at the tag equal to the lockfile cliVersion.
 
 DESCRIPTION
   Add an Aurora package to an existing project through its "aurora/scaffold" branch.
@@ -40,6 +42,13 @@ DESCRIPTION
   that it lacks, regenerates the GraphQL types and the business-rules index, and prints what is left to do: "pnpm
   db:generate --name <package>" for each package whose backend changed, the required keys still missing and the tools
   SQL scripts to run. It never generates or applies a schema migration.
+
+  With --from <url> the package is not one the CLI ships: the CLI clones <url> at the tag equal to the version recorded
+  in the lockfile (the repository must hold exactly that package, tagged with the CLI version), validates it together
+  with the packages the CLI ships and the other source entries, renders and merges it as above, and records it in
+  aurora.lock.yaml as { name, source }. The package argument is then required, the name must not be one the CLI ships,
+  and a failed fetch stops the command before anything is written. git uses your own credentials. "catalyst add" and
+  "catalyst upgrade" fetch every source entry of the lockfile the same way, at the CLI version they render with.
 
   A package already installed is not rendered again: adding it is a no-op. It refuses to run when the CLI version
   differs from the one recorded in the lockfile: run "catalyst upgrade" first.
@@ -64,6 +73,8 @@ EXAMPLES
   $ catalyst add identity
 
   $ catalyst add
+
+  $ catalyst add my-solution --from <git-repository-url>
 ```
 
 _See code: [src/commands/add/index.ts](https://github.com/avvale/aurora-catalyst/blob/main/packages/cli/src/commands/add/index.ts)_

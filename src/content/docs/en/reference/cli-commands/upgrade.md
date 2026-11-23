@@ -25,9 +25,12 @@ DESCRIPTION
 
   Run it from the root of the project, on the branch that should receive the upgrade. git must be on the PATH.
 
-  1. It reads the installed packages from aurora.lock.yaml and refuses to run without it, or when the running CLI no
-  longer ships a locked package. It also refuses, before changing anything, when the "aurora/scaffold" branch is missing
-  or when a tracked file has staged or unstaged changes (untracked files do not count): commit or stash them first.
+  1. It reads the installed packages from aurora.lock.yaml and refuses to run without it, or when a plain-name entry is
+  a package the running CLI no longer ships. An entry with a source (added with "catalyst add <package> --from <url>")
+  is fetched from that repository at the tag equal to the running CLI version, before anything is changed; a failed
+  fetch or a missing tag stops the command, naming the entry, the URL and the tag. It also refuses, before changing
+  anything, when the "aurora/scaffold" branch is missing or when a tracked file has staged or unstaged changes
+  (untracked files do not count): commit or stash them first.
   2. It migrates the module definition files, with no version gate, so a rerun after a merge picks up late arrivals: it
   renames each cliter/<bc>/<module>.aurora.yaml to <module>.module.yaml with "git mv", rewrites in every tracked file
   the two generated lines that name the old file (the "@source" header and the field-schema "derived from" line,

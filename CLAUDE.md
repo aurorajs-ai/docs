@@ -53,6 +53,8 @@ To update docs from a freshly-archived change:
 pnpm sync
 ```
 
+`pnpm sync` looks for the source repo in the sibling folder `../aurora-catalyst`. If your checkout has another folder name, declare its path: `CATALYST_REPO_PATH=../catalyst pnpm sync`.
+
 ## Rules
 
 - **IMPORTANT**: When completing a workflow, provide a summary table with two columns: Skills Used and Role Performed.
