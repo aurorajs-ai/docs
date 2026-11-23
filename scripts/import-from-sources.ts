@@ -20,12 +20,13 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import {
+  cliDocsDir,
   CONTENT_LOCALES,
   DOCS_ROOT,
   type Locale,
+  missingCliDocs,
   type Source,
   SOURCES,
-  sourceAssetsPath,
   targetFor,
 } from './lib/sources.js';
 
@@ -132,18 +133,7 @@ async function injectGenericFrontmatterUnder(dir: string): Promise<void> {
 // ─── Importers ───────────────────────────────────────────────────────
 
 async function mirrorCliCommandsFor(source: Source): Promise<void> {
-  const assetsRoot = sourceAssetsPath(source);
-  if (!existsSync(assetsRoot)) {
-    console.warn(`[skip] ${source.slug}: repo not found at ${assetsRoot}`);
-    return;
-  }
-  const sourceDir = path.join(assetsRoot, 'docs');
-  if (!existsSync(sourceDir)) {
-    console.warn(
-      `[skip] ${source.slug}: no CLI docs at ${sourceDir}. Run \`oclif readme --multi\` in ${source.repo}.`,
-    );
-    return;
-  }
+  const sourceDir = cliDocsDir(source);
   for (const locale of CONTENT_LOCALES) {
     const dest = targetFor(locale, 'reference/cli-commands');
     await resetDir(dest);
@@ -201,6 +191,19 @@ async function main(): Promise<void> {
     console.error(
       `Unknown source: ${options.only}. Known: ${SOURCES.map((s) => s.slug).join(', ')}`,
     );
+    process.exit(1);
+  }
+
+  const missing = options.skipCliCommands
+    ? []
+    : sources.filter((s) => s.hasCli && missingCliDocs(s));
+  if (missing.length > 0) {
+    for (const source of missing) {
+      console.error(
+        `${source.slug}: no CLI docs at ${missingCliDocs(source)}. Point ${source.pathEnv ?? 'the source'} at the ${source.repo} checkout, or run \`oclif readme --multi\` in packages/cli.`,
+      );
+    }
+    console.error('Nothing was changed.');
     process.exit(1);
   }
 
