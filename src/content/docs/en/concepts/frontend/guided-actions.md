@@ -95,6 +95,7 @@ The assistant stores each conversation turn so that a dedicated reviewer can rea
 
 ## Related
 
+- [The assistant voice channel](../assistant-voice-channel/) — the spoken form of the assistant's input and output.
 - [Detail mode](../detail-mode/) — the two shells that `detailMode` on a guided action chooses between.
 - [How-to: Enable the assistant on a module](../../../guides/frontend/enable-the-assistant-on-a-module/) — the YAML flag, field masking and registering a hand-written form.
 - [The in-app user manual](../in-app-user-manual/) — the chapters and tours that the action catalog is compiled with.

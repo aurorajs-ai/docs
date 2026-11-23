@@ -95,6 +95,7 @@ El asistente guarda cada turno de conversación para que un revisor dedicado pue
 
 ## Relacionado
 
+- [El canal de voz del asistente](../assistant-voice-channel/) — la forma hablada de entrada y salida del asistente.
 - [Detail mode](../detail-mode/) — los dos shells entre los que elige `detailMode` en una acción guiada.
 - [Cómo: Activar el asistente en un módulo](../../../guides/frontend/enable-the-assistant-on-a-module/) — la marca del YAML, el enmascarado de campos y el registro de un formulario escrito a mano.
 - [El manual de usuario integrado](../in-app-user-manual/) — los capítulos y recorridos con los que se compila el catálogo de acciones.
