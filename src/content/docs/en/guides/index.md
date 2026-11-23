@@ -27,6 +27,7 @@ If you are new to Aurora, start with the [tutorials](../tutorials/) instead.
 
 - **[Configure a frontend module](./frontend/configure-a-frontend-module/)** — pick the detail shell, choose widgets, lay out the form and regenerate.
 - **[Enable the assistant on a module](./frontend/enable-the-assistant-on-a-module/)** — let the help assistant fill a module's creation form.
+- **[Enable voice in the assistant](./frontend/enable-voice-in-the-assistant/)** — turn on listening modes and choose the ElevenLabs or the local speech profile.
 - **[Implement a grid-elements-manager widget](./frontend/implement-grid-elements-manager/)** — embed a child module's CRUD inside its parent's detail page.
 - **[Manage theme palettes](./frontend/manage-theme-palettes/)** — use the palette selector and add a palette from a tweakcn export.
 - **[Publish a screen context to the assistant](./frontend/publish-screen-context-to-the-assistant/)** — let the assistant answer about the record open on a hand-written screen.
