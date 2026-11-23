@@ -22,6 +22,12 @@ export interface Source {
    * monorepo).
    */
   assetsSubdir?: string;
+  /**
+   * Environment variable that overrides the sibling-folder lookup, for a
+   * checkout cloned under another folder name. A relative value resolves
+   * against the current directory.
+   */
+  pathEnv?: string;
 }
 
 export const SOURCES: Source[] = [
@@ -34,11 +40,13 @@ export const SOURCES: Source[] = [
     hasCli: true,
     label: { en: 'Aurora Catalyst CLI', es: 'Aurora Catalyst CLI' },
     assetsSubdir: 'packages/cli',
+    pathEnv: 'CATALYST_REPO_PATH',
   },
 ];
 
 export function sourcePath(source: Source): string {
-  return path.resolve(SIBLINGS_ROOT, source.repo);
+  const override = source.pathEnv ? process.env[source.pathEnv] : undefined;
+  return override ? path.resolve(override) : path.resolve(SIBLINGS_ROOT, source.repo);
 }
 
 /**
