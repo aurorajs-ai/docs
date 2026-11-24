@@ -10,7 +10,7 @@ Let an administrator add typed fields to an entity from the `tools` screens, wit
 ## Before you start
 
 - The `tools` bounded context is installed in the project. `catalyst add tools` (or `catalyst add identity`) also binds the frontend catalog adapter the generated form needs.
-- The module is a normal aggregate with its own `cliter/<bounded-context>/<module>.module.yaml`. A many-to-many pivot module cannot opt in.
+- The module is a normal aggregate with its own `blueprint/<bounded-context>/<module>.module.yaml`. A many-to-many pivot module cannot opt in.
 - You know the [concept](../../../concepts/backend/custom-fields/), including what a required field does to existing records.
 
 ## Steps

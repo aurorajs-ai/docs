@@ -15,7 +15,7 @@ Evitar que el CLI de Catalyst emita operaciones o archivos que no quieres — ya
 
 ## Pasos
 
-1. **Localiza la YAML del módulo.** Vive en `cliter/<bounded-context>/<module>.module.yaml`. Para `iam/role`, eso es `cliter/iam/role.module.yaml`.
+1. **Localiza la YAML del módulo.** Vive en `blueprint/<bounded-context>/<module>.module.yaml`. Para `iam/role`, eso es `blueprint/iam/role.module.yaml`.
 
 2. **Elige la granularidad que necesitas.**
 
@@ -26,7 +26,7 @@ Evitar que el CLI de Catalyst emita operaciones o archivos que no quieres — ya
 3. **Edita la YAML en su nivel superior.** Las dos claves viven junto a `aggregateProperties` y `additionalApis`. Los nombres que puedes listar en `excludedOperations` son los de la [tabla de operaciones](../../../concepts/backend/module-scaffolding/#operaciones-que-el-cli-reconoce).
 
    ```yaml
-   # cliter/iam/role.module.yaml
+   # blueprint/iam/role.module.yaml
    excludedOperations:
      - count
      - getRaw
@@ -96,7 +96,7 @@ Una entrada de `additionalApis` se genera en todas las capas. Lista las capas qu
 Un endpoint de restablecimiento de contraseña que existe solo por REST, tal como lo declara `iam/user`:
 
 ```yaml
-# cliter/iam/user.module.yaml
+# blueprint/iam/user.module.yaml
 additionalApis:
   - path: iam/user/forgot-password
     resolverType: mutation

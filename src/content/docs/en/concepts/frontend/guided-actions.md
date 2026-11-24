@@ -15,7 +15,7 @@ Two mechanisms draw those limits. A **guided action** is a button the assistant 
 
 ### Guided actions
 
-Each bounded context declares its actions in `cliter/<bc>/actions.yaml`, one file per bounded context. The file sits beside `<module>.module.yaml` (the data model) and `processes.yaml` (the business processes). It is compiled together with the [in-app user manual](../in-app-user-manual/) into the manual index.
+Each bounded context declares its actions in `blueprint/<bc>/actions.yaml`, one file per bounded context. The file sits beside `<module>.module.yaml` (the data model) and `processes.yaml` (the business processes). It is compiled together with the [in-app user manual](../in-app-user-manual/) into the manual index.
 
 ```yaml
 - id: create-account

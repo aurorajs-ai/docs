@@ -19,7 +19,7 @@ Que el usuario gestione los hijos del padre directamente desde la vista de detai
 1. **Activa el modo embed en el hijo.** En el YAML del hijo, declara `front.embedSupport: true`. Sin el flag, el codegen emite los ficheros de siempre y el regen del padre falla al intentar dispatchar el widget.
 
    ```yaml
-   # cliter/iam/permission.module.yaml
+   # blueprint/iam/permission.module.yaml
    front:
      embedSupport: true
    ```
@@ -39,7 +39,7 @@ Que el usuario gestione los hijos del padre directamente desde la vista de detai
 3. **Declara el widget en la property del padre.** En el YAML del padre, la property de relación que apunta al hijo recibe `widget.type: grid-elements-manager`. Opcionalmente ubícalo dentro de un tab.
 
    ```yaml
-   # cliter/iam/bounded-context.module.yaml
+   # blueprint/iam/bounded-context.module.yaml
    aggregateProperties:
      - name: permissions
        type: relationship

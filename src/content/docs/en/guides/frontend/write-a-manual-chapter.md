@@ -15,7 +15,7 @@ Document one module screen for end users, in one language, so that it appears in
 
 ## Steps
 
-1. **Create the chapter file.** One file per screen and language: `cliter/<bc>/manual/<lang>/<module>.md`, with the screen route in the frontmatter.
+1. **Create the chapter file.** One file per screen and language: `blueprint/<bc>/manual/<lang>/<module>.md`, with the screen route in the frontmatter.
 
    ```markdown
    ---
@@ -41,7 +41,7 @@ Document one module screen for end users, in one language, so that it appears in
 
 3. **Link instead of repeating.** The generic behavior of lists and forms (search, filter, columns, save, cancel, toasts) lives in the general chapters. Link them: `[Lists](/manual/general.02-listados)`. To point at another screen, link its chapter or section: `[accounts](/manual/iam.account)` or `[create an account](/manual/iam.account#iam.account.create-an-account)`.
 
-4. **Mark a process.** If a process of `cliter/<bc>/processes.yaml` starts on this screen, narrate it in one H2 and put the marker on its own line right under the heading:
+4. **Mark a process.** If a process of `blueprint/<bc>/processes.yaml` starts on this screen, narrate it in one H2 and put the marker on its own line right under the heading:
 
    ```markdown
    ## Grant access to a person
@@ -53,7 +53,7 @@ Document one module screen for end users, in one language, so that it appears in
 
    When the process crosses several screens, narrate the whole sequence here, in the chapter of its first mandatory step, and link the section of each other screen's chapter. The other chapters carry no marker for it.
 
-5. **Optionally, add a screen tour.** Only for what is specific to this screen. Create `cliter/<bc>/manual/<lang>/tours/<module>.yaml`, named like the chapter file:
+5. **Optionally, add a screen tour.** Only for what is specific to this screen. Create `blueprint/<bc>/manual/<lang>/tours/<module>.yaml`, named like the chapter file:
 
    ```yaml
    steps:

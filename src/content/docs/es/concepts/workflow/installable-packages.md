@@ -13,7 +13,7 @@ Ahora los paquetes siguen un único modelo declarativo. Un solo manifiesto descr
 
 ### El manifiesto
 
-Cada paquete tiene un manifiesto escrito a mano, `cliter/packages/<package>.yaml`, en el monorepo de origen. Es la única declaración que leen el empaquetador y el instalador. Nombra las rutas de backend y frontend que se copian, los paquetes que `requires`, las dependencias npm fijadas, las claves `.env` que necesita y su contribución a la composición: módulos, agregados, relaciones, bridges, colas, rutas, navegación, widgets y enlaces de puertos. No admite hooks, scripts ni código, y un manifiesto con un campo desconocido falla la validación. La [referencia del manifiesto de paquete](../../../reference/package-manifest/) lista todas las claves.
+Cada paquete tiene un manifiesto escrito a mano, `blueprint/packages/<package>.yaml`, en el monorepo de origen. Es la única declaración que leen el empaquetador y el instalador. Nombra las rutas de backend y frontend que se copian, los paquetes que `requires`, las dependencias npm fijadas, las claves `.env` que necesita y su contribución a la composición: módulos, agregados, relaciones, bridges, colas, rutas, navegación, widgets y enlaces de puertos. No admite hooks, scripts ni código, y un manifiesto con un campo desconocido falla la validación. La [referencia del manifiesto de paquete](../../../reference/package-manifest/) lista todas las claves.
 
 Un paquete incluye solo sus propios bounded contexts y zonas compartidas, nunca archivos de otro bounded context. Una necesidad entre contextos pasa por un puerto y un adaptador en `@bridges`.
 
@@ -56,7 +56,7 @@ Los archivos que conectan los paquetes entre sí (el módulo de la aplicación, 
 
 ### Qué más hace una actualización
 
-`catalyst upgrade` migra primero los archivos de definición de módulo: renombra cada `<module>.aurora.yaml` a `<module>.module.yaml` con `git mv`, reescribe las dos líneas generadas que nombran el archivo antiguo y confirma solo eso, antes de la fusión. Después renderiza y fusiona como se ha descrito. Los paquetes instalados se actualizan junto con el scaffold, y también cada entrada `source`: `catalyst upgrade` vuelve a descargarla en la etiqueta igual a la versión de la CLI que ejecutas y la renderiza con los paquetes del framework como un único conjunto. Si el repositorio no es accesible o no tiene esa etiqueta, la actualización se detiene antes de escribir nada. Los paquetes npm del framework se actualizan mediante npm.
+`catalyst upgrade` renderiza y fusiona como se ha descrito. Los paquetes instalados se actualizan junto con el scaffold, y también cada entrada `source`: `catalyst upgrade` vuelve a descargarla en la etiqueta igual a la versión de la CLI que ejecutas y la renderiza con los paquetes del framework como un único conjunto. Si el repositorio no es accesible o no tiene esa etiqueta, la actualización se detiene antes de escribir nada. Los paquetes npm del framework se actualizan mediante npm.
 
 ### Tras la fusión
 
@@ -64,7 +64,7 @@ Cuando la fusión no tiene conflictos, la CLI instala las dependencias, añade l
 
 ### Una framework solution desde su repositorio
 
-`catalyst add <package> --from <repository-url>` clona el repositorio en la etiqueta igual al `cliVersion` del lockfile, con tus propias credenciales de git, renderiza el paquete junto con los que incluye la CLI y lo registra como `{ name, source }`. También escribe el manifiesto del paquete en `cliter/packages/<package>.yaml`, que cada renderizado reescribe: `catalyst generate` lo lee para saber qué bounded contexts posee el paquete sin acceder a la red. No edites ese archivo. El repositorio contiene exactamente un paquete y lleva una etiqueta por cada versión de la CLI.
+`catalyst add <package> --from <repository-url>` clona el repositorio en la etiqueta igual al `cliVersion` del lockfile, con tus propias credenciales de git, renderiza el paquete junto con los que incluye la CLI y lo registra como `{ name, source }`. También escribe el manifiesto del paquete en `blueprint/packages/<package>.yaml`, que cada renderizado reescribe: `catalyst generate` lo lee para saber qué bounded contexts posee el paquete sin acceder a la red. No edites ese archivo. El repositorio contiene exactamente un paquete y lleva una etiqueta por cada versión de la CLI.
 
 ## Cuándo aplica
 

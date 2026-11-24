@@ -9,7 +9,7 @@ Make every generated endpoint of a module return and accept only rows of the cal
 
 ## Before you start
 
-- A Catalyst project with the module's `cliter/<bounded-context>/<module>.module.yaml`.
+- A Catalyst project with the module's `blueprint/<bounded-context>/<module>.module.yaml`.
 - The module is protected by OAuth (`hasOAuth: true`). Tenant scope needs the authenticated account.
 - You know the [concept](../../../concepts/backend/tenant-scope/): scope comes from the caller's `dTenants`, and relations are denied by default.
 

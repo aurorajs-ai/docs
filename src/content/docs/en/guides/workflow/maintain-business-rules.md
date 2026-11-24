@@ -138,14 +138,14 @@ Four commands cover the day-to-day. The first two are the ones you actually run 
 
 ### `pnpm br:generate`
 
-Regenerates `cliter/business-rules-index.json` and `docs/business-rules/INDEX.md`. Idempotent — running it twice with no changes produces the same output.
+Regenerates `blueprint/business-rules-index.json` and `docs/business-rules/INDEX.md`. Idempotent — running it twice with no changes produces the same output.
 
 ```bash
 pnpm br:generate
 # → ✓ Index regenerated: 5 rules (4 active, 0 derogated, 1 proposed) across 3 files.
 ```
 
-You normally do not need to run it by hand; the pre-commit hook does it automatically when it detects staged changes under `cliter/<bc>/business-rules/*.md`. Run it manually after editing a rule and before opening Claude Code if you want the hook (`inject-prompt-context.ts`) to see the latest version immediately.
+You normally do not need to run it by hand; the pre-commit hook does it automatically when it detects staged changes under `blueprint/<bc>/business-rules/*.md`. Run it manually after editing a rule and before opening Claude Code if you want the hook (`inject-prompt-context.ts`) to see the latest version immediately.
 
 ### `pnpm br:validate`
 
@@ -211,7 +211,7 @@ Each command is documented in its own `.md` under `.claude/commands/business-rul
 
 ## What the pre-commit hook does for you
 
-You do not have to think about regeneration during normal work — the pre-commit hook handles it. It triggers whenever the commit has staged changes under `cliter/<bc>/business-rules/*.md`, and runs two steps in order:
+You do not have to think about regeneration during normal work — the pre-commit hook handles it. It triggers whenever the commit has staged changes under `blueprint/<bc>/business-rules/*.md`, and runs two steps in order:
 
 1. `pnpm br:generate` — regenerates and re-stages the index. Aborts the commit on parse failures.
 2. `pnpm br:validate` — validates the catalog. Aborts the commit on structural errors (exit `1`); permits commit on warnings (exit `2`).

@@ -3,7 +3,9 @@ title: Claves del YAML de módulo
 description: Referencia de las claves de un *.module.yaml que deciden la escritura, el alcance por tenant, las restricciones de relaciones, las ayudas de formulario y los widgets de lista de strings, con los errores que la generación lanza ante combinaciones inválidas.
 ---
 
-Esta página documenta las claves de `cliter/<bounded-context>/<module>.module.yaml` que cambian lo que el generador emite para la escritura, el alcance por tenant, las relaciones y los widgets de formulario. No es la gramática completa. Para el razonamiento detrás de una clave, sigue el enlace de su fila.
+Esta página documenta las claves de `blueprint/<bounded-context>/<module>.module.yaml` que cambian lo que el generador emite para la escritura, el alcance por tenant, las relaciones y los widgets de formulario. No es la gramática completa. Para el razonamiento detrás de una clave, sigue el enlace de su fila.
+
+El archivo se llama siempre `<module>.module.yaml`, uno por módulo, directamente dentro de la carpeta de un bounded context de `blueprint/`. Los editores que usan [SchemaStore](https://www.schemastore.org/) validan el archivo contra el JSON schema del módulo cuando su ruta coincide con `**/blueprint/*/*.module.yaml`.
 
 ## Claves de módulo
 

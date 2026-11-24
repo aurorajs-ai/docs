@@ -11,10 +11,10 @@ Catalyst trata el archivo `*.module.yaml` del módulo como la única fuente de v
 
 ## Cómo funciona
 
-Cada módulo vive en `cliter/<bounded-context>/<module>.module.yaml`.
+Cada módulo vive en `blueprint/<bounded-context>/<module>.module.yaml`.
 
 :::note
-Los proyectos antiguos llamaban a este archivo `<module>.aurora.yaml`. El CLI ya no lee ese nombre: si solo existe el archivo antiguo, `catalyst generate` falla, nombra ambos archivos y te indica ejecutar `catalyst upgrade`, que los renombra.
+El CLI lee las definiciones de módulo solo de la carpeta `blueprint/` en la raíz del proyecto. Si esa carpeta no existe, `catalyst generate` falla antes de leer o escribir ningún archivo, y el error nombra `blueprint/`.
 :::
 
 Al ejecutar:

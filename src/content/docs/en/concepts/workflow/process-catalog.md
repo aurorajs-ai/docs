@@ -25,7 +25,7 @@ Work the system does without a person is not a step. If it has a human part (som
 
 ### The file
 
-`cliter/<bc>/processes.yaml` has one top-level key, `processes`. Each process has exactly five keys, and each step has `screen` and optionally `optional: true`.
+`blueprint/<bc>/processes.yaml` has one top-level key, `processes`. Each process has exactly five keys, and each step has `screen` and optionally `optional: true`.
 
 ```yaml
 processes:

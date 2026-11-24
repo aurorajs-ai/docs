@@ -57,7 +57,7 @@ La contención tiene una razón práctica. Una alarma que salta constantemente d
 
 ## Qué tienes realmente
 
-Casi todo viaja contigo. `catalyst new` copia la plantilla del monorepo de forma recursiva: el directorio `.claude/` entero, los catálogos de reglas bajo `cliter/` y los `scripts/` de los que dependen los hooks. Esa plantilla no se mantiene a mano, es un espejo del harness real generado por un script empaquetador — por eso lo que recibes coincide con lo que usa el equipo de Aurora.
+Casi todo viaja contigo. `catalyst new` copia la plantilla del monorepo de forma recursiva: el directorio `.claude/` entero, los catálogos de reglas bajo `blueprint/` y los `scripts/` de los que dependen los hooks. Esa plantilla no se mantiene a mano, es un espejo del harness real generado por un script empaquetador — por eso lo que recibes coincide con lo que usa el equipo de Aurora.
 
 Lo único que no viaja son los **plugins**. Las *declaraciones* de plugin sí están en el `settings.json` que recibes, así que tu editor te ofrece instalarlos al confiar en la carpeta, pero las instalaciones son por usuario. Justo por eso hay un hook que los comprueba en cada sesión nueva.
 

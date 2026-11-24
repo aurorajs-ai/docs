@@ -43,12 +43,12 @@ Every fiche below follows the same fixed template, so you can compare them line 
 
 - **What it is.** Codified **architectural / framework** constraints that govern your work *before* you write code.
 - **What it's for.** They are not post-hoc documentation nor "optional memory" — they are constraints you comply with *now*, while writing. Their core responsibility is to state, in a citable form, what the architecture forbids.
-- **What triggers it.** (a) citing an ID by name (`HR-MODULES-001`); (b) going to touch governed paths (a `byPath` / `byId` / `byKeyword` lookup in the index); (c) during `/openspec-propose`, in the `## Harness rules applicable` section; (d) editing files under `cliter/harness-rules/`.
+- **What triggers it.** (a) citing an ID by name (`HR-MODULES-001`); (b) going to touch governed paths (a `byPath` / `byId` / `byKeyword` lookup in the index); (c) during `/openspec-propose`, in the `## Harness rules applicable` section; (d) editing files under `blueprint/harness-rules/`.
 - **How it's applied — three enforcement layers.**
   - *Prompt-time* (`UserPromptSubmit`): the `inject-prompt-context.ts` hook injects the top-N active rules as a separate block, framed as "constraints, not memory".
   - *Propose-time* (`/openspec-propose`): `openspec/config.yaml` detects applicable rules; if the change VIOLATEs a `blocking` rule, it HALTs until resolved.
   - *Write-time* (`PreToolUse`): (a) the checkpoint (see Artifact 2) **attaches the HR-IDs** governing the path to the blocking message; (b) a *content-guard* blocks if the content matches a `detect.pattern` of an active rule. Today the only active `detect` is **`HR-ACL-001`** (pattern `as unknown as`).
-- **Where it lives.** Rules in `cliter/harness-rules/*.md` (core) and `cliter/<bc>/harness-rules/*.md` (tied to a bounded context); a **generated** index in `cliter/harness-rules-index.json` (never hand-edited; regenerated with `pnpm hr:generate`); a guide skill in `.claude/skills/catalyst-harness-rules-guard/SKILL.md` (plus `references/enforcement.md`, `references/format.md`, `references/audit.md`); and, for humans, an orientation map in `docs/harness-rules/README.md` beside the generated `INDEX.md`. The rule format lives in the skill's `references/format.md`, not in the README.
+- **Where it lives.** Rules in `blueprint/harness-rules/*.md` (core) and `blueprint/<bc>/harness-rules/*.md` (tied to a bounded context); a **generated** index in `blueprint/harness-rules-index.json` (never hand-edited; regenerated with `pnpm hr:generate`); a guide skill in `.claude/skills/catalyst-harness-rules-guard/SKILL.md` (plus `references/enforcement.md`, `references/format.md`, `references/audit.md`); and, for humans, an orientation map in `docs/harness-rules/README.md` beside the generated `INDEX.md`. The rule format lives in the skill's `references/format.md`, not in the README.
 - **Lifecycle.** A rule is **born** as a deliberate architectural decision (a new `.md`). Its `### Enunciado` and `### Casos exhaustivos` are **never** edited in place: if the meaning changes, the old rule is **repealed** (state `derogated`) and a **new one with a new ID** is created — IDs are never reused. There is **no** `/harness-rules:promote`: HR are stable, not crystallized per-change.
 - **Audience.** AI (injected at prompt-time, detected at propose-time, content-blocked at write-time) **and** the human dev (who reads them when citing an `HR-NNN` or when blocked).
 - **Its place in the analogy.** The building code. Stable, published, citable. You comply now; you do not negotiate at the door.
@@ -125,7 +125,7 @@ In short: same blueprint role as the backend skill, but standalone — no hook f
 | **Trigger** | Cite an ID, touch a governed path, `/openspec-propose`, edit a rule file | `PreToolUse` + `Write` + new file under backend arch paths | "where does X go", new backend file, hook STOP banner | "where is X", new frontend feature/BC |
 | **Blocks?** | **Yes** (when `blocking`) | **Yes** (once per path per session) | No — advises | No — advises |
 | **Automatic or read?** | Automatic (3 layers) + human reads | Automatic | Read by human/AI | Read by human/AI |
-| **Where it lives** | `cliter/**` (+ `docs/`, guide skill in `.claude/`) | `.claude/hooks/` | `backend/.claude/skills/` | `frontend/.claude/skills/` |
+| **Where it lives** | `blueprint/**` (+ `docs/`, guide skill in `.claude/`) | `.claude/hooks/` | `backend/.claude/skills/` | `frontend/.claude/skills/` |
 | **Lifecycle** | Born as a decision; repeal + new ID, never edit in place | Almost static; per-session cache | Versioned with backend (v3.0) | Versioned with frontend (v1.0) |
 | **Audience** | AI + human | AI + human | AI + human | AI + human |
 | **Cites HR?** | (is HR) | Yes — attaches HR-IDs | Yes — `HR-PORTS-001` | No |
@@ -133,7 +133,7 @@ In short: same blueprint role as the backend skill, but standalone — no hook f
 
 Notice the one column that matters most: only the first two artifacts have **Yes** in the *Blocks?* row. That single line is the spine of this whole page.
 
-In short: read the *Blocks?* and *Where it lives* rows first — they separate the two enforcers (`cliter/` law, `.claude/` gate) from the two advisors (`.claude/` blueprints).
+In short: read the *Blocks?* and *Where it lives* rows first — they separate the two enforcers (`blueprint/` law, `.claude/` gate) from the two advisors (`.claude/` blueprints).
 
 ## 5. ⭐ Overlap zones
 
@@ -214,12 +214,12 @@ In short: hook first (write-time gate), skill in the middle (placement), HR last
 Keep this cheat sheet in your head. When any of these fires at you, run the questions:
 
 - **Does it block me, or advise me?** If you got `exit(2)` and your tool call was rejected → it was the **hook** (or a `blocking` HR at propose-time). If you just got pointed at a section to read → it was a **skill**. Blocking belongs only to the hook and HR; skills only orient.
-- **Does it live in `cliter/` or in `.claude/`?** `cliter/` = the project's domain/architecture → **Harness Rules**. `.claude/` = the AI harness instrumentation → the **hook** and the **skills**. This physical clue alone tells you whether you are looking at a law or at tooling.
+- **Does it live in `blueprint/` or in `.claude/`?** `blueprint/` = the project's domain/architecture → **Harness Rules**. `.claude/` = the AI harness instrumentation → the **hook** and the **skills**. This physical clue alone tells you whether you are looking at a law or at tooling.
 - **Does an architect decide this, or is it orienting me?** If changing it requires repealing and republishing with a new ID → **Harness Rule** (an architect decides). If it is a decision tree you read and apply → **skill** (it orients you).
 - **Am I creating a new file, or editing an existing one?** The hook only fires on **new** files under backend architectural paths. Editing an existing file never trips the hook (though HR still apply at prompt-time and propose-time).
 - **Backend or frontend?** Both have a `catalyst-project-structure` skill, but only the backend one has a hook in front of it and cross-references HR. The frontend skill is standalone.
 
-In short: *blocks vs advises*, `cliter/` vs `.claude/`, *architect-decides vs orients-me* — three questions, and you always know which artifact is talking to you.
+In short: *blocks vs advises*, `blueprint/` vs `.claude/`, *architect-decides vs orients-me* — three questions, and you always know which artifact is talking to you.
 
 ## 8. Glossary
 

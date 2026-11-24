@@ -3,7 +3,7 @@ title: "Anatomía de una business rule"
 description: "Los campos, las convenciones y el ciclo de vida de cada regla — shape del frontmatter, gramática del ID, estado y severidad, tabla exhaustiva de casos, apuntadores cross-agregado y relación con las citas `@rule`."
 ---
 
-Una regla es una sección Markdown dentro de `cliter/<bc>/business-rules/<aggregate>.md`. El fichero contiene varias reglas; su frontmatter describe el agregado entero, mientras que cada regla vive bajo su propia cabecera `## BR-...` con su propia tabla de metadata. Esta página recorre cada parte de esa anatomía.
+Una regla es una sección Markdown dentro de `blueprint/<bc>/business-rules/<aggregate>.md`. El fichero contiene varias reglas; su frontmatter describe el agregado entero, mientras que cada regla vive bajo su propia cabecera `## BR-...` con su propia tabla de metadata. Esta página recorre cada parte de esa anatomía.
 
 ## Frontmatter de fichero
 
@@ -154,7 +154,7 @@ El audit reporta cualquier marcador con más de 30 días sin resolver, así que 
 Una regla que afecta a más de un agregado (una cascada) o a más de un bounded context (una excepción por rol de usuario) vive en **un solo fichero**: el del agregado donde se observa el invariante final. El frontmatter de ese fichero declara todos los BC y agregados afectados (en plural). Los demás ficheros involucrados llevan **apuntadores cortos** — nunca contenido duplicado.
 
 ```markdown
-# En cliter/production-planning/business-rules/production-order-position-event.md
+# En blueprint/production-planning/business-rules/production-order-position-event.md
 
 ## Cascadas que dispara este agregado
 
@@ -173,7 +173,7 @@ Un handler, función o test puede citar una regla en JSDoc o un comentario equiv
  * Cancela un evento de producción.
  *
  * @rule BR-PROD-EVENT-001 — No cancelar eventos DONE
- * @see cliter/production-planning/business-rules/production-order-position-event.md
+ * @see blueprint/production-planning/business-rules/production-order-position-event.md
  */
 async cancel(eventId: string): Promise<void> {
   ...

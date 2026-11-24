@@ -9,7 +9,7 @@ Hacer que cada endpoint generado de un módulo devuelva y acepte solo filas de l
 
 ## Antes de empezar
 
-- Un proyecto Catalyst con el `cliter/<bounded-context>/<module>.module.yaml` del módulo.
+- Un proyecto Catalyst con el `blueprint/<bounded-context>/<module>.module.yaml` del módulo.
 - El módulo está protegido por OAuth (`hasOAuth: true`). El alcance por tenant necesita la cuenta autenticada.
 - Conoces el [concepto](../../../concepts/backend/tenant-scope/): el alcance sale de los `dTenants` del llamante y las relaciones se deniegan por defecto.
 

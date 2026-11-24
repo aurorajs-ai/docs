@@ -57,7 +57,7 @@ The reason for the restraint is practical. An alarm that fires constantly stops 
 
 ## What you actually have
 
-Almost all of it ships. `catalyst new` copies the monorepo template recursively — the entire `.claude/` directory, the rule catalogues under `cliter/`, and the `scripts/` the hooks depend on. That template is not maintained by hand: it is a mirror of the real harness, produced by a packager script, which is why what you get matches what the Aurora team uses.
+Almost all of it ships. `catalyst new` copies the monorepo template recursively — the entire `.claude/` directory, the rule catalogues under `blueprint/`, and the `scripts/` the hooks depend on. That template is not maintained by hand: it is a mirror of the real harness, produced by a packager script, which is why what you get matches what the Aurora team uses.
 
 The one part that does not travel is the **plugins**. Plugin *declarations* are in the shipped `settings.json`, so your editor offers to install them when you trust the folder — but the installs themselves are per user. That is exactly why a startup hook checks for them on every fresh session.
 

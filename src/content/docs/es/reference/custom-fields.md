@@ -8,7 +8,7 @@ Para saber qué son los campos personalizados y por qué funcionan así, consult
 ## Flag del módulo
 
 ```yaml
-# cliter/<bounded-context>/<module>.module.yaml
+# blueprint/<bounded-context>/<module>.module.yaml
 hasCustomFields: true
 ```
 

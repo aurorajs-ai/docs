@@ -9,8 +9,8 @@ Make the help assistant able to explain the form of a module and preselect its f
 
 ## Before you start
 
-- A module under `cliter/<bc>/<module>.module.yaml` with a generated frontend.
-- A `create` guided action for the module in `cliter/<bc>/actions.yaml` (`catalyst generate front module` appends it when the bounded context has a manual).
+- A module under `blueprint/<bc>/<module>.module.yaml` with a generated frontend.
+- A `create` guided action for the module in `blueprint/<bc>/actions.yaml` (`catalyst generate front module` appends it when the bounded context has a manual).
 - The `catalyst` CLI available locally.
 - An application that has the `tools` package installed (without it there is no assistant), the assistant switched on (`tools.assistant.isEnabled`), and a role that holds the permission `tools.assistant.ask`, granted in IAM like any other permission. See [Access and cost](../../../concepts/frontend/guided-actions/#access-and-cost).
 

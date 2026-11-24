@@ -11,10 +11,10 @@ Catalyst treats the module's `*.module.yaml` file as the single source of truth.
 
 ## How it works
 
-Every module lives at `cliter/<bounded-context>/<module>.module.yaml`.
+Every module lives at `blueprint/<bounded-context>/<module>.module.yaml`.
 
 :::note
-Older projects named this file `<module>.aurora.yaml`. The CLI no longer reads that name: when only the old file exists, `catalyst generate` fails, names both files and tells you to run `catalyst upgrade`, which renames them.
+The CLI reads module definitions only from the `blueprint/` folder at the project root. When that folder does not exist, `catalyst generate` fails before it reads or writes any file, and the error names `blueprint/`.
 :::
 
 Running:

@@ -15,11 +15,11 @@ It is written for the **end user**, never for a developer. It describes tasks, s
 
 | Source | Path | Content |
 | --- | --- | --- |
-| Screen chapter | `cliter/<bc>/manual/<lang>/<module>.md` | One chapter per module screen and language. The frontmatter declares the screen `route`. |
+| Screen chapter | `blueprint/<bc>/manual/<lang>/<module>.md` | One chapter per module screen and language. The frontmatter declares the screen `route`. |
 | General chapter | `docs/manual/<lang>/*.md` | Behavior shared by every generated list and form, with no route. Listed first, in file-name order. |
-| Tour | `cliter/<bc>/manual/<lang>/tours/<chapter>.yaml` | A guided tour of a screen. |
-| Video steps | `cliter/<bc>/manual/<lang>/videos/<slug>.yaml` | A script that records a looping example. |
-| Guided actions | `cliter/<bc>/actions.yaml` | The buttons the assistant and the command palette offer. One file per bounded context, beside the module YAML. |
+| Tour | `blueprint/<bc>/manual/<lang>/tours/<chapter>.yaml` | A guided tour of a screen. |
+| Video steps | `blueprint/<bc>/manual/<lang>/videos/<slug>.yaml` | A script that records a looping example. |
+| Guided actions | `blueprint/<bc>/actions.yaml` | The buttons the assistant and the command palette offer. One file per bounded context, beside the module YAML. |
 
 A chapter has one H1 and one H2 per user task. The H2 text becomes the section id, so renaming a heading changes the target of links and search results. A chapter's id is `<bc>.<module>` and a section link is `/manual/<chapterId>#<chapterId>.<slug>`. Generic behavior is written once in the general chapters, and screen chapters link to them instead of repeating it.
 

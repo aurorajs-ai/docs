@@ -15,11 +15,11 @@ Está escrito para el **usuario final**, nunca para un desarrollador. Describe t
 
 | Fuente | Ruta | Contenido |
 | --- | --- | --- |
-| Capítulo de pantalla | `cliter/<bc>/manual/<lang>/<module>.md` | Un capítulo por pantalla de módulo e idioma. El frontmatter declara la `route` de la pantalla. |
+| Capítulo de pantalla | `blueprint/<bc>/manual/<lang>/<module>.md` | Un capítulo por pantalla de módulo e idioma. El frontmatter declara la `route` de la pantalla. |
 | Capítulo general | `docs/manual/<lang>/*.md` | Comportamiento compartido por todos los listados y formularios generados, sin ruta. Se lista primero, por orden de nombre de archivo. |
-| Recorrido | `cliter/<bc>/manual/<lang>/tours/<chapter>.yaml` | Un recorrido guiado de una pantalla. |
-| Pasos de vídeo | `cliter/<bc>/manual/<lang>/videos/<slug>.yaml` | Un guion que graba un ejemplo en bucle. |
-| Acciones guiadas | `cliter/<bc>/actions.yaml` | Los botones que ofrecen el asistente y la paleta de comandos. Un archivo por bounded context, junto al YAML del módulo. |
+| Recorrido | `blueprint/<bc>/manual/<lang>/tours/<chapter>.yaml` | Un recorrido guiado de una pantalla. |
+| Pasos de vídeo | `blueprint/<bc>/manual/<lang>/videos/<slug>.yaml` | Un guion que graba un ejemplo en bucle. |
+| Acciones guiadas | `blueprint/<bc>/actions.yaml` | Los botones que ofrecen el asistente y la paleta de comandos. Un archivo por bounded context, junto al YAML del módulo. |
 
 Un capítulo tiene un H1 y un H2 por cada tarea del usuario. El texto del H2 se convierte en el id de la sección, así que renombrar un encabezado cambia el destino de los enlaces y de los resultados de búsqueda. El id de un capítulo es `<bc>.<module>` y un enlace a una sección es `/manual/<chapterId>#<chapterId>.<slug>`. El comportamiento genérico se escribe una sola vez en los capítulos generales, y los capítulos de pantalla los enlazan en lugar de repetirlo.
 
