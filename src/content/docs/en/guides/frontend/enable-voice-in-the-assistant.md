@@ -72,6 +72,7 @@ Let users speak to the help assistant and hear its answers, with either the Elev
 
 - The chat input shows the wave button when the text area is empty. A session shows a pill labelled "Cancel" while it opens and "Stop" once it listens.
 - Say a question. The transcript appears as a message, the answer follows, and you hear it.
+- In hands-free, talk over the answer: the audio stops at once, your new phrase is answered after that, and the chat still shows the full earlier answer.
 - With the local profile, disconnect the network and repeat: the turn must still complete.
 
 ## Troubleshooting
