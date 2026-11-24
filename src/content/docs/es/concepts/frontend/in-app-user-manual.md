@@ -27,9 +27,10 @@ Un capítulo tiene un H1 y un H2 por cada tarea del usuario. El texto del H2 se 
 
 ### Compilación
 
-Cada build compila los capítulos, por idioma, en dos salidas derivadas: una con todas las secciones (id, ruta, permiso, título, HTML saneado, texto plano) y otra con el orden de lectura. Son salidas de build: nunca se editan a mano ni se versionan. Las genera `pnpm manual:compile`, y `pnpm dev` y el build del backend lo ejecutan por ti.
+Cada build compila los capítulos, por idioma, en dos salidas derivadas: una con todas las secciones (id, ruta, permiso, ruta de navegación, título, HTML saneado, texto plano) y otra con el orden de lectura. Son salidas de build: nunca se editan a mano ni se versionan. Las genera `pnpm manual:compile`, y `pnpm dev` y el build del backend lo ejecutan por ti.
 
 - Un capítulo cuya `route` falta, o que el árbol de navegación no contiene, hace fallar la compilación y nombra el archivo. El capítulo hereda su permiso del árbol de navegación, así que el manual no guarda una segunda copia.
+- La compilación deriva cada ruta de navegación (el camino por el menú hasta una pantalla, como `Plataforma > IAM > Cuentas`) del árbol de navegación y de los archivos de traducción del frontend, en cada idioma. La escribe en cada sección y la imprime como una línea «Dónde está» al inicio de cada capítulo de pantalla, así que nunca escribes una ruta de menú a mano. Lo que el árbol no puede saber (una pestaña de la pantalla, un control del shell de la aplicación) se declara con un marcador `<!-- nav: clave[, clave] -->`, donde cada clave es una clave de traducción. Una clave sin texto en un idioma, o un elemento de navegación del camino sin traducción, hace fallar la compilación.
 - El HTML se sanea una sola vez, al compilar.
 - El orden de lectura sigue el árbol de navegación: primero los capítulos generales y después cada bounded context y módulo en el orden en que los muestra el menú.
 - Cada proceso `active` del [catálogo de procesos](../../workflow/process-catalog/) debe estar narrado por exactamente una sección de capítulo por idioma, marcada con `<!-- process: <id> -->` en su propia línea. Si no, la compilación falla.
@@ -38,7 +39,7 @@ Cada build compila los capítulos, por idioma, en dos salidas derivadas: una con
 ### Lectura
 
 - La página `/manual` muestra el índice junto al capítulo seleccionado y su tabla de contenidos. El índice y el capítulo se desplazan de forma independiente, y cada capítulo que abre el usuario es una navegación del navegador, de modo que funcionan los botones de atrás y adelante.
-- Una acción de ayuda en la cabecera del sitio abre un panel de ayuda sobre la pantalla actual. Se abre en el capítulo cuya ruta es la más larga que coincide con la dirección (`/iam/account/edit/<id>` abre el capítulo de `/iam/account`; `/iam/accounting` no). Si la pantalla no tiene capítulo, se abre con el cuadro de búsqueda enfocado. El panel ofrece el asistente de ayuda, descrito en [Acciones guiadas y formularios asistidos](../guided-actions/).
+- Una acción de ayuda en la cabecera del sitio abre un panel de ayuda sobre la pantalla actual. Se abre en el capítulo cuya ruta es la más larga que coincide con la dirección (`/iam/account/edit/<id>` abre el capítulo de `/iam/account`; `/iam/accounting` no). Si la pantalla no tiene capítulo, se abre con el cuadro de búsqueda enfocado. El panel ofrece el asistente de ayuda, descrito en [Acciones guiadas y formularios asistidos](../guided-actions/). El asistente recibe la ruta de navegación de cada sección que lee, y sus instrucciones fijas le piden indicarla, tal cual, cuando envía al usuario a una pantalla o a un control: responde «Plataforma > IAM > Cuentas», no solo «Cuentas».
 - El menú de usuario ofrece una entrada "Manual de usuario". Ambas entradas aparecen solo cuando el índice del usuario tiene al menos un capítulo.
 - El manual no tiene permiso propio. Un capítulo se lista, se muestra y se puede buscar solo si el usuario tiene el permiso de su pantalla.
 
@@ -69,6 +70,8 @@ Una tarea de varios pasos puede llevar un marcador `<!-- video: <slug> -->`. Un 
 - La búsqueda es léxica, no semántica.
 - No es un PDF: el manual se lee dentro de la aplicación, con la sesión, el tema y el idioma del usuario.
 - El catálogo de procesos no es una entrada del asistente. El asistente lee el manual.
+- La ruta sale solo del manual compilado, nunca del navegador, y no se reconstruye al ejecutar. Tras cambiar la navegación o sus traducciones, vuelve a ejecutar `pnpm manual:compile`: un backend que lee una salida antigua, sin la ruta, falla en lugar de responder sin ella.
+- Las etiquetas de los grupos del menú lateral (Proyectos, Plataforma) son una constante de la compilación que replica el componente del menú. Si cambias los grupos del menú, actualiza esa constante.
 
 ## Relacionado
 

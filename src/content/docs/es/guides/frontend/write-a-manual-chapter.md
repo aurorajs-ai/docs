@@ -62,9 +62,19 @@ Documentar una pantalla de módulo para los usuarios finales, en un idioma, de m
 
    Cada paso tiene exactamente `target`, `title` y `text`. El `target` es el valor completo de un atributo `data-tour` que la plantilla de la pantalla ya incluye: los listados llevan `header`, `main-action`, `filter` y `table`, los formularios llevan `header` y `save`, cada uno con el prefijo `<bc>.<module>.`. No inventes destinos. Entrecomilla un `title` o un `text` que contenga `: `. Si todos los elementos de la pantalla son genéricos, no escribas archivo de recorrido.
 
-6. **Opcionalmente, marca un ejemplo grabado.** Después de los pasos y del resultado de una tarea de varios pasos, añade `<!-- video: <slug> -->` en su propia línea y escribe el archivo de pasos `videos/<slug>.yaml`. Usa solo datos de demostración inventados, y consulta las notas de grabación en `scripts/manual/README.md` de tu proyecto.
+6. **No escribas nunca una ruta de menú.** La compilación añade la línea «Dónde está» a partir del árbol de navegación, así que una frase como «Abre **Cuentas** en el menú **IAM**» acabaría desfasada respecto al menú. Declara solo lo que el árbol no puede saber, con un marcador `nav:` en su propia línea, dentro de la sección a la que pertenece:
 
-7. **Compila.** Desde la raíz del proyecto:
+   ```markdown
+   ## Gestionar los contactos
+
+   <!-- nav: business-partner-portal.legal-entity.Contacts -->
+   ```
+
+   En un capítulo con `route`, el marcador se añade a la ruta de la pantalla (una pestaña). En un capítulo general declara la ruta completa, como hace el capítulo del shell con los controles de la cabecera: `<!-- nav: navigation.ProfileMenu, navigation.LogOut -->`. Cada clave debe llevar su ámbito (`navigation.Help`, no `Help`) y tener texto en todos los idiomas. Usa como máximo un marcador por sección. No uses un marcador para la ruta de menú de la propia pantalla ni para texto literal.
+
+7. **Opcionalmente, marca un ejemplo grabado.** Después de los pasos y del resultado de una tarea de varios pasos, añade `<!-- video: <slug> -->` en su propia línea y escribe el archivo de pasos `videos/<slug>.yaml`. Usa solo datos de demostración inventados, y consulta las notas de grabación en `scripts/manual/README.md` de tu proyecto.
+
+8. **Compila.** Desde la raíz del proyecto:
 
    ```bash
    pnpm manual:compile
@@ -72,14 +82,16 @@ Documentar una pantalla de módulo para los usuarios finales, en un idioma, de m
 
 ## Verifica que funciona
 
-- La compilación termina sin errores. Falla, nombrando el archivo, ante una `route` ausente o desconocida, un enlace a un capítulo o sección que no existe, un recorrido sin su capítulo, un paso de recorrido con una clave que falta o sobra, un proceso `active` sin marcador en un idioma, un marcador duplicado y un marcador para un id que no es un proceso `active`.
+- La compilación termina sin errores. Falla, nombrando el archivo, ante una `route` ausente o desconocida, un enlace a un capítulo o sección que no existe, un recorrido sin su capítulo, un paso de recorrido con una clave que falta o sobra, un proceso `active` sin marcador en un idioma, un marcador duplicado y un marcador para un id que no es un proceso `active`. También falla ante una clave de `nav:` sin texto en un idioma, un elemento de navegación del camino de un capítulo sin `translation` y dos marcadores `nav:` en una misma sección.
 - Ejecuta `pnpm dev`, abre la pantalla y pulsa la acción de ayuda de la cabecera del sitio: el panel se abre en tu capítulo.
+- Lee la línea «Dónde está» al inicio del capítulo y la que imprime cada marcador `nav:`: la ruta debe ser la que muestra el menú lateral, en el idioma del capítulo.
 - Busca en el panel de ayuda una palabra del capítulo: la sección aparece. Un usuario sin el permiso de la pantalla no la ve.
 
 ## Solución de problemas
 
 - **`declares route "...", which no navigation item has`.** La `route` debe ser igual a una url del árbol de navegación. Cópiala del archivo `*.navigation.ts`.
 - **El panel de ayuda se abre en otro capítulo.** El panel elige el capítulo cuya ruta es la coincidencia más larga con la dirección. Comprueba que ningún otro capítulo declara una ruta coincidente más larga.
+- **`Translation key "..." has no "<lang>" text`.** Falta una clave de `nav:` en `frontend/public/i18n/<ámbito>/<lang>.json`, o no tiene ámbito. Añade el texto en todos los idiomas.
 - **Un paso del recorrido no hace nada en pantalla.** Un destino ausente en pantalla se omite al ejecutar. Revisa el valor de `data-tour` en la plantilla y que un permiso no esté ocultando el elemento.
 - **Un aviso sobre un bounded context con procesos activos y sin manual.** Es un aviso, no un fallo, hasta que exista el primer capítulo.
 
