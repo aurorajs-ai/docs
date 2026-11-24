@@ -103,7 +103,7 @@ Las **rules de ruta** enrutan a la skill que cubre un tipo de fichero.
 | Rule | Gobierna |
 | --- | --- |
 | `route-aurora-components.md` | `frontend/src/@aurora/components/**` |
-| `route-module-yaml.md` | `cliter/**/*.module.yaml` |
+| `route-module-yaml.md` | `blueprint/**/*.module.yaml` |
 | `route-backend-test.md` | `backend/**/*.spec.ts`, `backend/**/*.e2e-spec.ts` |
 | `route-drizzle-schema.md` | `backend/**/*.schema.ts`, el árbol de migraciones, la configuración de Drizzle y el workflow de drift |
 | `route-eta.md` | `**/*.eta` |

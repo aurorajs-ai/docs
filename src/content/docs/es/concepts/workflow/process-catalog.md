@@ -25,7 +25,7 @@ El trabajo que el sistema hace sin una persona no es un paso. Si tiene una parte
 
 ### El archivo
 
-`cliter/<bc>/processes.yaml` tiene una única clave de primer nivel, `processes`. Cada proceso tiene exactamente cinco claves, y cada paso tiene `screen` y, opcionalmente, `optional: true`.
+`blueprint/<bc>/processes.yaml` tiene una única clave de primer nivel, `processes`. Cada proceso tiene exactamente cinco claves, y cada paso tiene `screen` y, opcionalmente, `optional: true`.
 
 ```yaml
 processes:

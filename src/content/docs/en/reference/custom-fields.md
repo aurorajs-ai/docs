@@ -8,7 +8,7 @@ For what custom fields are and why they work this way, see [Custom fields](../..
 ## Module flag
 
 ```yaml
-# cliter/<bounded-context>/<module>.module.yaml
+# blueprint/<bounded-context>/<module>.module.yaml
 hasCustomFields: true
 ```
 

@@ -9,7 +9,7 @@ Coger un módulo frontend recién scaffoldeado y configurarlo a través de su `*
 
 ## Antes de empezar
 
-- Un módulo scaffoldeado bajo `cliter/<bounded-context>/<module>.module.yaml`.
+- Un módulo scaffoldeado bajo `blueprint/<bounded-context>/<module>.module.yaml`.
 - El CLI `catalyst` disponible localmente (`catalyst generate front module --force` funciona).
 - Ficheros de traducción para el bounded context y el módulo — Aurora genera la estructura, nunca las cadenas.
 

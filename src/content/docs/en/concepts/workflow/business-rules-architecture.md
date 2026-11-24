@@ -12,7 +12,7 @@ The catalog of business rules is supported by a small constellation of files, sc
 │                       INPUTS — humans and AI                             │
 ├──────────────────────────────────────────────────────────────────────────┤
 │  Developer/AI edits .md   ─┐                                             │
-│  /openspec-propose             ├──►  cliter/<bc>/business-rules/<agg>.md     │
+│  /openspec-propose             ├──►  blueprint/<bc>/business-rules/<agg>.md     │
 │  /business-rules:document ─┘                                             │
 └────────────────────┬─────────────────────────────────────────────────────┘
                      │
@@ -21,7 +21,7 @@ The catalog of business rules is supported by a small constellation of files, sc
 │                STRUCTURAL PROCESSING — scripts + Ajv                     │
 ├──────────────────────────────────────────────────────────────────────────┤
 │   parse-catalog.ts ──►  ParsedRule[]                                     │
-│   generate-index.ts ──► cliter/business-rules-index.json (for tooling)   │
+│   generate-index.ts ──► blueprint/business-rules-index.json (for tooling)   │
 │                    └──► docs/business-rules/INDEX.md       (for humans)  │
 │   validate-catalog.ts ─► Ajv check + unique IDs + valid metadata         │
 │   validate-citations.ts ► @rule in code vs index                         │
@@ -51,7 +51,7 @@ The next sections describe each component in turn. Group them by role to keep th
 
 ### 1. The catalog `.md` files
 
-Location: `cliter/<bounded-context>/business-rules/<aggregate>.md`. One file per aggregate, sitting next to the same aggregate's `*.module.yaml` and `CONTEXT.md`. The cohesion with the YAML is deliberate — everything that describes the domain lives under `cliter/`, including its invariants.
+Location: `blueprint/<bounded-context>/business-rules/<aggregate>.md`. One file per aggregate, sitting next to the same aggregate's `*.module.yaml` and `CONTEXT.md`. The cohesion with the YAML is deliberate — everything that describes the domain lives under `blueprint/`, including its invariants.
 
 Each file holds a file-level frontmatter and one `## BR-...` section per rule. The detailed format is documented in [Anatomy of a business rule](../business-rule-anatomy/).
 
@@ -67,7 +67,7 @@ The schema is loaded with Ajv (`+ ajv-formats` for the date check) and applied t
 
 ### 3. The consolidated index (`business-rules-index.json`)
 
-Location: `cliter/business-rules-index.json`. Generated, never edited by hand. It is the **single point of truth** for any tool that needs to reason about rules without parsing prose.
+Location: `blueprint/business-rules-index.json`. Generated, never edited by hand. It is the **single point of truth** for any tool that needs to reason about rules without parsing prose.
 
 ```jsonc
 {
@@ -157,7 +157,7 @@ Location: `.claude/skills/catalyst-business-rules-guard/`. **Not invoked by any 
 - Mention of "business rules" or "reglas de negocio" in any language.
 - Explicit citations like `BR-PROD-EVENT-005`.
 - Invocations of `/business-rules:*`.
-- Edits to files under `cliter/<bc>/business-rules/`.
+- Edits to files under `blueprint/<bc>/business-rules/`.
 - The user is about to touch code of an aggregate that has active rules (looked up via the index by path or aggregate).
 
 The skill contains the **system manual**: the ten anti-patterns to avoid, the three workflow entry points, the inviolable conventions, and links to three references files (`format.md`, `workflow.md`, `audit.md`) that Claude can drill into when it needs specific guidance.
@@ -172,7 +172,7 @@ The distinction with slash commands matters. A slash command is a delimited acti
 
 1. Reads the prompt from the JSON Claude Code passes via stdin.
 2. Locates the repo root (looks for `package.json` with `name: aurora`).
-3. Loads `cliter/business-rules-index.json`. If absent, the hook exits silently.
+3. Loads `blueprint/business-rules-index.json`. If absent, the hook exits silently.
 4. For each active or proposed rule, computes a **relevance score**: explicit ID mention `+50`, aggregate name `+10`, BC name `+5`, keyword (lowercase, length ≥ 4) `+3`.
 5. If any rule has score > 0, sorts and takes the **top 3**.
 6. Reads the body of each, truncates to 4000 chars per rule, and writes a formatted section to stdout. Claude sees it as added context next to the user prompt.
@@ -183,7 +183,7 @@ This is **soft enforcement**. Injection of context does not bind Claude to anyth
 
 ### 10. The pre-commit hook (Husky)
 
-Location: `.husky/pre-commit`. Detects staged changes in `cliter/<bc>/business-rules/*.md` and, if any are present, runs two steps in order:
+Location: `.husky/pre-commit`. Detects staged changes in `blueprint/<bc>/business-rules/*.md` and, if any are present, runs two steps in order:
 
 1. `pnpm br:generate` — regenerates the index (`business-rules-index.json` + `INDEX.md`) and stages it in the same commit. Aborts if it fails (broken frontmatter, duplicate IDs, parsing error).
 2. `pnpm br:validate` — validates the catalog against `_schema.json` and the metadata sets. Aborts on structural errors (exit code `1`); permits commit on warnings only (exit code `2`, e.g. paths under `Implementa` that don't exist).
@@ -192,7 +192,7 @@ The hook guarantees two invariants on every commit: the committed index always m
 
 ### 11. The CI workflow `business-rules-check.yml`
 
-Location: `.github/workflows/business-rules-check.yml`. Triggers on push to `main` and on pull requests that touch `cliter/**/business-rules/**`, `cliter/business-rules-index.json`, `docs/business-rules/**`, `scripts/business-rules/**`, or the workflow itself.
+Location: `.github/workflows/business-rules-check.yml`. Triggers on push to `main` and on pull requests that touch `blueprint/**/business-rules/**`, `blueprint/business-rules-index.json`, `docs/business-rules/**`, `scripts/business-rules/**`, or the workflow itself.
 
 Steps:
 

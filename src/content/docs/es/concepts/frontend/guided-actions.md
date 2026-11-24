@@ -15,7 +15,7 @@ Dos mecanismos fijan esos límites. Una **acción guiada** es un botón que el a
 
 ### Acciones guiadas
 
-Cada bounded context declara sus acciones en `cliter/<bc>/actions.yaml`, un fichero por bounded context. Vive junto a `<module>.module.yaml` (el modelo de datos) y `processes.yaml` (los procesos de negocio), y se compila con el [manual de usuario integrado](../in-app-user-manual/) en el índice del manual.
+Cada bounded context declara sus acciones en `blueprint/<bc>/actions.yaml`, un fichero por bounded context. Vive junto a `<module>.module.yaml` (el modelo de datos) y `processes.yaml` (los procesos de negocio), y se compila con el [manual de usuario integrado](../in-app-user-manual/) en el índice del manual.
 
 ```yaml
 - id: create-account

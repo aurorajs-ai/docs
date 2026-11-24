@@ -138,14 +138,14 @@ Cuatro comandos cubren el día a día. Los dos primeros son los que corres a man
 
 ### `pnpm br:generate`
 
-Regenera `cliter/business-rules-index.json` y `docs/business-rules/INDEX.md`. Idempotente — correrlo dos veces sin cambios produce el mismo output.
+Regenera `blueprint/business-rules-index.json` y `docs/business-rules/INDEX.md`. Idempotente — correrlo dos veces sin cambios produce el mismo output.
 
 ```bash
 pnpm br:generate
 # → ✓ Índice regenerado: 5 reglas (4 activas, 0 derogadas, 1 propuesta) en 3 archivos.
 ```
 
-Normalmente no hace falta correrlo a mano; el pre-commit hook lo hace automáticamente cuando detecta cambios staged bajo `cliter/<bc>/business-rules/*.md`. Córrelo manualmente después de editar una regla y antes de abrir Claude Code si quieres que el hook (`inject-prompt-context.ts`) vea la última versión inmediatamente.
+Normalmente no hace falta correrlo a mano; el pre-commit hook lo hace automáticamente cuando detecta cambios staged bajo `blueprint/<bc>/business-rules/*.md`. Córrelo manualmente después de editar una regla y antes de abrir Claude Code si quieres que el hook (`inject-prompt-context.ts`) vea la última versión inmediatamente.
 
 ### `pnpm br:validate`
 
@@ -211,7 +211,7 @@ Cada comando está documentado en su propio `.md` bajo `.claude/commands/busines
 
 ## Qué hace el pre-commit hook por ti
 
-No tienes que pensar en regeneraciones durante el trabajo normal — el pre-commit hook lo gestiona. Se dispara siempre que el commit lleva cambios staged bajo `cliter/<bc>/business-rules/*.md`, y corre dos pasos en orden:
+No tienes que pensar en regeneraciones durante el trabajo normal — el pre-commit hook lo gestiona. Se dispara siempre que el commit lleva cambios staged bajo `blueprint/<bc>/business-rules/*.md`, y corre dos pasos en orden:
 
 1. `pnpm br:generate` — regenera y re-stagea el índice. Aborta el commit en fallos de parsing.
 2. `pnpm br:validate` — valida el catálogo. Aborta el commit en errores estructurales (exit `1`); permite commit en warnings (exit `2`).

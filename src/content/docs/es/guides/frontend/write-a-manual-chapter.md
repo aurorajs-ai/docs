@@ -15,7 +15,7 @@ Documentar una pantalla de módulo para los usuarios finales, en un idioma, de m
 
 ## Pasos
 
-1. **Crea el archivo del capítulo.** Un archivo por pantalla e idioma: `cliter/<bc>/manual/<lang>/<module>.md`, con la ruta de la pantalla en el frontmatter.
+1. **Crea el archivo del capítulo.** Un archivo por pantalla e idioma: `blueprint/<bc>/manual/<lang>/<module>.md`, con la ruta de la pantalla en el frontmatter.
 
    ```markdown
    ---
@@ -41,7 +41,7 @@ Documentar una pantalla de módulo para los usuarios finales, en un idioma, de m
 
 3. **Enlaza en lugar de repetir.** El comportamiento genérico de listados y formularios (búsqueda, filtro, columnas, guardar, cancelar, avisos) vive en los capítulos generales. Enlázalos: `[Listados](/manual/general.02-listados)`. Para apuntar a otra pantalla, enlaza su capítulo o su sección: `[cuentas](/manual/iam.account)` o `[crear una cuenta](/manual/iam.account#iam.account.crear-una-cuenta)`.
 
-4. **Marca un proceso.** Si un proceso de `cliter/<bc>/processes.yaml` empieza en esta pantalla, narra el proceso en un H2 y pon el marcador en su propia línea, justo debajo del encabezado:
+4. **Marca un proceso.** Si un proceso de `blueprint/<bc>/processes.yaml` empieza en esta pantalla, narra el proceso en un H2 y pon el marcador en su propia línea, justo debajo del encabezado:
 
    ```markdown
    ## Dar acceso a una persona
@@ -53,7 +53,7 @@ Documentar una pantalla de módulo para los usuarios finales, en un idioma, de m
 
    Si el proceso cruza varias pantallas, narra aquí toda la secuencia, en el capítulo de su primer paso obligatorio, y enlaza la sección de cada una de las otras pantallas. Los demás capítulos no llevan marcador para él.
 
-5. **Opcionalmente, añade un recorrido de pantalla.** Solo para lo que es específico de esta pantalla. Crea `cliter/<bc>/manual/<lang>/tours/<module>.yaml`, con el mismo nombre que el archivo del capítulo:
+5. **Opcionalmente, añade un recorrido de pantalla.** Solo para lo que es específico de esta pantalla. Crea `blueprint/<bc>/manual/<lang>/tours/<module>.yaml`, con el mismo nombre que el archivo del capítulo:
 
    ```yaml
    steps:

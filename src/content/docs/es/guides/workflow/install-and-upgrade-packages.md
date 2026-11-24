@@ -51,7 +51,7 @@ Una framework solution como `business-partner-portal` no viene en la CLI: vive e
 
 2. **Continúa como con cualquier paquete.** Resuelve los conflictos, genera la migración y define las claves, como en "Añadir un paquete".
 
-El lockfile guarda ahora `{ name, source }` para el paquete, y `cliter/packages/<package>.yaml` guarda su manifiesto. No edites ese archivo: el siguiente renderizado lo reescribe.
+El lockfile guarda ahora `{ name, source }` para el paquete, y `blueprint/packages/<package>.yaml` guarda su manifiesto. No edites ese archivo: el siguiente renderizado lo reescribe.
 
 ### Actualizar el proyecto
 
@@ -61,7 +61,7 @@ El lockfile guarda ahora `{ name, source }` para el paquete, y `cliter/packages/
    catalyst upgrade
    ```
 
-   Se niega a continuar cuando falta el lockfile, cuando `aurora/scaffold` no existe o cuando hay archivos rastreados modificados. Renombra cualquier `<module>.aurora.yaml` a `<module>.module.yaml` en su propio commit, y después renderiza el scaffold y cada paquete bloqueado y los fusiona. Descarga de nuevo cada framework solution desde su `source` en la etiqueta igual a la versión de la CLI, así que cada repositorio debe ser accesible con tus credenciales de git y tener esa etiqueta; si no, la actualización se detiene antes de cambiar nada y nombra la entrada, la URL y la etiqueta.
+   Se niega a continuar cuando falta el lockfile, cuando `aurora/scaffold` no existe o cuando hay archivos rastreados modificados. Renderiza el scaffold y cada paquete bloqueado y los fusiona. Descarga de nuevo cada framework solution desde su `source` en la etiqueta igual a la versión de la CLI, así que cada repositorio debe ser accesible con tus credenciales de git y tener esa etiqueta; si no, la actualización se detiene antes de cambiar nada y nombra la entrada, la URL y la etiqueta.
 
 2. **Resuelve los conflictos y ejecuta los pasos posteriores a la fusión**, como arriba. La actualización también imprime los comandos `pnpm db:generate --name <package>` de los paquetes cuyo backend cambió.
 

@@ -44,7 +44,7 @@ La mecánica está documentada en [Mantener el catálogo de business rules](../.
 
 Dos capas automatizadas protegen el catálogo de la deriva, y se detienen en puntos distintos a propósito.
 
-**Consistencia estructural — totalmente automatizada.** Un pre-commit hook regenera el índice en cada commit que toque `cliter/<bc>/business-rules/*.md` y corre el validador (`pnpm br:validate`). Un workflow de GitHub Actions repite las mismas comprobaciones en cada PR y, además, verifica que el índice commiteado coincide con el regenerado. Los errores aquí bloquean el commit o el PR — violaciones de schema, IDs duplicados, valores ilegales de `Estado`/`Severidad`, drift entre catálogo e índice.
+**Consistencia estructural — totalmente automatizada.** Un pre-commit hook regenera el índice en cada commit que toque `blueprint/<bc>/business-rules/*.md` y corre el validador (`pnpm br:validate`). Un workflow de GitHub Actions repite las mismas comprobaciones en cada PR y, además, verifica que el índice commiteado coincide con el regenerado. Los errores aquí bloquean el commit o el PR — violaciones de schema, IDs duplicados, valores ilegales de `Estado`/`Severidad`, drift entre catálogo e índice.
 
 **Consistencia semántica — asistida por humano, dos momentos.** El primer momento es preventivo: cuando ejecutas `/openspec-propose`, la extensión `openspec/config.yaml` instruye a la IA a cargar las reglas relevantes de los bounded contexts candidatos y preguntarse a sí misma si la propuesta nueva contradice alguna. Si la contradice, la propuesta se detiene con opciones (derogar / coexistir con excepción / no es conflicto, justificar). El segundo momento es on-demand: `/business-rules:audit` corre un reporte estructural y a continuación pide a la IA que empareje reglas que comparten BCs, agregados o keywords, y clasifique cada par (`contradiction` / `extension` / `orthogonal` / `needs-review`). No hay job nocturno, ni GitHub App, ni API key — la audit usa la sesión de Claude Code que ya está abierta.
 
@@ -53,7 +53,7 @@ La separación deliberada entre las dos capas es el corazón de la ligereza del 
 ## Cómo se ve en la práctica
 
 ```
-cliter/
+blueprint/
 ├── production-planning/
 │   ├── CONTEXT.md
 │   ├── production-order-header.module.yaml

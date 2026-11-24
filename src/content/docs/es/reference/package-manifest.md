@@ -1,13 +1,13 @@
 ---
 title: Referencia del manifiesto de paquete
-description: Todas las claves de cliter/packages/<package>.yaml, sus reglas de validación, un ejemplo completo y el catálogo de paquetes que instala catalyst add.
+description: Todas las claves de blueprint/packages/<package>.yaml, sus reglas de validación, un ejemplo completo y el catálogo de paquetes que instala catalyst add.
 ---
 
 Para saber por qué los paquetes funcionan así, consulta [Paquetes instalables y actualizaciones del scaffold](../../concepts/workflow/installable-packages/). Para los pasos, consulta [Instalar y actualizar paquetes](../../guides/workflow/install-and-upgrade-packages/).
 
 ## Ubicación y reglas
 
-Un paquete tiene exactamente un manifiesto escrito a mano en `cliter/packages/<package>.yaml` del monorepo de origen. `cliter/packages/` no es un bounded context. El manifiesto declara solo datos: no admite hooks, scripts ni código, y un campo ajeno a esta referencia, un paquete desconocido en `requires` o una dependencia sin versión exacta falla la validación con un mensaje que nombra el manifiesto y el campo.
+Un paquete tiene exactamente un manifiesto escrito a mano en `blueprint/packages/<package>.yaml` del monorepo de origen. `blueprint/packages/` no es un bounded context. El manifiesto declara solo datos: no admite hooks, scripts ni código, y un campo ajeno a esta referencia, un paquete desconocido en `requires` o una dependencia sin versión exacta falla la validación con un mensaje que nombra el manifiesto y el campo.
 
 ## Claves de primer nivel
 
@@ -57,7 +57,7 @@ Un manifiesto declara rutas de copia solo dentro de los bounded contexts que pos
 ## Ejemplo
 
 ```yaml
-# cliter/packages/queue-manager.yaml
+# blueprint/packages/queue-manager.yaml
 name: queue-manager
 label: Queue Manager
 backend:
@@ -96,7 +96,7 @@ packages:
     source: <repository-url>
 ```
 
-`catalyst add <package> --from <repository-url>` escribe la forma de objeto. `catalyst add` y `catalyst upgrade` descargan cada entrada `source` en la etiqueta igual a la versión de la CLI. Por cada una, el renderizado escribe además su manifiesto en `cliter/packages/<package>.yaml` del proyecto: no lo edites.
+`catalyst add <package> --from <repository-url>` escribe la forma de objeto. `catalyst add` y `catalyst upgrade` descargan cada entrada `source` en la etiqueta igual a la versión de la CLI. Por cada una, el renderizado escribe además su manifiesto en `blueprint/packages/<package>.yaml` del proyecto: no lo edites.
 
 ## Catálogo de paquetes
 

@@ -3,7 +3,9 @@ title: Module YAML keys
 description: Reference for the keys of a *.module.yaml that decide writability, tenant scope, relationship constraints, form hints and string-list widgets, with the errors generation raises for invalid combinations.
 ---
 
-This page documents the keys of `cliter/<bounded-context>/<module>.module.yaml` that change what the generator emits for writability, tenant scope, relationships and form widgets. It is not the whole grammar. For the reasoning behind a key, follow the link in its row.
+This page documents the keys of `blueprint/<bounded-context>/<module>.module.yaml` that change what the generator emits for writability, tenant scope, relationships and form widgets. It is not the whole grammar. For the reasoning behind a key, follow the link in its row.
+
+The file name is always `<module>.module.yaml`, one per module, directly inside a bounded context folder of `blueprint/`. Editors that use [SchemaStore](https://www.schemastore.org/) validate the file against the module JSON schema when its path matches `**/blueprint/*/*.module.yaml`.
 
 ## Module keys
 

@@ -3,7 +3,7 @@ title: "Anatomy of a business rule"
 description: "The fields, conventions, and lifecycle of a single rule — frontmatter shape, ID grammar, state and severity, the exhaustive case table, cross-aggregate pointers, and how `@rule` citations relate to the catalog."
 ---
 
-A rule is a Markdown section under `cliter/<bc>/business-rules/<aggregate>.md`. The file holds many rules; the file's frontmatter describes the whole aggregate, while each rule lives under its own `## BR-...` heading with its own metadata table. This page walks through every part of that anatomy.
+A rule is a Markdown section under `blueprint/<bc>/business-rules/<aggregate>.md`. The file holds many rules; the file's frontmatter describes the whole aggregate, while each rule lives under its own `## BR-...` heading with its own metadata table. This page walks through every part of that anatomy.
 
 ## File-level frontmatter
 
@@ -154,7 +154,7 @@ The audit reports any marker that has been sitting unresolved for more than 30 d
 A rule that affects more than one aggregate (a cascade) or more than one bounded context (an exception based on a user role) lives in **one file**: the file of the aggregate where the final invariant is observed. The frontmatter of that file declares every affected BC and aggregate (in plural). Other files involved carry **short pointers** — never duplicated content.
 
 ```markdown
-# In cliter/production-planning/business-rules/production-order-position-event.md
+# In blueprint/production-planning/business-rules/production-order-position-event.md
 
 ## Cascadas que dispara este agregado
 
@@ -173,7 +173,7 @@ A handler, function, or test can cite a rule in JSDoc or an equivalent comment:
  * Cancela un evento de producción.
  *
  * @rule BR-PROD-EVENT-001 — No cancelar eventos DONE
- * @see cliter/production-planning/business-rules/production-order-position-event.md
+ * @see blueprint/production-planning/business-rules/production-order-position-event.md
  */
 async cancel(eventId: string): Promise<void> {
   ...

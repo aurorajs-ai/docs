@@ -5,7 +5,7 @@ description: Inicia el catálogo de procesos de un bounded context, añade o cam
 
 ## Objetivo
 
-Mantener `cliter/<bc>/processes.yaml` fiel a lo que el bounded context permite hacer a un usuario, y lograr que el manual narre todos los procesos activos.
+Mantener `blueprint/<bc>/processes.yaml` fiel a lo que el bounded context permite hacer a un usuario, y lograr que el manual narre todos los procesos activos.
 
 ## Antes de empezar
 
@@ -17,7 +17,7 @@ Mantener `cliter/<bc>/processes.yaml` fiel a lo que el bounded context permite h
 
 1. **Inicia un bounded context que no tiene catálogo.** En Claude Code, ejecuta `/processes:document <bc>`. Lee el árbol de navegación, los capítulos del manual, los PRD del dossier, `CONTEXT.md` y las reglas de negocio, redacta el catálogo y migra la prosa de flujos de `CONTEXT.md`. Una ejecución por bounded context, una pull request por bounded context.
 
-2. **Añade o cambia un proceso a mano.** Edita `cliter/<bc>/processes.yaml`:
+2. **Añade o cambia un proceso a mano.** Edita `blueprint/<bc>/processes.yaml`:
 
    ```yaml
    processes:

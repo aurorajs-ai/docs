@@ -5,7 +5,7 @@ description: Bootstrap the process catalog of a bounded context, add or change a
 
 ## Goal
 
-Keep `cliter/<bc>/processes.yaml` true to what the bounded context lets a user do, and keep the manual narrating every active process.
+Keep `blueprint/<bc>/processes.yaml` true to what the bounded context lets a user do, and keep the manual narrating every active process.
 
 ## Before you start
 
@@ -17,7 +17,7 @@ Keep `cliter/<bc>/processes.yaml` true to what the bounded context lets a user d
 
 1. **Bootstrap a bounded context that has no catalog.** In Claude Code, run `/processes:document <bc>`. It reads the navigation tree, the manual chapters, the PRDs of the dossier, `CONTEXT.md` and the business rules, drafts the catalog and migrates the flow prose of `CONTEXT.md`. One run per bounded context, one pull request per bounded context.
 
-2. **Add or change a process by hand.** Edit `cliter/<bc>/processes.yaml`:
+2. **Add or change a process by hand.** Edit `blueprint/<bc>/processes.yaml`:
 
    ```yaml
    processes:

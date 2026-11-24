@@ -9,8 +9,8 @@ Conseguir que el asistente de ayuda pueda explicar el formulario de un módulo y
 
 ## Antes de empezar
 
-- Un módulo en `cliter/<bc>/<module>.module.yaml` con frontend generado.
-- Una acción guiada `create` del módulo en `cliter/<bc>/actions.yaml` (`catalyst generate front module` la añade cuando el bounded context tiene manual).
+- Un módulo en `blueprint/<bc>/<module>.module.yaml` con frontend generado.
+- Una acción guiada `create` del módulo en `blueprint/<bc>/actions.yaml` (`catalyst generate front module` la añade cuando el bounded context tiene manual).
 - El CLI `catalyst` disponible en local.
 - Una aplicación con el paquete `tools` instalado (sin él no hay asistente), el asistente activado (`tools.assistant.isEnabled`) y un rol que tenga el permiso `tools.assistant.ask`, concedido en IAM como cualquier otro permiso. Consulta [Acceso y coste](../../../concepts/frontend/guided-actions/#acceso-y-coste).
 

@@ -44,7 +44,7 @@ The mechanics are documented in [Maintain the business-rules catalog](../../../g
 
 Two automated layers protect the catalog from drift, and they stop at different points on purpose.
 
-**Structural consistency — fully automated.** A pre-commit hook regenerates the index on every commit that touches `cliter/<bc>/business-rules/*.md` and runs the validator (`pnpm br:validate`). A GitHub Actions workflow re-runs the same checks on every PR and additionally verifies that the committed index matches the regenerated one. Errors here block the commit or the PR — schema violations, duplicate IDs, illegal `Estado`/`Severidad` values, drift between catalog and index.
+**Structural consistency — fully automated.** A pre-commit hook regenerates the index on every commit that touches `blueprint/<bc>/business-rules/*.md` and runs the validator (`pnpm br:validate`). A GitHub Actions workflow re-runs the same checks on every PR and additionally verifies that the committed index matches the regenerated one. Errors here block the commit or the PR — schema violations, duplicate IDs, illegal `Estado`/`Severidad` values, drift between catalog and index.
 
 **Semantic consistency — human-assisted, two moments.** The first moment is preventive: when you run `/openspec-propose`, the `openspec/config.yaml` extension instructs the AI to load the relevant rules of the candidate bounded contexts and ask itself whether the new proposal contradicts any of them. If it does, the proposal halts with options (derogate / coexist with an exception / no real conflict, justify). The second moment is on-demand: `/business-rules:audit` runs a structural report and then asks the AI to pair up rules sharing BCs, aggregates, or keywords and classify each pair (`contradiction` / `extension` / `orthogonal` / `needs-review`). There is no nightly job, no GitHub App, no API key — the audit uses the Claude Code session that is already open.
 
@@ -53,7 +53,7 @@ The deliberate gap between the two layers is the heart of the system's lightness
 ## What it looks like in practice
 
 ```
-cliter/
+blueprint/
 ├── production-planning/
 │   ├── CONTEXT.md
 │   ├── production-order-header.module.yaml

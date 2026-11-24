@@ -44,7 +44,7 @@ You'll encounter preservation regions in these moments:
 - You edit a form, regenerate with `catalyst generate`, and the CLI logs `[REGION PRESERVED] my-form.component.html: FORM-FIELDS`. Your edit survived.
 - The template is upgraded (new field type, better accessibility attributes). You regenerate and see `[REGION UPDATED] my-form.component.html: FORM-FIELDS`. You didn't have custom changes there, so the new template body flows in transparently.
 - You see `[REGION DROPPED] my-form.component.html: OLD-NAME`. A template you're consuming used to declare that region and no longer does. Whatever you had there is lost — check git if you need to recover it.
-- Your lockfile at `cliter/<bc>/.locks/<scope>/<module>.lock.json` grows a `regions` field per entry, mapping region names to hashes. `LOCK_JSON_VERSION` bumps from `0.0.1` to `0.1.0`.
+- Your lockfile at `blueprint/<bc>/.locks/<scope>/<module>.lock.json` grows a `regions` field per entry, mapping region names to hashes. `LOCK_JSON_VERSION` bumps from `0.0.1` to `0.1.0`.
 
 ## Trade-offs and limits
 

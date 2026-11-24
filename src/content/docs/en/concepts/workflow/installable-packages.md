@@ -13,7 +13,7 @@ Packages now follow one declarative model. A single manifest describes each pack
 
 ### The manifest
 
-Each package has one hand-written manifest, `cliter/packages/<package>.yaml`, in the source monorepo. It is the only declaration the packager and the installer read. It names the backend and frontend paths to copy, the packages it `requires`, pinned npm dependencies, the `.env` keys it needs, and its contribution to composition: modules, aggregates, relations, bridges, queues, routes, navigation, widgets and port bindings. It accepts no hooks, scripts or code, and a manifest with an unknown field fails validation. The [package manifest reference](../../../reference/package-manifest/) lists every key.
+Each package has one hand-written manifest, `blueprint/packages/<package>.yaml`, in the source monorepo. It is the only declaration the packager and the installer read. It names the backend and frontend paths to copy, the packages it `requires`, pinned npm dependencies, the `.env` keys it needs, and its contribution to composition: modules, aggregates, relations, bridges, queues, routes, navigation, widgets and port bindings. It accepts no hooks, scripts or code, and a manifest with an unknown field fails validation. The [package manifest reference](../../../reference/package-manifest/) lists every key.
 
 A package ships only its own bounded contexts and shared zones, never files of another bounded context. A cross-context need goes through a port and adapter in `@bridges`.
 
@@ -56,7 +56,7 @@ The files that wire packages together (the application module, the bridges modul
 
 ### What an upgrade also does
 
-`catalyst upgrade` first migrates module definition files: it renames each `<module>.aurora.yaml` to `<module>.module.yaml` with `git mv`, rewrites the two generated lines that name the old file and commits only that, before the merge. Then it renders and merges as above. Installed packages upgrade together with the scaffold, and so does every `source` entry: `catalyst upgrade` fetches each one again at the tag equal to the CLI version it runs with and renders it with the framework packages as one package set. A repository that is unreachable, or that lacks the tag, stops the upgrade before anything is written. The framework npm packages update through npm.
+`catalyst upgrade` renders and merges as above. Installed packages upgrade together with the scaffold, and so does every `source` entry: `catalyst upgrade` fetches each one again at the tag equal to the CLI version it runs with and renders it with the framework packages as one package set. A repository that is unreachable, or that lacks the tag, stops the upgrade before anything is written. The framework npm packages update through npm.
 
 ### After the merge
 
@@ -64,7 +64,7 @@ When the merge has no conflicts the CLI installs the dependencies, appends the `
 
 ### A framework solution from its repository
 
-`catalyst add <package> --from <repository-url>` clones the repository at the tag equal to the `cliVersion` of the lockfile, with your own git credentials, renders the package with the ones the CLI ships and records it as `{ name, source }`. It also writes the package's manifest to `cliter/packages/<package>.yaml`, which the render rewrites each time: `catalyst generate` reads it to know which bounded contexts the package owns without network access. Never edit that file. The repository holds exactly one package and carries one tag per CLI release.
+`catalyst add <package> --from <repository-url>` clones the repository at the tag equal to the `cliVersion` of the lockfile, with your own git credentials, renders the package with the ones the CLI ships and records it as `{ name, source }`. It also writes the package's manifest to `blueprint/packages/<package>.yaml`, which the render rewrites each time: `catalyst generate` reads it to know which bounded contexts the package owns without network access. Never edit that file. The repository holds exactly one package and carries one tag per CLI release.
 
 ## When it applies
 

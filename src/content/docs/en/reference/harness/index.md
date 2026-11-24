@@ -103,7 +103,7 @@ Two families:
 | Rule | Governs |
 | --- | --- |
 | `route-aurora-components.md` | `frontend/src/@aurora/components/**` |
-| `route-module-yaml.md` | `cliter/**/*.module.yaml` |
+| `route-module-yaml.md` | `blueprint/**/*.module.yaml` |
 | `route-backend-test.md` | `backend/**/*.spec.ts`, `backend/**/*.e2e-spec.ts` |
 | `route-drizzle-schema.md` | `backend/**/*.schema.ts`, the migrations tree, the Drizzle config and the drift-check workflow |
 | `route-eta.md` | `**/*.eta` |

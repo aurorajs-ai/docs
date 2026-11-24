@@ -51,7 +51,7 @@ A framework solution such as `business-partner-portal` is not in the CLI: it liv
 
 2. **Continue as for any package.** Resolve conflicts, generate the migration and set the keys, as in "Add a package".
 
-The lockfile now holds `{ name, source }` for the package, and `cliter/packages/<package>.yaml` holds its manifest. Never edit that file: the next render rewrites it.
+The lockfile now holds `{ name, source }` for the package, and `blueprint/packages/<package>.yaml` holds its manifest. Never edit that file: the next render rewrites it.
 
 ### Upgrade the project
 
@@ -61,7 +61,7 @@ The lockfile now holds `{ name, source }` for the package, and `cliter/packages/
    catalyst upgrade
    ```
 
-   It refuses when the lockfile is missing, when `aurora/scaffold` does not exist or when tracked files are dirty. It renames any `<module>.aurora.yaml` to `<module>.module.yaml` in its own commit, then renders the scaffold and every locked package and merges them. It fetches each framework solution again from its `source` at the tag equal to the CLI version, so every repository must be reachable with your git credentials and carry that tag; otherwise the upgrade stops before changing anything and names the entry, the URL and the tag.
+   It refuses when the lockfile is missing, when `aurora/scaffold` does not exist or when tracked files are dirty. It renders the scaffold and every locked package and merges them. It fetches each framework solution again from its `source` at the tag equal to the CLI version, so every repository must be reachable with your git credentials and carry that tag; otherwise the upgrade stops before changing anything and names the entry, the URL and the tag.
 
 2. **Resolve conflicts and run the post-merge steps**, as above. The upgrade also prints the `pnpm db:generate --name <package>` commands for the packages whose backend changed.
 

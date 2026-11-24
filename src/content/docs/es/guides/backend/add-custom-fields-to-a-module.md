@@ -10,7 +10,7 @@ Permitir que un administrador añada campos tipados a una entidad desde las pant
 ## Antes de empezar
 
 - El bounded context `tools` está instalado en el proyecto. `catalyst add tools` (o `catalyst add identity`) también enlaza el adaptador de catálogo de frontend que necesita el formulario generado.
-- El módulo es un agregado normal con su propio `cliter/<bounded-context>/<module>.module.yaml`. Un módulo pivote many-to-many no puede activarlo.
+- El módulo es un agregado normal con su propio `blueprint/<bounded-context>/<module>.module.yaml`. Un módulo pivote many-to-many no puede activarlo.
 - Conoces el [concepto](../../../concepts/backend/custom-fields/), incluido el efecto de un campo obligatorio sobre los registros existentes.
 
 ## Pasos

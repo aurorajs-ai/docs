@@ -15,7 +15,7 @@ Stop the Catalyst CLI from emitting operations or files you do not want — eith
 
 ## Steps
 
-1. **Locate the module YAML.** It lives at `cliter/<bounded-context>/<module>.module.yaml`. For `iam/role`, that is `cliter/iam/role.module.yaml`.
+1. **Locate the module YAML.** It lives at `blueprint/<bounded-context>/<module>.module.yaml`. For `iam/role`, that is `blueprint/iam/role.module.yaml`.
 
 2. **Choose the granularity you need.**
 
@@ -26,7 +26,7 @@ Stop the Catalyst CLI from emitting operations or files you do not want — eith
 3. **Edit the YAML at its top level.** Both keys live next to `aggregateProperties` and `additionalApis`. The names you can list under `excludedOperations` are the ones from the [operations table](../../../concepts/backend/module-scaffolding/#operations-the-cli-recognizes).
 
    ```yaml
-   # cliter/iam/role.module.yaml
+   # blueprint/iam/role.module.yaml
    excludedOperations:
      - count
      - getRaw
@@ -96,7 +96,7 @@ An `additionalApis` entry is generated in every layer. List the layers to leave 
 A password-reset endpoint that exists only over REST, as `iam/user` declares it:
 
 ```yaml
-# cliter/iam/user.module.yaml
+# blueprint/iam/user.module.yaml
 additionalApis:
   - path: iam/user/forgot-password
     resolverType: mutation

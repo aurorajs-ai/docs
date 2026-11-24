@@ -1,13 +1,13 @@
 ---
 title: Package manifest reference
-description: Every key of cliter/packages/<package>.yaml, its validation rules, a complete example and the catalog of packages that catalyst add installs.
+description: Every key of blueprint/packages/<package>.yaml, its validation rules, a complete example and the catalog of packages that catalyst add installs.
 ---
 
 For why packages work this way, see [Installable packages and scaffold upgrades](../../concepts/workflow/installable-packages/). For the steps, see [Install and upgrade packages](../../guides/workflow/install-and-upgrade-packages/).
 
 ## Location and rules
 
-A package has exactly one hand-written manifest at `cliter/packages/<package>.yaml` in the source monorepo. `cliter/packages/` is not a bounded context. The manifest declares data only: it accepts no hooks, scripts or code, and a field outside this reference, an unknown package in `requires`, or a dependency without an exact version fails validation with a message that names the manifest and the field.
+A package has exactly one hand-written manifest at `blueprint/packages/<package>.yaml` in the source monorepo. `blueprint/packages/` is not a bounded context. The manifest declares data only: it accepts no hooks, scripts or code, and a field outside this reference, an unknown package in `requires`, or a dependency without an exact version fails validation with a message that names the manifest and the field.
 
 ## Top-level keys
 
@@ -57,7 +57,7 @@ A manifest declares copy paths only inside the bounded contexts it owns, or insi
 ## Example
 
 ```yaml
-# cliter/packages/queue-manager.yaml
+# blueprint/packages/queue-manager.yaml
 name: queue-manager
 label: Queue Manager
 backend:
@@ -96,7 +96,7 @@ packages:
     source: <repository-url>
 ```
 
-`catalyst add <package> --from <repository-url>` writes the object form. `catalyst add` and `catalyst upgrade` fetch every `source` entry at the tag equal to the CLI version. For each one, the render also writes its manifest to `cliter/packages/<package>.yaml` of the project: never edit it.
+`catalyst add <package> --from <repository-url>` writes the object form. `catalyst add` and `catalyst upgrade` fetch every `source` entry at the tag equal to the CLI version. For each one, the render also writes its manifest to `blueprint/packages/<package>.yaml` of the project: never edit it.
 
 ## Package catalog
 

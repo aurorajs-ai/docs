@@ -9,7 +9,7 @@ Take a freshly-scaffolded frontend module and configure it through its `*.module
 
 ## Before you start
 
-- A scaffolded module under `cliter/<bounded-context>/<module>.module.yaml`.
+- A scaffolded module under `blueprint/<bounded-context>/<module>.module.yaml`.
 - The `catalyst` CLI available locally (`catalyst generate front module --force` works).
 - Translation files for the bounded context and module — Aurora generates the structure but never the strings.
 
