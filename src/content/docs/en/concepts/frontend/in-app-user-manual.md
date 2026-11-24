@@ -27,9 +27,10 @@ A chapter has one H1 and one H2 per user task. The H2 text becomes the section i
 
 ### Compile
 
-Every build compiles the chapters, per language, into two derived outputs: one with every section (id, route, permission, title, sanitized HTML, plain text) and one with the reading order. They are build outputs: never edited by hand and never committed. `pnpm manual:compile` runs them, and `pnpm dev` and the backend build run it for you.
+Every build compiles the chapters, per language, into two derived outputs: one with every section (id, route, permission, navigation path, title, sanitized HTML, plain text) and one with the reading order. They are build outputs: never edited by hand and never committed. `pnpm manual:compile` runs them, and `pnpm dev` and the backend build run it for you.
 
 - A chapter whose `route` is missing, or that the navigation tree does not contain, fails the compile naming the file. The chapter inherits its permission from the navigation tree, so the manual keeps no second copy.
+- The compile derives every navigation path (the menu route to a screen, such as `Platform > IAM > Accounts`) from the navigation tree and the frontend translation files, in each language. It writes it on every section and prints it as a "Where to find it" line at the start of each screen chapter, so you never write a menu path by hand. A part of the path the tree cannot know (a tab of the screen, a control of the application shell) is declared with a `<!-- nav: key[, key] -->` marker, where each key is a translation key. A key with no text in a language, or a navigation item on the path with no translation, fails the compile.
 - The HTML is sanitized once, at compile time.
 - The reading order follows the navigation tree: general chapters first, then each bounded context and module in the order the menu shows them.
 - Every `active` process of the [process catalog](../../workflow/process-catalog/) must be narrated by exactly one chapter section per language, marked with `<!-- process: <id> -->` on its own line. The compile fails otherwise.
@@ -38,7 +39,7 @@ Every build compiles the chapters, per language, into two derived outputs: one w
 ### Reading it
 
 - The `/manual` page shows the index beside the selected chapter and its table of contents. The index and the chapter scroll independently, and every chapter the user opens is a browser navigation, so back and forward work.
-- A help action in the site header opens a help panel over the current screen. It opens on the chapter whose route is the longest one that matches the address (`/iam/account/edit/<id>` opens the `/iam/account` chapter; `/iam/accounting` does not). With no chapter for the screen, it opens with the search box focused. The panel offers the help assistant, described in [Guided actions and assisted forms](../guided-actions/).
+- A help action in the site header opens a help panel over the current screen. It opens on the chapter whose route is the longest one that matches the address (`/iam/account/edit/<id>` opens the `/iam/account` chapter; `/iam/accounting` does not). With no chapter for the screen, it opens with the search box focused. The panel offers the help assistant, described in [Guided actions and assisted forms](../guided-actions/). The assistant receives the navigation path of every section it reads, and its fixed instructions tell it to state that path, exactly as given, when it sends the user to a screen or a control: it answers "Platform > IAM > Accounts", not just "Accounts".
 - The user menu offers a "User manual" entry. Both entries appear only when the user's index has at least one chapter.
 - The manual has no permission of its own. A chapter is listed, shown and searchable only if the user holds the permission of its screen.
 
@@ -69,6 +70,8 @@ A task of several steps can carry a `<!-- video: <slug> -->` marker. A script re
 - It is a lexical search, not a semantic one.
 - It is not a PDF: the manual is read in the application, with the session, theme and language of the user.
 - The process catalog is not an input of the assistant. The assistant reads the manual.
+- The path comes only from the compiled manual, never from the browser, and it is never rebuilt at run time. After a change to the navigation or its translations, run `pnpm manual:compile` again: a backend that reads an older output, without the path, fails instead of answering without it.
+- The sidebar group labels (Projects, Platform) are a constant of the compile that mirrors the sidebar component. If you change the groups of the sidebar, update that constant.
 
 ## Related
 
