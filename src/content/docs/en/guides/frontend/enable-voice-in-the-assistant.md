@@ -36,7 +36,7 @@ Let users speak to the help assistant and hear its answers, with either the Elev
 
    - **Speech to text** (Whisper `large-v3-turbo`, int8, about 1.5 GB). A directory containing `turbo-encoder.int8.onnx`, `turbo-decoder.int8.onnx` and `turbo-tokens.txt`.
    - **Text to speech** (Spanish voice `vits-coqui-es-css10`, about 145 MB). A directory containing `model.onnx` and `tokens.txt`.
-   - **Model.** An OpenAI-compatible server on the same host, for example LM Studio, with the model loaded and a context length set explicitly. Set the model id in `tools.assistant.model`.
+   - **Model.** An OpenAI-compatible server on the same host, for example LM Studio, with the model loaded and a context length set explicitly. Set the model id in `tools.assistant.model`, and list the id the server answers with in `tools.assistant.models` as `SELF_HOSTED` with both prices at 0; otherwise its turns store empty hosting and cost. The stored model is the one the server returns, which can differ from the requested id.
 
    Point the backend to them:
 
