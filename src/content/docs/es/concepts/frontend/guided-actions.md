@@ -78,6 +78,8 @@ El asistente pertenece al paquete `tools`, así que una aplicación sin él no t
 
 El asistente guarda cada turno de conversación para que un revisor dedicado pueda leerlo. Leerlos requiere el permiso aparte `tools.assistantConversation.get`. Una purga diaria borra los turnos anteriores a `tools.assistant.conversationRetentionDays`, que viene en 90.
 
+Cada turno guardado registra además qué modelo respondió y cuánto costó: `model` (el id que devolvió el proveedor, que puede diferir del solicitado), `modelHosting` (`HOSTED` o `SELF_HOSTED`) y `estimatedCost`. El alojamiento y los precios salen de un único ajuste clave-valor, `tools.assistant.models`, un mapa por id de modelo con `hosting`, `inputPricePerMTok` y `outputPricePerMTok` (precio por millón de tokens). El coste es tokens de entrada por precio de entrada más tokens de salida por precio de salida. Un modelo que no está en el mapa (o con una entrada mal formada) deja el alojamiento y el coste vacíos, nunca en 0; un modelo listado con precio 0 da coste 0. El mapa se lee antes de llamar al modelo, así que un valor ilegible hace fallar la pregunta antes de que cueste nada.
+
 ## Cuándo aplica
 
 - Un usuario pregunta al asistente cómo hacer algo y recibe un botón que lo lleva allí.

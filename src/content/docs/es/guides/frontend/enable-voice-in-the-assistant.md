@@ -36,7 +36,7 @@ Que los usuarios puedan hablar con el asistente de ayuda y oír sus respuestas, 
 
    - **Voz a texto** (Whisper `large-v3-turbo`, int8, unos 1,5 GB). Un directorio con `turbo-encoder.int8.onnx`, `turbo-decoder.int8.onnx` y `turbo-tokens.txt`.
    - **Texto a voz** (voz en español `vits-coqui-es-css10`, unos 145 MB). Un directorio con `model.onnx` y `tokens.txt`.
-   - **Modelo.** Un servidor compatible con OpenAI en el mismo equipo, por ejemplo LM Studio, con el modelo cargado y la longitud de contexto fijada de forma explícita. Pon el id del modelo en `tools.assistant.model`.
+   - **Modelo.** Un servidor compatible con OpenAI en el mismo equipo, por ejemplo LM Studio, con el modelo cargado y la longitud de contexto fijada de forma explícita. Pon el id del modelo en `tools.assistant.model` y añade el id con el que responde el servidor a `tools.assistant.models` como `SELF_HOSTED` con ambos precios en 0; si no, sus turnos guardan alojamiento y coste vacíos. El modelo guardado es el que devuelve el servidor, que puede diferir del id solicitado.
 
    Indica al backend dónde están:
 

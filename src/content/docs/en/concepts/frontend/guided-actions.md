@@ -78,6 +78,8 @@ The assistant belongs to the `tools` package, so an application without it has n
 
 The assistant stores each conversation turn so that a dedicated reviewer can read it. Reading them needs the separate permission `tools.assistantConversation.get`. A daily purge deletes turns older than `tools.assistant.conversationRetentionDays`, which ships at 90.
 
+Each stored turn also records which model answered and what it cost: `model` (the id the provider returned, which can differ from the one requested), `modelHosting` (`HOSTED` or `SELF_HOSTED`) and `estimatedCost`. Hosting and prices come from one key-value setting, `tools.assistant.models`, a map by model id with `hosting`, `inputPricePerMTok` and `outputPricePerMTok` (price per million tokens). The cost is input tokens times the input price plus output tokens times the output price. A model missing from the map (or with a malformed entry) leaves hosting and cost empty, never 0; a listed model priced at 0 gives a cost of 0. The map is read before the model is called, so an unreadable value fails the question before it costs anything.
+
 ## When it applies
 
 - A user asks the assistant how to do something and gets a button that takes them there.
