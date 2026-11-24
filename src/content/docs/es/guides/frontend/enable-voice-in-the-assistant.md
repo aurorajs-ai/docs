@@ -72,6 +72,7 @@ Que los usuarios puedan hablar con el asistente de ayuda y oír sus respuestas, 
 
 - La entrada del chat muestra el botón de ondas cuando el área de texto está vacía. Una sesión muestra una píldora con «Cancelar» mientras se abre y «Detener» cuando ya escucha.
 - Di una pregunta. La transcripción aparece como un mensaje, sigue la respuesta y la oyes.
+- En manos libres, habla encima de la respuesta: el audio se detiene al instante, tu frase nueva se responde después y el chat sigue mostrando la respuesta anterior completa.
 - Con el perfil local, desconecta la red y repite: el turno debe completarse igualmente.
 
 ## Solución de problemas
