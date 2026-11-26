@@ -94,7 +94,7 @@ B3. **Open the onboarding pull request, with your roster entry.** Add yourself t
    cp .env.dev .env
    ```
 
-   The command reads `.env.dev.enc` and your key from `.keys/age.txt`, and writes `backend/.env.dev`. Then point the `DATABASE_*` block of `.env` at your own database, as in [Install Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
+   The command reads `.env.dev.enc` and your key from `.keys/age.txt`, and writes `backend/.env.dev`.
 
    Run the project with `pnpm dev` from the root. See [Add IAM + OAuth](../../../tutorials/getting-started/add-iam-oauth/) for the first login.
 
