@@ -20,7 +20,7 @@ Dejar a un desarrollador trabajando sobre el tablero compartido: dado de alta en
   gh auth login
   ```
 
-  `gh auth login` es la única credencial que usa el despachador para sus llamadas a GitHub. El daemon necesita además `npx`, `claude`, `openspec` y `catalyst` en el PATH; `pnpm backlog:daemon install` nombra cualquier binario que falte y se detiene. El camino B necesita también `sops` y `age`.
+  `gh auth login` es la única credencial que usa el despachador para sus llamadas a GitHub. El daemon necesita además `npx`, `claude`, `openspec` (`pnpm add -g @fission-ai/openspec`) y `catalyst` en el PATH; `pnpm backlog:daemon install` nombra cualquier binario que falte y se detiene. El camino B necesita también `sops` y `age`.
 
 ## Pasos
 
@@ -59,28 +59,22 @@ B1. **Clona el repositorio.**
    cd my-project
    ```
 
-B2. **Prepara un pull request de incorporación.** Lleva dos cambios y lo revisa el responsable del repositorio:
+B2. **Crea tu propio `backend/.keys`.** La carpeta está en `.gitignore` y contiene tres ficheros: tu identidad `age` para SOPS y el par de claves de firma OAuth. Desde la raíz del proyecto:
 
-   - Tu entrada en `.backlog/team.yaml`, como en el paso A2.
-   - Tu clave pública `age` como nuevo destinatario de `backend/.sops.yaml`. Crea antes el par de claves; se imprime la clave pública (`age1...`) y la privada queda en `backend/.keys/`, que está en `.gitignore`:
+   ```bash
+   mkdir -p backend/.keys
+   age-keygen -o backend/.keys/age.txt
+   catalyst keys
+   ```
 
-     ```bash
-     mkdir -p backend/.keys
-     age-keygen -o backend/.keys/age.txt
-     ```
+   `age-keygen` escribe `backend/.keys/age.txt` e imprime tu clave pública (`age1...`); la CLI no tiene ningún comando que la cree. `catalyst keys` escribe `oauth-private.key` y `oauth-public.key` en `backend/.keys/`; `--out <dir>` cambia la carpeta. Envía la clave **pública** `age1...` a un compañero. No envíes ni subas nunca `age.txt`.
 
-     Añade la clave pública a los destinatarios de la regla existente, como se describe en [Desplegar un proyecto en Coolify](../deploy-to-coolify/):
+B3. **Abre el pull request de incorporación, con tu entrada del roster.** Añádete a `.backlog/team.yaml`, como en el paso A2, y abre el pull request con `gh pr create`. Un compañero que ya descifra el proyecto lo completa:
 
-     ```yaml
-     creation_rules:
-       - age: >-
-           age1ownerpublickey...,
-           age1yourpublickey...
-     ```
+   - Añade tu clave pública a los destinatarios `age:` de `backend/.sops.yaml`, cuya regla es `path_regex: '(\.env(\..+)?|\.env)$'`. Una línea de comentario junto a cada clave nombra a su dueño; añade la tuya.
+   - Recifra los ficheros `backend/.env.<env>.enc` existentes para que tu clave pueda leerlos, con `sops updatekeys <fichero>`, y lo sube al mismo pull request.
 
-   Ábrelo con `gh pr create`. No subas nunca `backend/.keys/age.txt`.
-
-B3. **Espera a que el responsable lo mergee y recifre.** Añadir un destinatario a `.sops.yaml` no modifica los ficheros que ya están cifrados. El responsable ejecuta `sops updatekeys` sobre cada fichero `backend/.env.<env>.enc` y sube el resultado. Después haz `git pull`.
+   Añadir un destinatario no modifica los ficheros ya cifrados, por eso el compañero los recifra. Cuando el pull request se mergee, haz `git pull`.
 
 ### Ambos caminos — el entorno local
 
@@ -90,10 +84,7 @@ B3. **Espera a que el responsable lo mergee y recifre.** Añadir un destinatario
    pnpm install
    ```
 
-2. **Crea `backend/.env` y `backend/.keys`.** Un proyecto creado en el paso A1 ya tiene ambos. En un clon:
-
-   - Genera el par de claves de firma OAuth con `catalyst keys`; escribe en `backend/.keys/`.
-   - Descifra el entorno que uses en local. Desde `backend/`, `catalyst env decrypt --env dev --config ../aurora.yaml` escribe `backend/.env.dev` y lee tu clave de `backend/.keys/age.txt`. Usa sus variables para `backend/.env` y apunta el bloque `DATABASE_*` a tu propia base de datos, como en [Instalar Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
+2. **Crea `backend/.env`.** Un proyecto creado por el camino A ya lo tiene. En un clon, descifra el entorno que uses en local. Desde `backend/`, `catalyst env decrypt --env dev --config ../aurora.yaml` lee `.env.dev.enc` y tu clave de `.keys/age.txt`, y escribe `backend/.env.dev`. Usa sus variables para `backend/.env` y apunta el bloque `DATABASE_*` a tu propia base de datos, como en [Instalar Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
 
    Arranca el proyecto con `pnpm dev` desde la raíz. Para el primer inicio de sesión, consulta [Añadir IAM + OAuth](../../../tutorials/getting-started/add-iam-oauth/).
 
@@ -131,7 +122,7 @@ B3. **Espera a que el responsable lo mergee y recifre.** Añadir un destinatario
 - **`install` se detiene por un binario ausente.** Instálalo, abre un shell nuevo donde esté en el PATH y ejecuta `install` otra vez. Lo mismo vale tras actualizar Node o renombrar el checkout.
 - **El despacho se detiene e informa del checkout principal.** La sincronización exige `main` activa y rechaza un fichero versionado modificado. Haz commit del cambio o descártalo; el trabajo se hace en worktrees, nunca en el checkout principal.
 - **Una tarea encolada está en `Blocked`.** Lee su comentario. Nombra la causa: sin assignee, dos assignees o un id fuera del roster. Corrige el assignee y vuelve a pasar la tarea a `Queued`.
-- **`sops` no descifra tras mergear el pull request de incorporación.** El responsable aún no ha recifrado los ficheros para tu clave; pídele `sops updatekeys`.
+- **`sops` no descifra tras mergear el pull request de incorporación.** Un compañero aún no ha recifrado los ficheros para tu clave; pídele `sops updatekeys`.
 
 ## Relacionado
 

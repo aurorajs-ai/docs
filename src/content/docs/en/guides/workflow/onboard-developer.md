@@ -20,7 +20,7 @@ Get one developer working on the shared task board: listed in the roster, with a
   gh auth login
   ```
 
-  `gh auth login` is the one credential the dispatcher uses for its GitHub calls. The daemon also needs `npx`, `claude`, `openspec` and `catalyst` on the PATH; `pnpm backlog:daemon install` names any binary that is missing and stops. Path B also needs `sops` and `age`.
+  `gh auth login` is the one credential the dispatcher uses for its GitHub calls. The daemon also needs `npx`, `claude`, `openspec` (`pnpm add -g @fission-ai/openspec`) and `catalyst` on the PATH; `pnpm backlog:daemon install` names any binary that is missing and stops. Path B also needs `sops` and `age`.
 
 ## Steps
 
@@ -59,28 +59,22 @@ B1. **Clone the repository.**
    cd my-project
    ```
 
-B2. **Prepare an onboarding pull request.** It carries two changes and is reviewed by the owner of the repository:
+B2. **Create your own `backend/.keys`.** The folder is gitignored and holds three files: your `age` identity for SOPS and the OAuth signing pair. From the project root:
 
-   - Your entry in `.backlog/team.yaml`, as in step A2.
-   - Your public `age` key as a new recipient of `backend/.sops.yaml`. Create the key pair first; the public key (`age1...`) is printed, and the private key stays in `backend/.keys/`, which is gitignored:
+   ```bash
+   mkdir -p backend/.keys
+   age-keygen -o backend/.keys/age.txt
+   catalyst keys
+   ```
 
-     ```bash
-     mkdir -p backend/.keys
-     age-keygen -o backend/.keys/age.txt
-     ```
+   `age-keygen` writes `backend/.keys/age.txt` and prints your public key (`age1...`); the CLI has no command that creates it. `catalyst keys` writes `oauth-private.key` and `oauth-public.key` into `backend/.keys/`; `--out <dir>` changes the folder. Send the **public** `age1...` key to a teammate. Never send or commit `age.txt`.
 
-     Append the public key to the recipients of the existing rule, as described in [Deploy a project to Coolify](../deploy-to-coolify/):
+B3. **Open the onboarding pull request, with your roster entry.** Add yourself to `.backlog/team.yaml`, as in step A2, and open the pull request with `gh pr create`. A teammate who already decrypts the project finishes it:
 
-     ```yaml
-     creation_rules:
-       - age: >-
-           age1ownerpublickey...,
-           age1yourpublickey...
-     ```
+   - Adds your public key to the `age:` recipients of `backend/.sops.yaml`, whose rule is `path_regex: '(\.env(\..+)?|\.env)$'`. A comment line beside each key names its owner; add yours.
+   - Re-encrypts the existing `backend/.env.<env>.enc` files so your key can read them, with `sops updatekeys <file>`, and pushes that to the same pull request.
 
-   Open it with `gh pr create`. Never commit `backend/.keys/age.txt`.
-
-B3. **Wait for the owner to merge and re-encrypt.** Adding a recipient to `.sops.yaml` does not change files that are already encrypted. The owner runs `sops updatekeys` on each `backend/.env.<env>.enc` file and pushes the result. Then `git pull`.
+   Adding a recipient does not change files that are already encrypted, which is why the teammate re-encrypts. Once the pull request is merged, `git pull`.
 
 ### Both paths — the local environment
 
@@ -90,10 +84,7 @@ B3. **Wait for the owner to merge and re-encrypt.** Adding a recipient to `.sops
    pnpm install
    ```
 
-2. **Create `backend/.env` and `backend/.keys`.** A project created in step A1 already has both. In a clone:
-
-   - Generate the OAuth signing pair with `catalyst keys`; it writes into `backend/.keys/`.
-   - Decrypt the environment you use for local work. From `backend/`, `catalyst env decrypt --env dev --config ../aurora.yaml` writes `backend/.env.dev` and reads your key from `backend/.keys/age.txt`. Use its variables for `backend/.env` and point the `DATABASE_*` block at your own database, as in [Install Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
+2. **Create `backend/.env`.** A project created in path A already has it. In a clone, decrypt the environment you use for local work. From `backend/`, `catalyst env decrypt --env dev --config ../aurora.yaml` reads `.env.dev.enc` and your key from `.keys/age.txt`, and writes `backend/.env.dev`. Use its variables for `backend/.env` and point the `DATABASE_*` block at your own database, as in [Install Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
 
    Run the project with `pnpm dev` from the root. See [Add IAM + OAuth](../../../tutorials/getting-started/add-iam-oauth/) for the first login.
 
@@ -131,7 +122,7 @@ B3. **Wait for the owner to merge and re-encrypt.** Adding a recipient to `.sops
 - **`install` stops on a missing binary.** Install it, open a new shell where it is on the PATH and run `install` again. The same applies after a Node upgrade or after renaming the checkout.
 - **Dispatch stops and reports the main checkout.** The synchronization needs `main` checked out and refuses a dirty tracked file. Commit or discard the change; work happens in worktrees, never in the main checkout.
 - **A queued task is `Blocked`.** Read its comment. It names the cause: no assignee, two assignees or an id outside the roster. Fix the assignee and move the task to `Queued` again.
-- **`sops` cannot decrypt after the onboarding pull request merged.** The owner has not re-encrypted the files for your key yet; ask for `sops updatekeys`.
+- **`sops` cannot decrypt after the onboarding pull request merged.** A teammate has not re-encrypted the files for your key yet; ask for `sops updatekeys`.
 
 ## Related
 
