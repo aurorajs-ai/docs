@@ -39,3 +39,4 @@ If you are new to Aurora, start with the [tutorials](../tutorials/) instead.
 - **[Install and upgrade packages](./workflow/install-and-upgrade-packages/)** — `catalyst add` and `catalyst upgrade`, conflicts, migrations and the vendor branch.
 - **[Maintain the business-rules catalog](./workflow/maintain-business-rules/)** — the three authoring workflows, the commands and the pre-commit hook.
 - **[Maintain the process catalog](./workflow/maintain-processes/)** — bootstrap, edit and validate `processes.yaml` and its manual markers.
+- **[Onboard a developer](./workflow/onboard-developer/)** — roster entry, SOPS key, local environment, dispatcher daemon and a first task, for a new or an existing project.
