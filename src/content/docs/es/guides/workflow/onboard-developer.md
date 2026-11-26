@@ -86,7 +86,15 @@ B3. **Abre el pull request de incorporación, con tu entrada del roster.** Añá
    pnpm install
    ```
 
-2. **Crea `backend/.env`.** Un proyecto creado por el camino A ya lo tiene. En un clon, descifra el entorno que uses en local. Desde `backend/`, `catalyst env decrypt --env dev --config ../aurora.yaml` lee `.env.dev.enc` y tu clave de `.keys/age.txt`, y escribe `backend/.env.dev`. Usa sus variables para `backend/.env` y apunta el bloque `DATABASE_*` a tu propia base de datos, como en [Instalar Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
+2. **Crea `backend/.env`.** Un proyecto creado por el camino A ya lo tiene. En un clon, descifra el entorno `dev` y copia el resultado como `backend/.env`. Desde `backend/`:
+
+   ```bash
+   cd backend
+   catalyst env decrypt --env dev --config ../aurora.yaml
+   cp .env.dev .env
+   ```
+
+   El comando lee `.env.dev.enc` y tu clave de `.keys/age.txt`, y escribe `backend/.env.dev`. Después apunta el bloque `DATABASE_*` de `.env` a tu propia base de datos, como en [Instalar Aurora Catalyst](../../../tutorials/getting-started/install-aurora/).
 
    Arranca el proyecto con `pnpm dev` desde la raíz. Para el primer inicio de sesión, consulta [Añadir IAM + OAuth](../../../tutorials/getting-started/add-iam-oauth/).
 
