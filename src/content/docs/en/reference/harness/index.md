@@ -255,6 +255,10 @@ Four plugins. **This is the one family that does not fully ship.** The declarati
 
 These are not files under `.claude/`. They are instructions in `CLAUDE.md`, applied by the assistant's reasoning, and they ship because the template carries its own `CLAUDE.md`.
 
+### Task Gate
+
+The zeroth gate, before the Intent Gate. If the prompt names an existing Backlog task in order to work it, the task already carries its triage, so classification is skipped. The assistant sets the task `In Progress` and assigns it in one edit, `backlog task edit T-nn -s "In Progress" -a @<id>`, where `<id>` is the line in `.backlog/.dispatch/assignee` of the main checkout. Without that file, or with an id absent from `.backlog/team.yaml`, it stops and says to run `pnpm backlog:daemon install --assignee @<id>`, changing no state. A task assigned to another developer is reported and the assistant asks before reassigning it. Asking about a task only answers. See [The board for several developers](../../concepts/workflow/multi-developer-board/).
+
 ### Intent Gate
 
 The first gate. Before classifying anything, the assistant confirms it understands the request. An ambiguous request — a vague goal, a missing constraint, two plausible readings — is clarified in conversation before any work begins, and then re-triaged. A clear request skips the gate entirely.
@@ -265,7 +269,7 @@ Classifies every request as **Minor**, **Medium** or **Complex**, and the tier d
 
 ### Worktree Gate
 
-For Medium and Complex work, before the first code change: an offer to isolate the work in a git worktree on its own branch, closing with a pull request. Recommended, never imposed, never done silently. Minor work never triggers it.
+Every change to a tracked file, of any tier, goes through a git worktree with its own branch before the first edit, and closes with a pull request to `main`. It is never an offer and never a question: the main checkout is shared with other execution threads, and an edit left there is indistinguishable from theirs. The branch is `task/T-nn` when the work has a Backlog task, and a conventional-commit scope otherwise.
 
 ### Quality Gates
 

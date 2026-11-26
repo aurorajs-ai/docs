@@ -54,3 +54,4 @@ If you want to _do_ something, use the [how-to guides](../guides/). If you need 
 - **[The four governance artifacts](./workflow/governance-artifacts/)** — Harness Rules, the architecture-checkpoint hook, and the backend/frontend project-structure skills: what blocks you, what advises you, and who owns what.
 - **[Installable packages and scaffold upgrades](./workflow/installable-packages/)** — manifests, the lockfile and the `aurora/scaffold` vendor branch behind `catalyst add` and `catalyst upgrade`.
 - **[Process catalog](./workflow/process-catalog/)** — the business processes of a bounded context as ordered paths over screens, and how they differ from rules and the manual.
+- **[The board for several developers](./workflow/multi-developer-board/)** — one developer per task, the roster, the machine identity, board synchronization and the graph written by CI.

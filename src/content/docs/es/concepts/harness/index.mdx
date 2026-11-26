@@ -41,7 +41,7 @@ Las skills son la única familia que recibe una ayuda parcial de la capa 1. La m
 
 ### Capa 3 — De criterio: la aplica el modelo
 
-El Intent Gate, el Task-Weight Triage, el Worktree Gate, los Quality Gates y los contratos de delegación. Viven en `CLAUDE.md` como instrucciones y se ejecutan razonando: no hay ningún script detrás.
+El Task Gate, el Intent Gate, el Task-Weight Triage, el Worktree Gate, los Quality Gates y los contratos de delegación. Viven en `CLAUDE.md` como instrucciones y se ejecutan razonando: no hay ningún script detrás.
 
 Esta capa existe porque hay decisiones que no se pueden automatizar. Ningún script distingue una errata de una función nueva y, por tanto, ningún script puede decidir si un cambio necesita desarrollo dirigido por tests y una revisión, o si basta con hacerlo. Ese juicio se delega en el modelo, de forma deliberada y explícita.
 
@@ -51,7 +51,7 @@ Aurora no mete todo en la capa 1 por el hecho de que sea la más fuerte. La regl
 
 - Un comportamiento que debe ocurrir siempre, y cuyo coste de omitirse es real → **capa 1**. Formatear, lintar los barrels, inyectar las reglas que gobiernan el fichero que se está tocando.
 - Una convención cuya violación molesta pero se recupera → **capa 2**. Dónde va un fichero, cómo se compone un handler, qué skill cubre una tarea.
-- Una decisión que exige sopesar el contexto → **capa 3**. Cuánto pesa esta tarea, si necesita worktree, qué gate de revisión le toca.
+- Una decisión que exige sopesar el contexto → **capa 3**. Cuánto pesa esta tarea, qué gate de revisión le toca.
 
 La contención tiene una razón práctica. Una alarma que salta constantemente deja de ser información y se convierte en ruido; la gente aprende a descartarla sin leerla. Reservar el bloqueo mecánico para las pocas reglas donde una violación rompe de verdad la integridad arquitectónica es lo que mantiene el bloqueo significativo cuando sí salta.
 

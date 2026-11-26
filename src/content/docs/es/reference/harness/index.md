@@ -255,6 +255,10 @@ Cuatro plugins. **Es la única familia que no viaja del todo.** Las declaracione
 
 Estas no son ficheros bajo `.claude/`. Son instrucciones dentro de `CLAUDE.md`, aplicadas por el razonamiento del asistente, y viajan porque la plantilla lleva su propio `CLAUDE.md`.
 
+### Task Gate
+
+El gate cero, antes del Intent Gate. Si la petición nombra una tarea existente de Backlog para trabajarla, la tarea ya trae su triaje, así que se omite la clasificación. El asistente la pasa a `In Progress` y la asigna en una sola edición, `backlog task edit T-nn -s "In Progress" -a @<id>`, donde `<id>` es la línea de `.backlog/.dispatch/assignee` del checkout principal. Sin ese fichero, o con un id que no está en `.backlog/team.yaml`, se detiene y indica que ejecutes `pnpm backlog:daemon install --assignee @<id>`, sin cambiar ningún estado. Una tarea asignada a otro desarrollador se comunica y el asistente pregunta antes de reasignarla. Preguntar por una tarea solo la responde. Consulta [El tablero con varios desarrolladores](../../concepts/workflow/multi-developer-board/).
+
 ### Intent Gate
 
 El primer gate. Antes de clasificar nada, el asistente confirma que entiende la petición. Una petición ambigua —objetivo difuso, una restricción que falta, dos lecturas plausibles— se aclara conversando antes de empezar cualquier trabajo, y después se vuelve a triar. Una petición clara se salta el gate por completo.
@@ -265,7 +269,7 @@ Clasifica cada petición como **Minor**, **Medium** o **Complex**, y el tier dec
 
 ### Worktree Gate
 
-Para trabajo Medium y Complex, antes del primer cambio de código: se ofrece aislar el trabajo en un worktree de git con su propia rama, cerrando con un pull request. Recomendado, nunca impuesto, nunca hecho en silencio. El trabajo Minor no lo dispara.
+Todo cambio en un fichero versionado, de cualquier tier, pasa por un worktree de git con su propia rama antes de la primera edición, y termina con un pull request a `main`. Nunca es una oferta ni una pregunta: el checkout principal lo comparten otros hilos de ejecución, y una edición dejada allí no se distingue de las suyas. La rama es `task/T-nn` cuando el trabajo tiene tarea de Backlog, y un alcance de conventional commit en caso contrario.
 
 ### Quality Gates
 

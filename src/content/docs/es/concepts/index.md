@@ -54,3 +54,4 @@ Si quieres _hacer_ algo, usa las [guías](../guides/). Si necesitas datos exacto
 - **[Los cuatro artefactos de gobernanza](./workflow/governance-artifacts/)** — Harness Rules, el hook architecture-checkpoint y las skills de project-structure de backend/frontend: qué te bloquea, qué te aconseja y quién es responsable de qué.
 - **[Paquetes instalables y actualizaciones del scaffold](./workflow/installable-packages/)** — manifiestos, el lockfile y la rama de proveedor `aurora/scaffold` detrás de `catalyst add` y `catalyst upgrade`.
 - **[Catálogo de procesos](./workflow/process-catalog/)** — los procesos de negocio de un bounded context como caminos ordenados sobre pantallas, y en qué se diferencian de las reglas y del manual.
+- **[El tablero con varios desarrolladores](./workflow/multi-developer-board/)** — una persona por tarea, el roster, la identidad de máquina, la sincronización del tablero y el grafo que escribe la CI.

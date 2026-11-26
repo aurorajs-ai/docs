@@ -41,7 +41,7 @@ Skills are the one family that gets a partial assist from layer 1. Most rely pur
 
 ### Layer 3 — Judgement: the model applies it
 
-The Intent Gate, the Task-Weight Triage, the Worktree Gate, the Quality Gates, the delegation contracts. These live in `CLAUDE.md` as instructions, and they are executed by reasoning — there is no script behind them.
+The Task Gate, the Intent Gate, the Task-Weight Triage, the Worktree Gate, the Quality Gates, the delegation contracts. These live in `CLAUDE.md` as instructions, and they are executed by reasoning — there is no script behind them.
 
 This layer exists because some decisions cannot be automated. No script can tell a typo from a new function, and therefore no script can decide whether a change needs test-driven development and a review, or whether it should just be made. That judgement is delegated to the model, deliberately and explicitly.
 
@@ -51,7 +51,7 @@ Aurora does not put everything in layer 1 just because layer 1 is the strongest.
 
 - A behaviour that must happen every single time, and whose cost of being skipped is real → **layer 1**. Formatting, barrel linting, injecting the rules that govern the file being touched.
 - A convention whose violation is annoying but recoverable → **layer 2**. Where a file belongs, how a handler is composed, which skill covers a task.
-- A decision that requires weighing context → **layer 3**. How heavy is this task, does it need a worktree, which review gate applies.
+- A decision that requires weighing context → **layer 3**. How heavy is this task, which review gate applies.
 
 The reason for the restraint is practical. An alarm that fires constantly stops being information and becomes noise; people learn to click through it. Reserving mechanical blocking for the few rules where a violation genuinely breaks architectural integrity is what keeps the blocks meaningful when they do fire.
 
