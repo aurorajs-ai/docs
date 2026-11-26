@@ -41,3 +41,5 @@ Las migraciones se aplican al arrancar por defecto (`DATABASE_MIGRATE_ON_BOOT`).
 ## Siguiente
 
 Tu proyecto está generado y conectado a una base de datos. El siguiente paso, [añadir IAM + OAuth](/aurora-catalyst-docs/es/tutorials/getting-started/add-iam-oauth/), lo convierte en un proveedor de identidad.
+
+Para incorporar a un compañero al proyecto, sigue [Incorporar a un desarrollador](/aurora-catalyst-docs/es/guides/workflow/onboard-developer/).

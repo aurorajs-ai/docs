@@ -41,3 +41,5 @@ Migrations apply at boot by default (`DATABASE_MIGRATE_ON_BOOT`). The guide [Man
 ## Next
 
 Your project is scaffolded and wired to a database. Next, [add IAM + OAuth](/aurora-catalyst-docs/en/tutorials/getting-started/add-iam-oauth/) to turn it into an identity provider.
+
+To bring a colleague onto the project, follow [Onboard a developer](/aurora-catalyst-docs/en/guides/workflow/onboard-developer/).
