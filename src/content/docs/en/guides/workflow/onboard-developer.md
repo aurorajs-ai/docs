@@ -74,7 +74,7 @@ B2. **Set up `backend/.keys`.** The folder is gitignored (`backend/.gitignore` i
 B3. **Open the onboarding pull request, with your roster entry.** Add yourself to `.backlog/team.yaml`, as in step A2, and open the pull request with `gh pr create`. A teammate who already decrypts the project finishes it:
 
    - Adds your public key to the `age:` recipients of `backend/.sops.yaml`, whose rule is `path_regex: '(\.env(\..+)?|\.env)$'`. A comment line beside each key names its owner; add yours.
-   - Re-encrypts the existing `backend/.env.<env>.enc` files so your key can read them, with `sops updatekeys <file>`, and pushes that to the same pull request.
+   - Re-encrypts `backend/.env.local.enc`, and any other encrypted env file the project keeps, so your key can read them, with `sops updatekeys <file>`, and pushes that to the same pull request.
 
    Adding a recipient does not change files that are already encrypted, which is why the teammate re-encrypts. Once the pull request is merged, `git pull`.
 
@@ -86,15 +86,15 @@ B3. **Open the onboarding pull request, with your roster entry.** Add yourself t
    pnpm install
    ```
 
-2. **Create `backend/.env`.** A project created in path A already has it. In a clone, decrypt the `dev` environment and copy the result as `backend/.env`. From `backend/`:
+2. **Create `backend/.env`.** A project created in path A already has it. In a clone, decrypt the `local` environment and copy the result as `backend/.env`. From `backend/`:
 
    ```bash
    cd backend
-   catalyst env decrypt --env dev --config ../aurora.yaml
-   cp .env.dev .env
+   catalyst env decrypt --env local --config ../aurora.yaml
+   cp .env.local .env
    ```
 
-   The command reads `.env.dev.enc` and your key from `.keys/age.txt`, and writes `backend/.env.dev`.
+   The command reads `.env.local.enc` and your key from `.keys/age.txt`, and writes `backend/.env.local`; the CLI always writes `.env.<env>`, never `.env`, hence the copy.
 
    Run the project with `pnpm dev` from the root. See [Add IAM + OAuth](../../../tutorials/getting-started/add-iam-oauth/) for the first login.
 

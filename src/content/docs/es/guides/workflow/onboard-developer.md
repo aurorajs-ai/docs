@@ -74,7 +74,7 @@ B2. **Prepara `backend/.keys`.** La carpeta está en `.gitignore` (`backend/.git
 B3. **Abre el pull request de incorporación, con tu entrada del roster.** Añádete a `.backlog/team.yaml`, como en el paso A2, y abre el pull request con `gh pr create`. Un compañero que ya descifra el proyecto lo completa:
 
    - Añade tu clave pública a los destinatarios `age:` de `backend/.sops.yaml`, cuya regla es `path_regex: '(\.env(\..+)?|\.env)$'`. Una línea de comentario junto a cada clave nombra a su dueño; añade la tuya.
-   - Recifra los ficheros `backend/.env.<env>.enc` existentes para que tu clave pueda leerlos, con `sops updatekeys <fichero>`, y lo sube al mismo pull request.
+   - Recifra `backend/.env.local.enc`, y cualquier otro fichero de entorno cifrado que tenga el proyecto, para que tu clave pueda leerlos, con `sops updatekeys <fichero>`, y lo sube al mismo pull request.
 
    Añadir un destinatario no modifica los ficheros ya cifrados, por eso el compañero los recifra. Cuando el pull request se mergee, haz `git pull`.
 
@@ -86,15 +86,15 @@ B3. **Abre el pull request de incorporación, con tu entrada del roster.** Añá
    pnpm install
    ```
 
-2. **Crea `backend/.env`.** Un proyecto creado por el camino A ya lo tiene. En un clon, descifra el entorno `dev` y copia el resultado como `backend/.env`. Desde `backend/`:
+2. **Crea `backend/.env`.** Un proyecto creado por el camino A ya lo tiene. En un clon, descifra el entorno `local` y copia el resultado como `backend/.env`. Desde `backend/`:
 
    ```bash
    cd backend
-   catalyst env decrypt --env dev --config ../aurora.yaml
-   cp .env.dev .env
+   catalyst env decrypt --env local --config ../aurora.yaml
+   cp .env.local .env
    ```
 
-   El comando lee `.env.dev.enc` y tu clave de `.keys/age.txt`, y escribe `backend/.env.dev`.
+   El comando lee `.env.local.enc` y tu clave de `.keys/age.txt`, y escribe `backend/.env.local`; la CLI siempre escribe `.env.<env>`, nunca `.env`, por eso se copia.
 
    Arranca el proyecto con `pnpm dev` desde la raíz. Para el primer inicio de sesión, consulta [Añadir IAM + OAuth](../../../tutorials/getting-started/add-iam-oauth/).
 
