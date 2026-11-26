@@ -59,15 +59,17 @@ B1. **Clone the repository.**
    cd my-project
    ```
 
-B2. **Create your own `backend/.keys`.** The folder is gitignored and holds three files: your `age` identity for SOPS and the OAuth signing pair. From the project root:
+B2. **Set up `backend/.keys`.** The folder is gitignored (`backend/.gitignore` ignores `/.keys`), so its files are never committed. It holds three files:
 
-   ```bash
-   mkdir -p backend/.keys
-   age-keygen -o backend/.keys/age.txt
-   catalyst keys
-   ```
+   - `oauth-private.key` and `oauth-public.key`: the OAuth signing pair of the team. Do not generate a new one: a teammate gives you theirs, so every developer has the same pair in development. Put both files in `backend/.keys/`.
+   - `age.txt`: your own `age` identity for SOPS. Create it from the project root:
 
-   `age-keygen` writes `backend/.keys/age.txt` and prints your public key (`age1...`); the CLI has no command that creates it. `catalyst keys` writes `oauth-private.key` and `oauth-public.key` into `backend/.keys/`; `--out <dir>` changes the folder. Send the **public** `age1...` key to a teammate. Never send or commit `age.txt`.
+     ```bash
+     mkdir -p backend/.keys
+     age-keygen -o backend/.keys/age.txt
+     ```
+
+     `age-keygen` writes the file and prints your public key (`age1...`); the CLI has no command that creates it. Send the **public** `age1...` key to a teammate. Never send or commit `age.txt`.
 
 B3. **Open the onboarding pull request, with your roster entry.** Add yourself to `.backlog/team.yaml`, as in step A2, and open the pull request with `gh pr create`. A teammate who already decrypts the project finishes it:
 

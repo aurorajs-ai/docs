@@ -59,15 +59,17 @@ B1. **Clona el repositorio.**
    cd my-project
    ```
 
-B2. **Crea tu propio `backend/.keys`.** La carpeta está en `.gitignore` y contiene tres ficheros: tu identidad `age` para SOPS y el par de claves de firma OAuth. Desde la raíz del proyecto:
+B2. **Prepara `backend/.keys`.** La carpeta está en `.gitignore` (`backend/.gitignore` ignora `/.keys`), así que sus ficheros nunca se suben. Contiene tres ficheros:
 
-   ```bash
-   mkdir -p backend/.keys
-   age-keygen -o backend/.keys/age.txt
-   catalyst keys
-   ```
+   - `oauth-private.key` y `oauth-public.key`: el par de firma OAuth del equipo. No generes uno nuevo: un compañero te da el suyo, para que todos los desarrolladores tengan el mismo par en desarrollo. Copia ambos ficheros en `backend/.keys/`.
+   - `age.txt`: tu propia identidad `age` para SOPS. Créala desde la raíz del proyecto:
 
-   `age-keygen` escribe `backend/.keys/age.txt` e imprime tu clave pública (`age1...`); la CLI no tiene ningún comando que la cree. `catalyst keys` escribe `oauth-private.key` y `oauth-public.key` en `backend/.keys/`; `--out <dir>` cambia la carpeta. Envía la clave **pública** `age1...` a un compañero. No envíes ni subas nunca `age.txt`.
+     ```bash
+     mkdir -p backend/.keys
+     age-keygen -o backend/.keys/age.txt
+     ```
+
+     `age-keygen` escribe el fichero e imprime tu clave pública (`age1...`); la CLI no tiene ningún comando que la cree. Envía la clave **pública** `age1...` a un compañero. No envíes ni subas nunca `age.txt`.
 
 B3. **Abre el pull request de incorporación, con tu entrada del roster.** Añádete a `.backlog/team.yaml`, como en el paso A2, y abre el pull request con `gh pr create`. Un compañero que ya descifra el proyecto lo completa:
 
