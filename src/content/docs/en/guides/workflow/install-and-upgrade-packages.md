@@ -73,6 +73,14 @@ The lockfile now holds `{ name, source }` for the package, and `blueprint/packag
 
    Push it after every upgrade or add. A fresh clone gets it with `git fetch origin aurora/scaffold:aurora/scaffold`.
 
+### Relate a module to a package bounded context
+
+From CLI 5.2.0 the render writes the `*.module.yaml` of every installed package to `blueprint/<bc>/`. A project that was installed with an earlier CLI does not have them yet.
+
+1. **Upgrade to CLI 5.2.0 or later.** Run `catalyst upgrade` as above. The merge adds `blueprint/<bc>/*.module.yaml` for every locked package.
+2. **Declare the relation** in your module, pointing `modulePath` at the package bounded context (for example `iam/account`; see the [module YAML reference](../../../reference/module-yaml/#relationship-keys)).
+3. **Generate the module** with `catalyst generate`. The target now resolves.
+
 ### Migrate a package the CLI no longer ships
 
 Two packages left the CLI. Both migrations are one-time and manual, and the CLI README holds the full procedures ("Install a framework solution from its repository" and "Leave a package the CLI no longer ships"). The shape of each:
@@ -100,6 +108,7 @@ Two packages left the CLI. Both migrations are one-time and manual, and the CLI 
 - **`catalyst add --from` or `catalyst upgrade` stops on a fetch.** The repository is unreachable with your git credentials, or it has no tag equal to the CLI version. The message names the entry, the URL and the tag. Fix the access, or ask the owner to publish the tag, and rerun: nothing was written.
 - **`catalyst add --from` refuses the package name.** The name is one the CLI ships, or the running CLI differs from the lockfile `cliVersion`. In the second case run `catalyst upgrade` first.
 - **An edit to a generated composition file disappeared.** Those files are generated whole from the manifests. Move your wiring to `backend/src/project.composition.ts` or `frontend/src/app/project.composition.ts`.
+- **`catalyst generate` fails with `relationship.modulePath "iam/account" does not name an existing schema`.** The project lacks the YAML of that package bounded context. Check that the package is in `aurora.lock.yaml`, then run `catalyst upgrade` with CLI 5.2.0 or later. If no installed package provides the target, the error is correct: add the package or write the module.
 
 ## Related
 

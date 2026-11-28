@@ -54,6 +54,12 @@ La fusión a tres bandas de Git, con el renderizado anterior como base, resuelve
 
 Los archivos que conectan los paquetes entre sí (el módulo de la aplicación, el módulo de bridges, el agregador del esquema Drizzle, las rutas, la navegación) se generan completos a partir de los manifiestos del conjunto instalado, y llevan la cabecera `@aurora-catalyst-generated`. Tu propio cableado va en dos archivos que son tuyos, `backend/src/project.composition.ts` y `frontend/src/app/project.composition.ts`. Los archivos de composición generados los importan y los extienden después de las entradas de los paquetes, de modo que una instalación nunca reescribe lo que pones ahí. `catalyst generate` registra tus propios bounded contexts en estos archivos.
 
+### Definiciones de módulo de los paquetes instalados
+
+Cada paquete incluye también los archivos `*.module.yaml` de sus bounded contexts. El render los escribe en `blueprint/<bc>/` de tu proyecto, junto a tus propios módulos, y llegan por la misma fusión que cualquier archivo de paquete. Eso permite que un módulo tuyo se relacione con un bounded context de un paquete: con `identity` instalado, una relación many-to-one hacia `iam/account` se resuelve, porque `blueprint/iam/account.module.yaml` está en el proyecto. Antes de la CLI 5.2.0 un paquete no incluía definiciones de módulo, y `catalyst generate` fallaba con `relationship.modulePath "iam/account" does not name an existing schema`.
+
+Una relación hacia un bounded context que ni tu proyecto ni un paquete instalado aportan sigue fallando con ese error, antes de escribir nada.
+
 ### Qué más hace una actualización
 
 `catalyst upgrade` renderiza y fusiona como se ha descrito. Los paquetes instalados se actualizan junto con el scaffold, y también cada entrada `source`: `catalyst upgrade` vuelve a descargarla en la etiqueta igual a la versión de la CLI que ejecutas y la renderiza con los paquetes del framework como un único conjunto. Si el repositorio no es accesible o no tiene esa etiqueta, la actualización se detiene antes de escribir nada. Los paquetes npm del framework se actualizan mediante npm.
@@ -79,6 +85,7 @@ Cuando la fusión no tiene conflictos, la CLI instala las dependencias, añade l
 - Una actualización depende de que cada repositorio `source` sea accesible con tus credenciales de git. Si alguno no lo es, la actualización se detiene en lugar de omitirlo.
 - `catalyst add` se niega a ejecutarse cuando la versión de la CLI difiere de la del lockfile. Ejecuta antes `catalyst upgrade`. `catalyst upgrade` se niega cuando falta `aurora/scaffold`, o cuando un archivo rastreado tiene cambios en el área de preparación o sin preparar: haz commit o guárdalos antes.
 - Las migraciones de esquema las generas tú después de la fusión, y nunca se ejecutan automáticamente.
+- Los `*.module.yaml` incluidos son archivos del paquete, no tuyos. Ejecutar `catalyst generate` sobre un módulo de un paquete está permitido, pero `catalyst generate back` reescribe el YAML incluido, y `--force` sobrescribe el código del paquete sin `.origin` que revisar, porque no se incluye `.locks/`. Sin `--force`, los archivos existentes se omiten.
 - La rama de proveedor vive en el clon que ejecutó `catalyst new` hasta que la subes. Tras cada actualización, sube `aurora/scaffold` junto con tu rama. Un clon nuevo la obtiene con `git fetch origin aurora/scaffold:aurora/scaffold`.
 - Un proyecto creado antes de que existiera el lockfile hay que adoptarlo a mano primero. El README de la CLI describe los dos caminos de adopción.
 
