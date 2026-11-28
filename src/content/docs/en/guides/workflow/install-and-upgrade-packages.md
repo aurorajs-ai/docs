@@ -78,7 +78,7 @@ The lockfile now holds `{ name, source }` for the package, and `blueprint/packag
 From CLI 5.2.0 the render writes the `*.module.yaml` of every installed package to `blueprint/<bc>/`. A project that was installed with an earlier CLI does not have them yet.
 
 1. **Upgrade to CLI 5.2.0 or later.** Run `catalyst upgrade` as above. The merge adds `blueprint/<bc>/*.module.yaml` for every locked package.
-2. **Declare the relation** in your module, pointing `modulePath` at the package bounded context (for example `iam/account`; see the [module YAML reference](/en/reference/module-yaml/#relationship-keys)).
+2. **Declare the relation** in your module, pointing `modulePath` at the package bounded context (for example `iam/account`; see the [module YAML reference](../../../reference/module-yaml/#relationship-keys)).
 3. **Generate the module** with `catalyst generate`. The target now resolves.
 
 ### Migrate a package the CLI no longer ships

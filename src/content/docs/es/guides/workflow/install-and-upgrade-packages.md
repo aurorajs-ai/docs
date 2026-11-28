@@ -78,7 +78,7 @@ El lockfile guarda ahora `{ name, source }` para el paquete, y `blueprint/packag
 Desde la CLI 5.2.0 el render escribe en `blueprint/<bc>/` los `*.module.yaml` de cada paquete instalado. Un proyecto instalado con una CLI anterior todavía no los tiene.
 
 1. **Actualiza a la CLI 5.2.0 o posterior.** Ejecuta `catalyst upgrade` como arriba. La fusión añade `blueprint/<bc>/*.module.yaml` de cada paquete del lockfile.
-2. **Declara la relación** en tu módulo, apuntando `modulePath` al bounded context del paquete (por ejemplo `iam/account`; consulta la [referencia del YAML de módulo](/es/reference/module-yaml/#claves-de-relación)).
+2. **Declara la relación** en tu módulo, apuntando `modulePath` al bounded context del paquete (por ejemplo `iam/account`; consulta la [referencia del YAML de módulo](../../../reference/module-yaml/#claves-de-relación)).
 3. **Genera el módulo** con `catalyst generate`. El destino ya se resuelve.
 
 ### Migrar un paquete que la CLI ya no incluye
