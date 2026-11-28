@@ -93,8 +93,8 @@ description: <one-line description>
 
 ## Related
 
-- [How-to: …](/guides/…/) ← link to the practical recipes
-- [Reference: …](/reference/…/) ← link to auto-generated parts
+- [How-to: …](../../guides/…/) ← link to the practical recipes
+- [Reference: …](../../reference/…/) ← link to auto-generated parts
 ```
 
 ### 2. How-to guide (when the feature changes user workflow)
@@ -135,7 +135,7 @@ description: <one-line>
 
 ## Related
 
-- [Concept: …](/concepts/…/)
+- [Concept: …](../../../concepts/…/)
 ```
 
 Guides are task-focused. Do NOT explain _why_ here — link to the concept page.
@@ -180,7 +180,7 @@ Both versions live in the same PR.
 
 - [ ] Each page has a `title` and `description` in the frontmatter.
 - [ ] No duplicated prose between concept / guide / reference. Cross-link instead.
-- [ ] Links use the Starlight absolute form WITH the locale prefix (`/en/concepts/foo/`, `/es/concepts/foo/`), not relative paths like `../concepts/foo.md`.
+- [ ] Internal links are relative to the page (`../../../concepts/foo/`, as the existing pages do), never absolute (`/en/concepts/foo/`): the site is served under a base path, and an absolute link drops it and returns 404.
 - [ ] No broken image references, no placeholder `TODO` left without an explicit `:::note[Placeholder]` block.
 - [ ] Spanish page is NOT a literal translation — paragraphs are idiomatic and may reorder.
 
@@ -197,4 +197,4 @@ When done:
 
 1. Summarize in a PR description which Diátaxis categories you touched and why.
 2. Link the PR to its source: `Documents change: <source-repo>/openspec/changes/archive/<change>/` (mode A) or `Documents task: <T-nn>, PR <source-repo>#<number>` (mode B).
-3. Run `pnpm build` locally to catch broken links before pushing. If you can't, say so explicitly.
+3. Run `pnpm build` and then `pnpm check:links` locally before pushing, the same two steps as CI: the build does not detect broken links, only `pnpm check:links` does. If you can't, say so explicitly.
