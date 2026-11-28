@@ -54,6 +54,12 @@ Git's three-way merge, using the previous rendering as the base, resolves owners
 
 The files that wire packages together (the application module, the bridges module, the Drizzle schema aggregator, the routes, the navigation) are generated whole from the manifests of the installed set, and carry the `@aurora-catalyst-generated` header. Your own wiring goes in two developer-owned files, `backend/src/project.composition.ts` and `frontend/src/app/project.composition.ts`. Generated composition files import them and spread them after the packages' entries, so an install never rewrites what you put there. `catalyst generate` registers your own bounded contexts in these files.
 
+### Module definitions of installed packages
+
+Each package also ships the `*.module.yaml` files of its bounded contexts. The render writes them to `blueprint/<bc>/` of your project, next to your own modules, so they reach you through the same merge as any package file. This is what lets a module of yours relate to a package bounded context: with `identity` installed, a many-to-one to `iam/account` resolves, because `blueprint/iam/account.module.yaml` is in the project. Before CLI 5.2.0 a package shipped no module definitions, and `catalyst generate` failed with `relationship.modulePath "iam/account" does not name an existing schema`.
+
+A relation to a bounded context that neither your project nor an installed package provides keeps failing with that error, before anything is written.
+
 ### What an upgrade also does
 
 `catalyst upgrade` renders and merges as above. Installed packages upgrade together with the scaffold, and so does every `source` entry: `catalyst upgrade` fetches each one again at the tag equal to the CLI version it runs with and renders it with the framework packages as one package set. A repository that is unreachable, or that lacks the tag, stops the upgrade before anything is written. The framework npm packages update through npm.
@@ -79,6 +85,7 @@ When the merge has no conflicts the CLI installs the dependencies, appends the `
 - An upgrade depends on every `source` repository being reachable with your git credentials. If one is not, the upgrade stops instead of skipping it.
 - `catalyst add` refuses to run when the CLI version differs from the lockfile's. Run `catalyst upgrade` first. `catalyst upgrade` refuses when `aurora/scaffold` is missing, or when a tracked file has staged or unstaged changes: commit or stash first.
 - Schema migrations are generated after the merge, by you, and never run automatically.
+- The shipped `*.module.yaml` files are package files, not yours. `catalyst generate` on a package-owned module is allowed, but `catalyst generate back` rewrites the shipped YAML, and `--force` overwrites the package code with no `.origin` to review because no `.locks/` ships. Without `--force`, existing files are skipped.
 - The vendor branch lives in the clone that ran `catalyst new` until you push it. After each upgrade, push `aurora/scaffold` with your branch. A fresh clone gets it with `git fetch origin aurora/scaffold:aurora/scaffold`.
 - A project created before the lockfile existed has to be adopted by hand first. The CLI README describes the two adoption paths.
 

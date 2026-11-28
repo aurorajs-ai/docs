@@ -80,6 +80,8 @@ relationship:
   onDelete: restrict
 ```
 
+`modulePath` nombra un `blueprint/<bounded-context>/<module>.module.yaml` que debe existir en el proyecto. Un bounded context de un paquete cumple la condición cuando el paquete está instalado con la CLI 5.2.0 o posterior, porque el render escribe sus YAML en `blueprint/`. Un destino que ni el proyecto ni un paquete instalado aportan detiene la generación con `relationship.modulePath "<path>" does not name an existing schema`.
+
 ## Claves de widget
 
 Se declaran en el bloque `widget` de una propiedad.

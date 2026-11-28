@@ -73,6 +73,14 @@ El lockfile guarda ahora `{ name, source }` para el paquete, y `blueprint/packag
 
    Súbela tras cada actualización o instalación. Un clon nuevo la obtiene con `git fetch origin aurora/scaffold:aurora/scaffold`.
 
+### Relacionar un módulo con un bounded context de un paquete
+
+Desde la CLI 5.2.0 el render escribe en `blueprint/<bc>/` los `*.module.yaml` de cada paquete instalado. Un proyecto instalado con una CLI anterior todavía no los tiene.
+
+1. **Actualiza a la CLI 5.2.0 o posterior.** Ejecuta `catalyst upgrade` como arriba. La fusión añade `blueprint/<bc>/*.module.yaml` de cada paquete del lockfile.
+2. **Declara la relación** en tu módulo, apuntando `modulePath` al bounded context del paquete (por ejemplo `iam/account`; consulta la [referencia del YAML de módulo](/es/reference/module-yaml/#claves-de-relación)).
+3. **Genera el módulo** con `catalyst generate`. El destino ya se resuelve.
+
 ### Migrar un paquete que la CLI ya no incluye
 
 Dos paquetes salieron de la CLI. Ambas migraciones se hacen una sola vez y a mano, y el README de la CLI contiene los procedimientos completos («Install a framework solution from its repository» y «Leave a package the CLI no longer ships»). Así es cada una:
@@ -100,6 +108,7 @@ Dos paquetes salieron de la CLI. Ambas migraciones se hacen una sola vez y a man
 - **`catalyst add --from` o `catalyst upgrade` se detiene al descargar.** El repositorio no es accesible con tus credenciales de git, o no tiene una etiqueta igual a la versión de la CLI. El mensaje nombra la entrada, la URL y la etiqueta. Arregla el acceso, o pide a quien la mantiene que publique la etiqueta, y vuelve a ejecutar: no se escribió nada.
 - **`catalyst add --from` rechaza el nombre del paquete.** El nombre es uno de los que incluye la CLI, o la CLI en ejecución difiere del `cliVersion` del lockfile. En el segundo caso ejecuta antes `catalyst upgrade`.
 - **Desapareció una edición en un archivo de composición generado.** Esos archivos se generan completos a partir de los manifiestos. Mueve tu cableado a `backend/src/project.composition.ts` o a `frontend/src/app/project.composition.ts`.
+- **`catalyst generate` falla con `relationship.modulePath "iam/account" does not name an existing schema`.** Al proyecto le falta el YAML de ese bounded context del paquete. Comprueba que el paquete está en `aurora.lock.yaml` y ejecuta `catalyst upgrade` con la CLI 5.2.0 o posterior. Si ningún paquete instalado aporta el destino, el error es correcto: añade el paquete o escribe el módulo.
 
 ## Relacionado
 
